@@ -1,0 +1,280 @@
+DROP TABLE IF EXISTS LesCriteresNotesStage;
+DROP TABLE IF EXISTS LesCriteresNotesAnglais;
+DROP TABLE IF EXISTS LesCriteresNotesPortFolio;
+DROP TABLE IF EXISTS SectionContenirCriteres;
+-- DROP TABLE IF EXISTS SalleSoutenanceStagePortfolio; ; -- correction erreur de cardinalité MCD
+DROP TABLE IF EXISTS LesCriteresNotesSoutenance;
+DROP TABLE IF EXISTS LesCriteresNotesRapport;
+DROP TABLE IF EXISTS AnneeStage;
+DROP TABLE IF EXISTS SectionsEval;
+DROP TABLE IF EXISTS SectionContenirCriteres;
+-- DROP TABLE IF EXISTS AnneeGrilleEval ; -- correction erreur de cardinalité dans MCD
+DROP TABLE IF EXISTS EvalStage;
+DROP TABLE IF EXISTS EvalRapport;
+DROP TABLE IF EXISTS evalportfolio;
+DROP TABLE IF EXISTS evalanglais;
+DROP TABLE IF EXISTS Entreprises ;
+DROP TABLE IF EXISTS EvalSoutenance ;
+DROP TABLE IF EXISTS StatutsEval ;
+DROP TABLE IF EXISTS Salles ;
+DROP TABLE IF EXISTS EtudiantsBUT2ou3;
+DROP TABLE IF EXISTS Enseignants ;
+DROP TABLE IF EXISTS ModelesGrilleEval;
+DROP TABLE IF EXISTS SectionCritereEval ;
+DROP TABLE IF EXISTS CriteresEval;
+DROP TABLE IF EXISTS AnneesUniversitaires;
+-- Des AUTO_INCREMENT ont été ajoutés pour la plupart des clés primaires de type SMALLINT et sans sémantique
+CREATE TABLE AnneesUniversitaires(
+anneeDebut SMALLINT check (anneeDebut > 2020),
+fin SMALLINT unique NOT NULL check (fin>anneeDebut), -- c'est une clé candidate
+PRIMARY KEY(anneeDebut)
+);
+CREATE TABLE CriteresEval(
+IdCritere SMALLINT AUTO_INCREMENT,
+descLongue VARCHAR(500),
+descCourte VARCHAR(100) NOT NULL,
+-- noteMaxCritere FLOAT NOT NULL Check (noteMaxCritere >0.5), a été supprimée
+-- la note est déjà dans SectionContenirCriteres entre critère et section
+-- l'intérêt de la laisser dans SectionContenirCriteres est qu'un même critère pourrait
+-- etre utilisé plusieurs fois avec des notes différentes
+-- (e.g. changement d'une année à l'autre pour ajuster les grilles)
+PRIMARY KEY(IdCritere)
+);
+CREATE TABLE SectionCritereEval(
+IdSection SMALLINT AUTO_INCREMENT,
+titre VARCHAR(50) NOT NULL,
+description VARCHAR(300),
+PRIMARY KEY(IdSection)
+);
+CREATE TABLE ModelesGrilleEval(
+IdModeleEval SMALLINT AUTO_INCREMENT,
+natureGrille ENUM('ANGLAIS ', 'SOUTENANCE', 'RAPPORT', ' STAGE', ' PORTFOLIO') NOT NULL,
+noteMaxGrille FLOAT Check (noteMaxGrille >0),
+nomModuleGrilleEvaluation VARCHAR(80) UNIQUE NOT NULL,
+anneeDebut SMALLINT NOT NULL, -- correction erreur de cardinalité dans MCD
+PRIMARY KEY(IdModeleEval) ,
+FOREIGN KEY(anneeDebut) REFERENCES AnneesUniversitaires(anneeDebut)
+);
+
+-- Pour l'accès au front office, c'est la table Enseignants ci-dessous qui sera utilisée
+-- Pour l'accès au back office, c'est la table UtilisateursBackOffice (plus loin) qui sera utilisée
+-- il n'est pas nécessaire de prévoir le cas ou traitement particulier d'un enseignant qui suivrit des
+-- stage et qui serait aussi autorisé à accéder au BackOffice : le doubler dans les 2 tables
+CREATE TABLE Enseignants(
+IdEnseignant SMALLINT AUTO_INCREMENT,
+nom VARCHAR(50) NOT NULL,
+prenom VARCHAR(50) NOT NULL,
+mail VARCHAR(80) UNIQUE NOT NULL, -- c'est une clé candidate
+mdp VARCHAR(255) NOT NULL,
+PRIMARY KEY(IdEnseignant)
+);
+
+
+CREATE TABLE EtudiantsBUT2ou3(
+IdEtudiant SMALLINT AUTO_INCREMENT,
+nom VARCHAR(50) NOT NULL,
+prenom VARCHAR(50) NOT NULL,
+mail VARCHAR(80) UNIQUE NOT NULL, -- c'est une clé candidate
+PRIMARY KEY(IdEtudiant)
+);
+CREATE TABLE Salles(
+IdSalle VARCHAR(10),
+description VARCHAR(50),
+PRIMARY KEY(IdSalle)
+);
+CREATE TABLE StatutsEval(
+Statut VARCHAR(15) check (statut in ('SAISIE', 'BLOQUEE', 'REMONTEE', 'VALIDEE', 'DIFFUSEE')),
+PRIMARY KEY(Statut)
+);
+CREATE TABLE EvalSoutenance(
+IdEvalSoutenance SMALLINT AUTO_INCREMENT,
+note FLOAT check (note >0),
+commentaireJury VARCHAR(500),
+anneeDebut SMALLINT NOT NULL,
+IdModeleEval SMALLINT NOT NULL,
+IdEtudiant SMALLINT NOT NULL,
+Statut VARCHAR(15) NOT NULL,
+PRIMARY KEY(IdEvalSoutenance),
+FOREIGN KEY(Statut) REFERENCES StatutsEval(Statut),
+FOREIGN KEY(anneeDebut) REFERENCES AnneesUniversitaires(anneeDebut),
+FOREIGN KEY(IdModeleEval) REFERENCES ModelesGrilleEval(IdModeleEval),
+FOREIGN KEY(IdEtudiant) REFERENCES EtudiantsBUT2ou3(IdEtudiant),
+UNIQUE (IdEtudiant, IdModeleEval , anneeDebut) -- c'est une clé candidate
+);
+CREATE TABLE EvalPortFolio(
+IdEvalPortfolio SMALLINT AUTO_INCREMENT,
+-- date_h DATETIME, a été supprimée
+-- la date de soutenance du portfolio est la meme que la date de soutenance de stage
+note FLOAT check (note >0) ,
+commentaireJury VARCHAR(500),
+anneeDebut SMALLINT NOT NULL,
+IdModeleEval SMALLINT NOT NULL,
+IdEtudiant SMALLINT NOT NULL,
+Statut VARCHAR(15) NOT NULL,
+PRIMARY KEY(IdEvalPortfolio),
+FOREIGN KEY(Statut) REFERENCES StatutsEval(Statut),
+FOREIGN KEY(anneeDebut) REFERENCES AnneesUniversitaires(anneeDebut),
+FOREIGN KEY(IdModeleEval) REFERENCES ModelesGrilleEval(IdModeleEval),
+FOREIGN KEY(IdEtudiant) REFERENCES EtudiantsBUT2ou3(IdEtudiant),
+UNIQUE (IdEtudiant, IdModeleEval , anneeDebut) -- c'est une clé candidate
+);
+CREATE TABLE Entreprises(
+IdEntreprise SMALLINT AUTO_INCREMENT,
+nom VARCHAR(50) UNIQUE NOT NULL,
+villeE VARCHAR(50) NOT NULL,
+codePostal VARCHAR(6) NOT NULL,
+PRIMARY KEY(IdEntreprise)
+);
+
+CREATE TABLE EvalRapport(
+IdEvalRapport SMALLINT AUTO_INCREMENT,
+note FLOAT check (note >0.5),
+commentaireJury VARCHAR(200),
+Statut VARCHAR(15) NOT NULL,
+anneeDebut SMALLINT NOT NULL,
+IdModeleEval SMALLINT NOT NULL,
+IdEtudiant SMALLINT NOT NULL,
+PRIMARY KEY(IdEvalRapport),
+FOREIGN KEY(Statut) REFERENCES StatutsEval(Statut),
+FOREIGN KEY(anneeDebut) REFERENCES AnneesUniversitaires(anneeDebut),
+FOREIGN KEY(IdModeleEval) REFERENCES ModelesGrilleEval(IdModeleEval),
+FOREIGN KEY(IdEtudiant) REFERENCES EtudiantsBUT2ou3(IdEtudiant),
+UNIQUE (IdEtudiant, IdModeleEval , anneeDebut) -- c'est une clé candidate
+);
+CREATE TABLE EvalAnglais(
+IdEvalAnglais SMALLINT AUTO_INCREMENT,
+dateS DATETIME,
+note FLOAT check (note >0),
+commentaireJury VARCHAR(200),
+Statut VARCHAR(15) NOT NULL,
+IdSalle VARCHAR(10) NOT NULL,
+IdEnseignant SMALLINT NOT NULL,
+anneeDebut SMALLINT NOT NULL,
+IdModeleEval SMALLINT NOT NULL,
+IdEtudiant SMALLINT NOT NULL,
+PRIMARY KEY(IdEvalAnglais),
+FOREIGN KEY(Statut) REFERENCES StatutsEval(Statut),
+FOREIGN KEY(IdSalle) REFERENCES Salles(IdSalle),
+FOREIGN KEY(IdEnseignant) REFERENCES Enseignants(IdEnseignant),
+FOREIGN KEY(anneeDebut) REFERENCES AnneesUniversitaires(anneeDebut),
+FOREIGN KEY(IdModeleEval) REFERENCES ModelesGrilleEval(IdModeleEval),
+FOREIGN KEY(IdEtudiant) REFERENCES EtudiantsBUT2ou3(IdEtudiant),
+UNIQUE (IdEtudiant, IdModeleEval , anneeDebut) -- c'est une clé candidate
+);
+
+CREATE TABLE EvalStage(
+IdEvalStage SMALLINT AUTO_INCREMENT,
+note FLOAT,
+commentaireJury VARCHAR(200),
+presenceMaitreStageApp boolean NOT NULL,
+confidentiel boolean NOT NULL,
+date_h DATETIME,
+IdEnseignantTuteur SMALLINT NOT NULL,
+Statut VARCHAR(15) NOT NULL,
+IdSecondEnseignant SMALLINT NOT NULL,
+anneeDebut SMALLINT NOT NULL,
+IdModeleEval SMALLINT NOT NULL,
+IdEtudiant SMALLINT NOT NULL,
+IdSalle varchar(10) NOT NULL, -- correction erreur de cardinalité dans MCD
+PRIMARY KEY(IdEvalStage),
+FOREIGN KEY(IdEnseignantTuteur) REFERENCES Enseignants(IdEnseignant),
+FOREIGN KEY(Statut) REFERENCES StatutsEval(Statut),
+FOREIGN KEY(IdSecondEnseignant) REFERENCES Enseignants(IdEnseignant),
+FOREIGN KEY(anneeDebut) REFERENCES AnneesUniversitaires(anneeDebut),
+FOREIGN KEY(IdModeleEval) REFERENCES ModelesGrilleEval(IdModeleEval),
+FOREIGN KEY(IdEtudiant) REFERENCES EtudiantsBUT2ou3(IdEtudiant) ,
+FOREIGN KEY(IdSalle) REFERENCES salles(IdSalle), -- correction err card MCD
+UNIQUE (IdEtudiant, IdModeleEval , anneeDebut) -- c'est une clé candidate
+);
+CREATE TABLE AnneeGrilleEval(
+anneeDebut SMALLINT,
+IdModeleEval SMALLINT,
+PRIMARY KEY(anneeDebut, IdModeleEval),
+FOREIGN KEY(anneeDebut) REFERENCES AnneesUniversitaires(anneeDebut),
+FOREIGN KEY(IdModeleEval) REFERENCES ModelesGrilleEval(IdModeleEval)
+);
+CREATE TABLE SectionContenirCriteres(
+IdCritere SMALLINT,
+IdSection SMALLINT,
+ValeurMaxCritereEVal FLOAT NOT NULL,
+PRIMARY KEY(IdCritere, IdSection),
+FOREIGN KEY(IdCritere) REFERENCES CriteresEval(IdCritere),
+FOREIGN KEY(IdSection) REFERENCES SectionCritereEval(IdSection)
+);
+
+CREATE TABLE SectionsEval(
+IdSection SMALLINT,
+IdModeleEval SMALLINT,
+PRIMARY KEY(IdSection, IdModeleEval),
+FOREIGN KEY(IdSection) REFERENCES SectionCritereEval(IdSection),
+FOREIGN KEY(IdModeleEval) REFERENCES ModelesGrilleEval(IdModeleEval)
+);
+
+CREATE TABLE AnneeStage(
+anneeDebut SMALLINT,
+IdEtudiant SMALLINT,
+IdEntreprise SMALLINT,
+but3sinon2 BOOLEAN NOT NULL,
+alternanceBUT3 BOOLEAN NOT NULL,
+nomMaitreStageApp VARCHAR(50),
+sujet VARCHAR(200) NOT NULL,
+noteEntreprise FLOAT check (noteEntreprise>0.5),
+typeMission VARCHAR(50),
+cadreMission VARCHAR(200),
+PRIMARY KEY(anneeDebut, IdEtudiant),
+FOREIGN KEY(anneeDebut) REFERENCES AnneesUniversitaires(anneeDebut),
+FOREIGN KEY(IdEtudiant) REFERENCES EtudiantsBUT2ou3(IdEtudiant),
+FOREIGN KEY(IdEntreprise) REFERENCES Entreprises(IdEntreprise)
+);
+CREATE TABLE LesCriteresNotesRapport(
+IdCritere SMALLINT,
+IdEvalRapport SMALLINT,
+noteCritere VARCHAR(50) check (noteCritere > 0),
+PRIMARY KEY(IdCritere, IdEvalRapport),
+FOREIGN KEY(IdCritere) REFERENCES CriteresEval(IdCritere),
+FOREIGN KEY(IdEvalRapport) REFERENCES EvalRapport(IdEvalRapport)
+);
+CREATE TABLE LesCriteresNotesSoutenance(
+IdCritere SMALLINT,
+IdEvalSoutenance SMALLINT,
+noteCritere VARCHAR(50),
+PRIMARY KEY(IdCritere, IdEvalSoutenance),
+FOREIGN KEY(IdCritere) REFERENCES CriteresEval(IdCritere),
+FOREIGN KEY(IdEvalSoutenance) REFERENCES EvalSoutenance(IdEvalSoutenance)
+);
+CREATE TABLE LesCriteresNotesPortFolio(
+IdCritere SMALLINT,
+IdEvalPortfolio SMALLINT,
+noteCritere VARCHAR(50),
+PRIMARY KEY(IdCritere, IdEvalPortfolio),
+FOREIGN KEY(IdCritere) REFERENCES CriteresEval(IdCritere),
+FOREIGN KEY(IdEvalPortfolio) REFERENCES EvalPortFolio(IdEvalPortfolio)
+);
+CREATE TABLE LesCriteresNotesAnglais(
+IdCritere SMALLINT,
+IdEvalAnglais SMALLINT,
+noteCritere VARCHAR(50),
+PRIMARY KEY(IdCritere, IdEvalAnglais),
+FOREIGN KEY(IdCritere) REFERENCES CriteresEval(IdCritere),
+FOREIGN KEY(IdEvalAnglais) REFERENCES EvalAnglais(IdEvalAnglais)
+);
+CREATE TABLE LesCriteresNotesStage(
+IdCritere SMALLINT,
+IdEvalStage SMALLINT,
+noteCritere VARCHAR(50),
+PRIMARY KEY(IdCritere, IdEvalStage),
+FOREIGN KEY(IdCritere) REFERENCES CriteresEval(IdCritere),
+FOREIGN KEY(IdEvalStage) REFERENCES EvalStage(IdEvalStage)
+);
+-- La table suivante n'est pas liée aux autres tables.
+-- Elle recense les utilisateurs autorisés à se connecter au back office.
+-- Il pourront s'identifier par leur identifiant ou leur mail(clé candidate).
+-- Pour l'accès au front office, c'est la table enseignant qui sera utilisée
+CREATE TABLE UtilisateursBackOffice (
+Identifiant SMALLINT,
+nom VARCHAR(50) NOT NULL,n 
+prenom VARCHAR(50) NOT NULL,
+mail VARCHAR(150) UNIQUE NOT NULL,
+mdp VARCHAR(255) NOT NULL,
+PRIMARY KEY(Identifiant)
+);
