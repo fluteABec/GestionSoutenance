@@ -5,7 +5,7 @@ INSERT INTO Enseignants (IdEnseignant, nom, prenom, mail, mdp) VALUES
 (4, 'Petit', 'Julien', 'julien.petit@univ-lyon.fr', 'pwdJulien4'),
 (5, 'Robert', 'Isabelle', 'isabelle.robert@univ-lyon.fr', 'pwdIsa5');
 
---Ajout de données pour la table back_office
+-- Ajout de données pour la table back_office
 INSERT INTO utilisateursbackoffice (Identifiant, nom, prenom, mail, mdp) VALUES
 (33, 'Gustave', 'expedition', 'Dilim@etuc.uca.fr', 'verso');
 
