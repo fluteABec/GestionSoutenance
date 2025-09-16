@@ -272,7 +272,7 @@ FOREIGN KEY(IdEvalStage) REFERENCES EvalStage(IdEvalStage)
 -- Pour l'accès au front office, c'est la table enseignant qui sera utilisée
 CREATE TABLE UtilisateursBackOffice (
 Identifiant SMALLINT,
-nom VARCHAR(50) NOT NULL,n 
+nom VARCHAR(50) NOT NULL, 
 prenom VARCHAR(50) NOT NULL,
 mail VARCHAR(150) UNIQUE NOT NULL,
 mdp VARCHAR(255) NOT NULL,
