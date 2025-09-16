@@ -1,0 +1,102 @@
+/* Style global - UCA */
+body {
+    font-family: "Roboto", Arial, sans-serif;
+    background-color: #f9f9f9;
+    color: #002C5F;
+    margin: 0;
+    padding: 0;
+}
+
+h2, h3, h4 {
+    color: #002C5F;
+    margin-bottom: 10px;
+}
+
+a {
+    color: #FF6E00;
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
+
+/* Container principal */
+form {
+    max-width: 700px;
+    margin: 40px auto;
+    background: #fff;
+    padding: 25px 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+/* Labels + champs */
+label {
+    display: block;
+    font-weight: bold;
+    margin-top: 15px;
+    margin-bottom: 5px;
+}
+
+input, select, button {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 15px;
+    margin-bottom: 15px;
+    transition: border 0.2s, box-shadow 0.2s;
+}
+
+input:focus, select:focus {
+    border-color: #002C5F;
+    box-shadow: 0 0 4px rgba(0,44,95,0.4);
+    outline: none;
+}
+
+/* Bouton */
+button {
+    background-color: #002C5F;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    transition: background 0.2s;
+}
+button:hover {
+    background-color: #FF6E00;
+}
+
+/* Séparateur */
+hr {
+    margin: 25px 0;
+    border: none;
+    border-top: 2px solid #eee;
+}
+
+/* Zone infos complémentaires */
+#infosComplementaires {
+    background: #f3f6fa;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+#infosComplementaires h4 {
+    margin-top: 15px;
+    margin-bottom: 5px;
+    color: #FF6E00;
+}
+
+#infosComplementaires p {
+    margin: 0 0 10px;
+}
+
+/* Messages */
+p {
+    font-size: 14px;
+}
+p[style*="color:red"] {
+    font-weight: bold;
+}

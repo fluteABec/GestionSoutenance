@@ -1,0 +1,24 @@
+[2025-09-11 11:40:18] Anonyme - ConsultationResultats - Erreur: ID étudiant manquant. GET: []
+[2025-09-11 11:40:39] Anonyme - ConsultationResultats - Erreur: ID étudiant manquant. GET: []
+[2025-09-11 11:45:49] Anonyme - TestSimple - Test de la fonction logAction
+[2025-09-11 11:46:28] Anonyme - ConsultationResultats - Erreur: Résultats non disponibles. ID: 1 - Stage: null - Portfolio: null
+[2025-09-11 11:46:46] Anonyme - ConsultationResultats - Erreur: ID étudiant manquant. GET: []
+[2025-09-11 11:46:55] Anonyme - TestSimple - Test de la fonction logAction
+[2025-09-11 11:47:02] Anonyme - ConsultationResultats - Erreur: ID étudiant manquant. GET: []
+[2025-09-11 11:49:19] Anonyme - ConsultationResultats - Erreur: ID étudiant manquant. GET: []
+[2025-09-11 11:49:36] Anonyme - ConsultationResultats - Erreur: Résultats non disponibles. ID: 1 - Stage: null - Portfolio: null
+[2025-09-11 11:49:48] Anonyme - ConsultationResultats - Erreur: ID étudiant manquant. GET: []
+[2025-09-11 11:49:56] Anonyme - ConsultationResultats - Erreur: Résultats non disponibles. ID: 1 - Stage: null - Portfolio: null
+[2025-09-11 11:50:13] Anonyme - ConsultationResultats - Erreur: ID étudiant invalide. ID: abc. GET: {"id":"abc"}
+[2025-09-11 11:50:22] Anonyme - ConsultationResultats - Erreur: Résultats non disponibles. ID: 20 - Stage: null - Portfolio: null
+[2025-09-11 11:50:38] Anonyme - TestSimple - Test de la fonction logAction
+[2025-09-11 11:59:42] Anonyme - ConsultationResultats - Erreur: Résultats non disponibles. ID: 1 - Stage: 16 - Portfolio: null
+[2025-09-11 12:00:09] Anonyme - TestSimple - Test de la fonction logAction
+[2025-09-11 12:01:12] Anonyme - ConsultationResultats - Erreur: Résultats non disponibles. ID: 1 - Stage: 16 - Portfolio: null
+[2025-09-11 12:01:15] Anonyme - ConsultationResultats - Erreur: Résultats non disponibles. ID: 2 - Stage: 14.5 - Portfolio: null
+[2025-09-11 12:01:18] Anonyme - ConsultationResultats - Erreur: ID étudiant manquant. GET: []
+[2025-09-11 12:01:20] Anonyme - ConsultationResultats - Erreur: Étudiant non trouvé. ID: 999
+[2025-09-11 12:01:59] Anonyme - ConsultationResultats - Erreur: Résultats non disponibles. ID: 20 - Stage: null - Portfolio: null
+[2025-09-11 12:06:17] Anonyme - ConsultationResultats - Erreur: Résultats non disponibles. ID: 20 - Stage: null - Portfolio: null
+[2025-09-11 12:06:54] Anonyme - ConsultationResultats - Erreur: Résultats non disponibles. ID: 46 - Stage: null - Portfolio: null
+[2025-09-11 12:08:53] Anonyme - ConsultationResultats - Erreur: ID étudiant manquant. GET: []
