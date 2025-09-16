@@ -41,7 +41,7 @@ if ($row) {
     session_start();
     $_SESSION['role'] = $row['role'];
     $_SESSION['identifiant'] = $row['mail'];
-    header("Location: back/back_office.html");
+    header("Location: back/mainAdministration.php");
     exit();
 }
 

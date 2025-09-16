@@ -1,7 +1,7 @@
 <?php
 // -------------------------Connexion à la base de données
 $host = 'localhost';
-$db   = 'projet';
+$db   = 'evaluationstages';
 $user = 'root';
 $pass = '';
 $charset = 'utf8mb4';
