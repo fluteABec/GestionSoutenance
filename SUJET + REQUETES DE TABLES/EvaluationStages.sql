@@ -1,12 +1,3 @@
--- phpMyAdmin SQL Dump
--- version 5.2.1
--- https://www.phpmyadmin.net/
---
--- Hôte : localhost
--- Généré le : mar. 16 sep. 2025 à 11:05
--- Version du serveur : 10.4.28-MariaDB
--- Version de PHP : 8.2.4
-
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
