@@ -284,7 +284,7 @@ function rappelMail($pdo, $idEtudiant) { // plus ou moins la même fonction que 
 
 function get_liste_eleve_remonter3A($pdo) {
     $stmd = $pdo->query("
-    SELECT e.IdEtudiant, e.nom, e.prenom, e.mail,  a.note, p.note, s.note
+    SELECT e.IdEtudiant, e.nom, e.prenom, e.mail,  a.note AS note_angalis, p.note AS note_portfolio, s.note AS note_stage
         FROM EtudiantsBUT2ou3 e
         JOIN EvalStage s ON e.IdEtudiant = s.IdEtudiant
         JOIN EvalPortfolio p ON e.IdEtudiant = p.IdEtudiant
@@ -302,7 +302,7 @@ function get_liste_eleve_remonter3A($pdo) {
 
 function get_liste_eleve_remonter2A($pdo) {
     $stmd = $pdo->query("
-    SELECT e.IdEtudiant, e.nom, e.prenom, e.mail,  p.note, s.note
+    SELECT e.IdEtudiant, e.nom, e.prenom, e.mail,  p.note AS note_portfolio, s.note AS note_stage
         FROM EtudiantsBUT2ou3 e
         JOIN EvalStage s ON e.IdEtudiant = s.IdEtudiant
         JOIN EvalPortfolio p ON e.IdEtudiant = p.IdEtudiant
@@ -349,10 +349,14 @@ function get_liste_eleve_remonter2A($pdo) {
                 $liste = get_liste_eleve_remonter3A($pdo);
                 $nom_fichier = "export_remontee_BUT3.csv";
             }
-        
+
+            // Nettoie le tampon de sortie pour éviter d'inclure du HTML dans le CSV
+            if (ob_get_level()) {
+                ob_end_clean();
+            }
             header('Content-Type: text/csv; charset=utf-8');
             header("Content-Disposition: attachment; filename=\"$nom_fichier\"");
-        
+
             $output = fopen("php://output", "w");
             if (!empty($liste)) {
                 fputcsv($output, array_keys($liste[0])); // en-têtes
