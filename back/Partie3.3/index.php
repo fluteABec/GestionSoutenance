@@ -17,88 +17,7 @@ l'affichage des résultats sous forme de tableau -->
  Tout le CSS de la page (générer par IA)
 ------------------------------------------------------ -->
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            background-color: #f4f6f9;
-            color: #333;
-        }
-        header {
-            background-color: #003087;
-            color: white;
-            padding: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        header img {
-            height: 50px;
-        }
-        header h1 {
-            margin: 0;
-            font-size: 1.5rem;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-        }
-        h2 {
-            color: #003087;
-            border-bottom: 2px solid #003087;
-            padding-bottom: 0.5rem;
-            margin-bottom: 1rem;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 2rem;
-            background-color: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        th, td {
-            padding: 0.75rem;
-            text-align: left;
-            border: 1px solid #ddd;
-        }
-        th {
-            background-color: #e6ecf5;
-            color: #003087;
-            font-weight: bold;
-        }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        a {
-            color: #005b99;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-        .message {
-            background-color: #dff0d8;
-            color: #3c763d;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            border-radius: 4px;
-        }
-        .no-data {
-            color: #777;
-            font-style: italic;
-        }
-        footer {
-            background-color: #003087;
-            color: white;
-            text-align: center;
-            padding: 1rem;
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-        }
-    </style>
+
 </head>
 <body>
     <header>
@@ -204,20 +123,23 @@ function getEtudiantRemonter2A($pdo) // récupère les étudiants BUT2 déjà re
           AND p.Statut = 'REMONTEE';");
     return $stmd->fetchAll(PDO::FETCH_ASSOC);
 }
-function getEtudiantRemonter3A($pdo) // récupère les étudiants BUT3 déjà remontés
-{
+function getEtudiantRemonter3A($pdo) {
     $stmd = $pdo->query("SELECT e.IdEtudiant, e.nom, e.prenom,
                s.Statut AS statut_stage,
-               p.Statut AS statut_portfolio
+               p.Statut AS statut_portfolio,
+               a.Statut AS statut_anglais
         FROM EtudiantsBUT2ou3 e
         JOIN EvalStage s ON e.IdEtudiant = s.IdEtudiant
         JOIN EvalPortfolio p ON e.IdEtudiant = p.IdEtudiant
+        JOIN EvalAnglais a ON e.IdEtudiant = a.IdEtudiant
         JOIN AnneeStage ast ON e.IdEtudiant = ast.IdEtudiant
         WHERE ast.but3sinon2 = TRUE
           AND s.Statut = 'REMONTEE'
-          AND p.Statut = 'REMONTEE';");
+          AND p.Statut = 'REMONTEE'
+          AND a.Statut = 'REMONTEE';");
     return $stmd->fetchAll(PDO::FETCH_ASSOC);
 }
+
 function bloquerNotes($pdo, $idEtudiant, $isBUT3 = false) { // rebloque les notes d'un étudiant et envoie un mail
     $stmd = $pdo->prepare("UPDATE EvalStage SET Statut = 'BLOQUEE' WHERE IdEtudiant = ? AND Statut = 'REMONTEE'");
     $stmd->execute([$idEtudiant]);
@@ -235,16 +157,16 @@ function bloquerNotes($pdo, $idEtudiant, $isBUT3 = false) { // rebloque les note
     }
 }
 
-function envoieMail($mail_destinataire, $sujet, $message) {
+function envoieMail($mail_destinataire, $sujet, $message, $fichier_joint = null) {
     $mail = new PHPMailer(true);
 
     try {
         // Config serveur SMTP Gmail
         $mail->isSMTP();
-        $mail->Host       = 'smtp.gmail.com';      // Serveur SMTP
+        $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
         $mail->Username   = 'u1840518965@gmail.com';
-        $mail->Password   = 'ooeo bavi hozw pndl';
+        $mail->Password   = 'ooeo bavi hozw pndl'; // ton mot de passe d'application
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
 
@@ -253,6 +175,11 @@ function envoieMail($mail_destinataire, $sujet, $message) {
 
         // Destinataire
         $mail->addAddress($mail_destinataire);
+
+        // Ajout de la pièce jointe si fournie
+        if ($fichier_joint && file_exists($fichier_joint)) {
+            $mail->addAttachment($fichier_joint);
+        }
 
         // Contenu
         $mail->isHTML(true);
@@ -266,6 +193,7 @@ function envoieMail($mail_destinataire, $sujet, $message) {
         echo "Erreur lors de l'envoi du mail : {$mail->ErrorInfo}";
     }
 }
+
 
 function getMailEtudiant($pdo, $idEtudiant) {  // récupère le mail d'un étudiant via son ID pour l'envoi de mail
     $stmd = $pdo->prepare("SELECT mail FROM EtudiantsBUT2ou3 WHERE IdEtudiant = ?");
@@ -284,7 +212,7 @@ function rappelMail($pdo, $idEtudiant) { // plus ou moins la même fonction que 
 
 function get_liste_eleve_remonter3A($pdo) {
     $stmd = $pdo->query("
-    SELECT e.IdEtudiant, e.nom, e.prenom, e.mail,  a.note, p.note, s.note
+    SELECT e.IdEtudiant, e.nom, e.prenom, e.mail,  a.note AS note_angalis, p.note AS note_portfolio, s.note AS note_stage
         FROM EtudiantsBUT2ou3 e
         JOIN EvalStage s ON e.IdEtudiant = s.IdEtudiant
         JOIN EvalPortfolio p ON e.IdEtudiant = p.IdEtudiant
@@ -300,9 +228,14 @@ function get_liste_eleve_remonter3A($pdo) {
     return $stmd->fetchAll(PDO::FETCH_ASSOC);
 }
 
+function get_mail_admin($pdo) {
+    $stmd = $pdo->query("SELECT mail FROM `utilisateursbackoffice` WHERE 1");
+    return $stmd->fetchColumn();
+}
+
 function get_liste_eleve_remonter2A($pdo) {
     $stmd = $pdo->query("
-    SELECT e.IdEtudiant, e.nom, e.prenom, e.mail,  p.note, s.note
+    SELECT e.IdEtudiant, e.nom, e.prenom, e.mail,  p.note AS note_portfolio, s.note AS note_stage
         FROM EtudiantsBUT2ou3 e
         JOIN EvalStage s ON e.IdEtudiant = s.IdEtudiant
         JOIN EvalPortfolio p ON e.IdEtudiant = p.IdEtudiant
@@ -316,6 +249,43 @@ function get_liste_eleve_remonter2A($pdo) {
 }
 
 
+function ecriture_des_donnees_csv($liste, $nom_fichier) {
+            $output = fopen($nom_fichier, "w");
+            if (!empty($liste)) {
+                fputcsv($output, array_keys($liste[0])); // en-têtes
+                foreach ($liste as $ligne) {
+                    fputcsv($output, $ligne);
+                }
+            }
+            fclose($output);
+}
+
+function envoiCVS_mail_BUT2($pdo) {
+    // Génère un CSV temporaire
+    $liste = get_liste_eleve_remonter2A($pdo);
+    $nom_fichier = __DIR__ . "/export_remontee_BUT2.csv";
+    ecriture_des_donnees_csv($liste, $nom_fichier);
+
+    $id_Administrateur = get_mail_admin($pdo);
+    $sujet = "Export de vos notes";
+    $message = "<p>Bonjour,<br>Veuillez trouver ci-joint vos résultats au format CSV.</p>";
+
+    envoieMail($id_Administrateur, $sujet, $message, $nom_fichier);
+}
+
+function envoiCVS_mail_BUT3($pdo) {
+    // Génère un CSV temporaire
+    $liste = get_liste_eleve_remonter3A($pdo);
+    $nom_fichier = __DIR__ . "/export_remontee_BUT3.csv";
+    ecriture_des_donnees_csv($liste, $nom_fichier);
+
+    
+    $id_Administrateur = get_mail_admin($pdo);
+    $sujet = "Export de vos notes";
+    $message = "<p>Bonjour,<br>Veuillez trouver ci-joint vos résultats au format CSV.</p>";
+
+    envoieMail($id_Administrateur, $sujet, $message, $nom_fichier);
+}
 
 //------------------------------------------------------
 // CODE PRINCIPALE
@@ -341,6 +311,9 @@ function get_liste_eleve_remonter2A($pdo) {
             }
         }
 
+        // Fonction pour écrire les données dans un fichier CSV
+        
+
         if (isset($_POST['export_csv'])) {
             if ($_POST['export_csv'] === 'but2') {
                 $liste = get_liste_eleve_remonter2A($pdo);
@@ -349,10 +322,15 @@ function get_liste_eleve_remonter2A($pdo) {
                 $liste = get_liste_eleve_remonter3A($pdo);
                 $nom_fichier = "export_remontee_BUT3.csv";
             }
-        
+
+            // Nettoie le tampon de sortie pour éviter d'inclure du HTML dans le CSV
+            if (ob_get_level()) {
+                ob_end_clean();
+            }
             header('Content-Type: text/csv; charset=utf-8');
             header("Content-Disposition: attachment; filename=\"$nom_fichier\"");
-        
+
+            // Utilise la fonction pour écrire dans php://output
             $output = fopen("php://output", "w");
             if (!empty($liste)) {
                 fputcsv($output, array_keys($liste[0])); // en-têtes
@@ -364,6 +342,16 @@ function get_liste_eleve_remonter2A($pdo) {
             exit;
         }
 
+        // Envoi par mail des CSV
+        if (isset($_POST['export_csv_mail'])) {
+            if ($_POST['export_csv_mail'] === 'but2') {
+                envoiCVS_mail_BUT2($pdo);
+                echo "<div class='message'>Le CSV BUT2 a été envoyé par mail.</div>";
+            } else {
+                envoiCVS_mail_BUT3($pdo);
+                echo "<div class='message'>Le CSV BUT3 a été envoyé par mail.</div>";
+            }
+        }
 
         echo "<h2>Étudiants BUT2 prêts à la remontée :</h2>";
         $etudiantsBUT2 = getEtudiantsBUT2($pdo);
@@ -457,7 +445,7 @@ function get_liste_eleve_remonter2A($pdo) {
         if ($etudiantsRemonteeBUT3) {
             echo "<table><tr>
                 <th>Prénom</th><th>Nom</th><th>ID</th>
-                <th>Stage</th><th>Portfolio</th><th>Action</th></tr>";
+                <th>Stage</th><th>Portfolio</th><th>Anglais</th><th>Action</th></tr>";
             foreach ($etudiantsRemonteeBUT3 as $etudiant) {
                 echo "<tr>
                     <td>{$etudiant['prenom']}</td>
@@ -465,6 +453,7 @@ function get_liste_eleve_remonter2A($pdo) {
                     <td>{$etudiant['IdEtudiant']}</td>
                     <td>{$etudiant['statut_stage']}</td>
                     <td>{$etudiant['statut_portfolio']}</td>
+                    <td>{$etudiant['statut_anglais']}</td>
                     <td><a href='?action=bloquer&id={$etudiant['IdEtudiant']}&but3=1'>Bloquer</a></td>
                 </tr>";
             }
@@ -473,11 +462,16 @@ function get_liste_eleve_remonter2A($pdo) {
             echo "<p class='no-data'>Aucun étudiant BUT3 remonté.</p>";
         }
 
-        // Bouton de récupération des données 
 
-        echo "<form method='post'>
+echo "<form method='post'>
         <button type='submit' name='export_csv' value='but2'>Exporter BUT2 en CSV</button>
-        <button type='submit' name='export_csv' value='but3'>Exporter BUT3 en CSV</button> </form>";
+        <button type='submit' name='export_csv' value='but3'>Exporter BUT3 en CSV</button>
+    </form>
+
+    <form method='post'>
+        <button type='submit' name='export_csv_mail' value='but2'>Exporter BUT2 en CSV et envoyer par mail</button>
+        <button type='submit' name='export_csv_mail' value='but3'>Exporter BUT3 en CSV et envoyer par mail</button>
+    </form>";
 
 
         ?>
@@ -485,6 +479,5 @@ function get_liste_eleve_remonter2A($pdo) {
             <p><a href="../mainAdministration.php">← Retour</a></p>
 
     </div>
-    
 </body>
 </html>
