@@ -235,16 +235,16 @@ function bloquerNotes($pdo, $idEtudiant, $isBUT3 = false) { // rebloque les note
     }
 }
 
-function envoieMail($mail_destinataire, $sujet, $message) {
+function envoieMail($mail_destinataire, $sujet, $message, $fichier_joint = null) {
     $mail = new PHPMailer(true);
 
     try {
         // Config serveur SMTP Gmail
         $mail->isSMTP();
-        $mail->Host       = 'smtp.gmail.com';      // Serveur SMTP
+        $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
         $mail->Username   = 'u1840518965@gmail.com';
-        $mail->Password   = 'ooeo bavi hozw pndl';
+        $mail->Password   = 'ooeo bavi hozw pndl'; // ton mot de passe d'application
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
 
@@ -253,6 +253,11 @@ function envoieMail($mail_destinataire, $sujet, $message) {
 
         // Destinataire
         $mail->addAddress($mail_destinataire);
+
+        // Ajout de la pièce jointe si fournie
+        if ($fichier_joint && file_exists($fichier_joint)) {
+            $mail->addAttachment($fichier_joint);
+        }
 
         // Contenu
         $mail->isHTML(true);
@@ -266,6 +271,7 @@ function envoieMail($mail_destinataire, $sujet, $message) {
         echo "Erreur lors de l'envoi du mail : {$mail->ErrorInfo}";
     }
 }
+
 
 function getMailEtudiant($pdo, $idEtudiant) {  // récupère le mail d'un étudiant via son ID pour l'envoi de mail
     $stmd = $pdo->prepare("SELECT mail FROM EtudiantsBUT2ou3 WHERE IdEtudiant = ?");
@@ -300,6 +306,11 @@ function get_liste_eleve_remonter3A($pdo) {
     return $stmd->fetchAll(PDO::FETCH_ASSOC);
 }
 
+function get_mail_admin($pdo) {
+    $stmd = $pdo->query("SELECT mail FROM `utilisateursbackoffice` WHERE 1");
+    return $stmd->fetchColumn();
+}
+
 function get_liste_eleve_remonter2A($pdo) {
     $stmd = $pdo->query("
     SELECT e.IdEtudiant, e.nom, e.prenom, e.mail,  p.note AS note_portfolio, s.note AS note_stage
@@ -316,6 +327,43 @@ function get_liste_eleve_remonter2A($pdo) {
 }
 
 
+function ecriture_des_donnees_csv($liste, $nom_fichier) {
+            $output = fopen($nom_fichier, "w");
+            if (!empty($liste)) {
+                fputcsv($output, array_keys($liste[0])); // en-têtes
+                foreach ($liste as $ligne) {
+                    fputcsv($output, $ligne);
+                }
+            }
+            fclose($output);
+}
+
+function envoiCVS_mail_BUT2($pdo) {
+    // Génère un CSV temporaire
+    $liste = get_liste_eleve_remonter2A($pdo);
+    $nom_fichier = __DIR__ . "/export_remontee_BUT2.csv";
+    ecriture_des_donnees_csv($liste, $nom_fichier);
+
+    $id_Administrateur = get_mail_admin($pdo);
+    $sujet = "Export de vos notes";
+    $message = "<p>Bonjour,<br>Veuillez trouver ci-joint vos résultats au format CSV.</p>";
+
+    envoieMail($id_Administrateur, $sujet, $message, $nom_fichier);
+}
+
+function envoiCVS_mail_BUT3($pdo) {
+    // Génère un CSV temporaire
+    $liste = get_liste_eleve_remonter3A($pdo);
+    $nom_fichier = __DIR__ . "/export_remontee_BUT3.csv";
+    ecriture_des_donnees_csv($liste, $nom_fichier);
+
+    
+    $id_Administrateur = get_mail_admin($pdo);
+    $sujet = "Export de vos notes";
+    $message = "<p>Bonjour,<br>Veuillez trouver ci-joint vos résultats au format CSV.</p>";
+
+    envoieMail($id_Administrateur, $sujet, $message, $nom_fichier);
+}
 
 //------------------------------------------------------
 // CODE PRINCIPALE
@@ -341,6 +389,9 @@ function get_liste_eleve_remonter2A($pdo) {
             }
         }
 
+        // Fonction pour écrire les données dans un fichier CSV
+        
+
         if (isset($_POST['export_csv'])) {
             if ($_POST['export_csv'] === 'but2') {
                 $liste = get_liste_eleve_remonter2A($pdo);
@@ -357,6 +408,7 @@ function get_liste_eleve_remonter2A($pdo) {
             header('Content-Type: text/csv; charset=utf-8');
             header("Content-Disposition: attachment; filename=\"$nom_fichier\"");
 
+            // Utilise la fonction pour écrire dans php://output
             $output = fopen("php://output", "w");
             if (!empty($liste)) {
                 fputcsv($output, array_keys($liste[0])); // en-têtes
@@ -368,6 +420,16 @@ function get_liste_eleve_remonter2A($pdo) {
             exit;
         }
 
+        // Envoi par mail des CSV
+        if (isset($_POST['export_csv_mail'])) {
+            if ($_POST['export_csv_mail'] === 'but2') {
+                envoiCVS_mail_BUT2($pdo);
+                echo "<div class='message'>Le CSV BUT2 a été envoyé par mail.</div>";
+            } else {
+                envoiCVS_mail_BUT3($pdo);
+                echo "<div class='message'>Le CSV BUT3 a été envoyé par mail.</div>";
+            }
+        }
 
         echo "<h2>Étudiants BUT2 prêts à la remontée :</h2>";
         $etudiantsBUT2 = getEtudiantsBUT2($pdo);
@@ -477,11 +539,16 @@ function get_liste_eleve_remonter2A($pdo) {
             echo "<p class='no-data'>Aucun étudiant BUT3 remonté.</p>";
         }
 
-        // Bouton de récupération des données 
 
-        echo "<form method='post'>
+echo "<form method='post'>
         <button type='submit' name='export_csv' value='but2'>Exporter BUT2 en CSV</button>
-        <button type='submit' name='export_csv' value='but3'>Exporter BUT3 en CSV</button> </form>";
+        <button type='submit' name='export_csv' value='but3'>Exporter BUT3 en CSV</button>
+    </form>
+
+    <form method='post'>
+        <button type='submit' name='export_csv_mail' value='but2'>Exporter BUT2 en CSV et envoyer par mail</button>
+        <button type='submit' name='export_csv_mail' value='but3'>Exporter BUT3 en CSV et envoyer par mail</button>
+    </form>";
 
 
         ?>
@@ -489,6 +556,5 @@ function get_liste_eleve_remonter2A($pdo) {
             <p><a href="../mainAdministration.php">← Retour</a></p>
 
     </div>
-    <!-- test branch -->
 </body>
 </html>
