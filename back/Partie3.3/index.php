@@ -204,20 +204,23 @@ function getEtudiantRemonter2A($pdo) // récupère les étudiants BUT2 déjà re
           AND p.Statut = 'REMONTEE';");
     return $stmd->fetchAll(PDO::FETCH_ASSOC);
 }
-function getEtudiantRemonter3A($pdo) // récupère les étudiants BUT3 déjà remontés
-{
+function getEtudiantRemonter3A($pdo) {
     $stmd = $pdo->query("SELECT e.IdEtudiant, e.nom, e.prenom,
                s.Statut AS statut_stage,
-               p.Statut AS statut_portfolio
+               p.Statut AS statut_portfolio,
+               a.Statut AS statut_anglais
         FROM EtudiantsBUT2ou3 e
         JOIN EvalStage s ON e.IdEtudiant = s.IdEtudiant
         JOIN EvalPortfolio p ON e.IdEtudiant = p.IdEtudiant
+        JOIN EvalAnglais a ON e.IdEtudiant = a.IdEtudiant
         JOIN AnneeStage ast ON e.IdEtudiant = ast.IdEtudiant
         WHERE ast.but3sinon2 = TRUE
           AND s.Statut = 'REMONTEE'
-          AND p.Statut = 'REMONTEE';");
+          AND p.Statut = 'REMONTEE'
+          AND a.Statut = 'REMONTEE';");
     return $stmd->fetchAll(PDO::FETCH_ASSOC);
 }
+
 function bloquerNotes($pdo, $idEtudiant, $isBUT3 = false) { // rebloque les notes d'un étudiant et envoie un mail
     $stmd = $pdo->prepare("UPDATE EvalStage SET Statut = 'BLOQUEE' WHERE IdEtudiant = ? AND Statut = 'REMONTEE'");
     $stmd->execute([$idEtudiant]);
@@ -523,7 +526,7 @@ function envoiCVS_mail_BUT3($pdo) {
         if ($etudiantsRemonteeBUT3) {
             echo "<table><tr>
                 <th>Prénom</th><th>Nom</th><th>ID</th>
-                <th>Stage</th><th>Portfolio</th><th>Action</th></tr>";
+                <th>Stage</th><th>Portfolio</th><th>Anglais</th><th>Action</th></tr>";
             foreach ($etudiantsRemonteeBUT3 as $etudiant) {
                 echo "<tr>
                     <td>{$etudiant['prenom']}</td>
@@ -531,6 +534,7 @@ function envoiCVS_mail_BUT3($pdo) {
                     <td>{$etudiant['IdEtudiant']}</td>
                     <td>{$etudiant['statut_stage']}</td>
                     <td>{$etudiant['statut_portfolio']}</td>
+                    <td>{$etudiant['statut_anglais']}</td>
                     <td><a href='?action=bloquer&id={$etudiant['IdEtudiant']}&but3=1'>Bloquer</a></td>
                 </tr>";
             }
