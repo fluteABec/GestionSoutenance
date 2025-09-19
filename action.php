@@ -22,7 +22,6 @@ $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if ($row) {
     session_start();
- 
     $_SESSION['identifiant'] = $row['mail'];
     $_SESSION['professeur_id'] = $row['IdEnseignant'];
     header("Location: front/front_office.php");
@@ -39,7 +38,6 @@ $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if ($row) {
     session_start();
-
     $_SESSION['identifiant'] = $row['mail'];
     header("Location: back/mainAdministration.php");
     exit();
