@@ -390,7 +390,7 @@ $tableauMailsAdmin =
             echo "<div class='message'>Toutes les notes prêtes ont été remontées.</div>";
         }
 
-        if ($_GET['action'] === 'autoriser') {
+        if (isset($_GET['action']) === 'autoriser') {
             $listeAutorises = recuperer_mails_admin(getPDO());
             $mailActuel = isset($_SESSION['identifiant']) ? $_SESSION['identifiant'] : null;
             if ($mailActuel && in_array($mailActuel, $listeAutorises)) {
