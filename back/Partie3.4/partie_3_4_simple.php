@@ -107,6 +107,8 @@ $etudiantsCandidats = getEtudiantsCandidats($pdo);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Partie 3.4 - Diffusion des résultats</title>
+        <link rel="stylesheet" href="../../3.1.css">
+
 </head>
 <body>
     <div class="container">

@@ -14,18 +14,13 @@ $taches = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Visualisation des tâches enseignants</title>
-    <link rel="stylesheet" href="/projet_sql/3.1.css">
+    <link rel="stylesheet" href="../../3.1.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 </head>
 <body>
-    <div class="navbar">
-        <div class="brand"><span class="logo"></span><span>Tâches enseignants</span></div>
-        <a class="nav-item" href="/projet_sql/back/Partie3.1/3_1_natan.php">Tâches enseignants</a>
-        <a class="nav-item" href="/projet_sql/back/Partie3.3/index.php">Évaluations IUT</a>
-        <a class="nav-item" href="/projet_sql/back/Partie3.4/index.php">Diffusion résultats</a>
-        <a class="nav-item" href="/projet_sql/back/mainAdministration.php">Administration</a>
-    </div>
+    <?php include '../navbar.php'; ?>
+
     <div class="container">
         <div class="header">
             <h1>Résumé des grilles à remplir par les enseignants</h1>
