@@ -13,7 +13,7 @@ $motdepasse = $_POST['motdepasse'];
 
 // Préparer et exécuter la requête pour vérifier les informations d'identification => connexion 
 // Vérifier d'abord dans la table Enseignants
-$sql = "SELECT IdEnseignant, nom, prenom, mail, mdp FROM Enseignants WHERE mail = :identifiant AND mdp = :motdepasse";
+$sql = "SELECT nom, prenom, mail, mdp FROM Enseignants WHERE mail = :identifiant AND mdp = :motdepasse";
 $stmt = $pdo->prepare($sql);
 $stmt->bindParam(':identifiant', $identifiant);
 $stmt->bindParam(':motdepasse', $motdepasse);
