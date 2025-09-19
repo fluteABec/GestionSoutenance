@@ -23,7 +23,7 @@ function h($s) { return htmlspecialchars((string)$s, ENT_QUOTES | ENT_SUBSTITUTE
 ?><!doctype html>
 <html lang="fr">
 <head>
-<meta charset="utf-8">
+<meta charset="utf-8">ccd
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Analyses soutenances BUT2/BUT3</title>
 </head>
