@@ -1,8 +1,17 @@
 <!DOCTYPE html>
 
-<?php require '../db.php';
+<!-- Connexion à la base de données et à la session-->
+<?php
+require '../db.php';
+session_start();
+// Vérifier si l'utilisateur est connecté
+if (!isset($_SESSION['identifiant']) ) {
+    header("Location: ../index.html");
+    exit();
+}
 ?>
 
+<!-- Header HTML -->
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -11,36 +20,31 @@
     <link rel="stylesheet" href="style.css">
 </head>
 
+
 <body>
     <div class="containerHAUT">
-<?php
-// Vérifier si l'utilisateur est connecté
-session_start();
-// Récupérer l'identifiant du professeur depuis la session
-if (!isset($_SESSION['identifiant']) ) {
-    header("Location: ../indedddx.html");
-    exit();
-}
-$identifiant = $_SESSION['identifiant'];
-$professorName = 'Default';
+    
+    <?php
+        $professorName = 'Default';
 
-// Récupérer le nom du professeur depuis la base de données
-$sql = "SELECT nom FROM Enseignants WHERE mail = :identifiant";
-$stmt = $pdo->prepare($sql);
-$stmt->bindParam(':identifiant', $identifiant);
-$stmt->execute();
-$professor = $stmt->fetch(PDO::FETCH_ASSOC);
+        // Récupérer le nom du professeur depuis la base de données
+        $sql = "SELECT nom FROM Enseignants WHERE mail = :identifiant";
+        $stmt = $pdo->prepare($sql);
+        $stmt->bindParam(':identifiant', $identifiant);
+        $stmt->execute();
+        $professor = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// Vérifier si le professeur a été trouvé
-if ($professor) {
-    $professorName = $professor['nom'];
-} else {
-    $professorName = 'Inconnu';
-}
+        // Vérifier si le professeur a été trouvé
+        if ($professor) {
+            $professorName = $professor['nom'];
+        } else {
+            $professorName = 'Inconnu';
+        }
 
-echo "<h1>Bienvenue, professorName </h1>"
-
-?>
+        echo "<h1>Bienvenue, $professorName</h1>"
+    ?>
+    
+    </div>
     <div class="containerBAS">
         <h2>Liste des étudiants associés</h2>
         <table class="student-table">
