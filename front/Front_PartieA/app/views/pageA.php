@@ -15,7 +15,7 @@ if (!isset($enseignantFullName) || !isset($enseignant)) {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Page A — Soutenances</title>
-  <link rel="stylesheet" href="/Front_PartieA/public/style.css">
+  <link rel="stylesheet" href="../public/stylee.css">
   <style>
     .filters {
       background: #f8f9fa;
