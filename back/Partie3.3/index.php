@@ -18,9 +18,6 @@ require __DIR__ . '/vendor/autoload.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-
-
-
         // Connexion
         function getPDO() {
             return new PDO('mysql:host=localhost;dbname=EvaluationStages;charset=utf8', 'root', '', [
