@@ -13,7 +13,7 @@ $motdepasse = $_POST['motdepasse'];
 
 // Préparer et exécuter la requête pour vérifier les informations d'identification => connexion 
 // Vérifier d'abord dans la table Enseignants
-$sql = "SELECT IdEnseignant, nom, prenom, mail, mdp, 'professeur' as role FROM Enseignants WHERE mail = :identifiant AND mdp = :motdepasse";
+$sql = "SELECT nom, prenom, mail, mdp FROM Enseignants WHERE mail = :identifiant AND mdp = :motdepasse";
 $stmt = $pdo->prepare($sql);
 $stmt->bindParam(':identifiant', $identifiant);
 $stmt->bindParam(':motdepasse', $motdepasse);
@@ -22,15 +22,15 @@ $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if ($row) {
     session_start();
-    $_SESSION['role'] = $row['role'];
+ 
     $_SESSION['identifiant'] = $row['mail'];
     $_SESSION['professeur_id'] = $row['IdEnseignant'];
-    header("Location: front/front_office.html");
+    header("Location: front/front_office.php");
     exit();
 }
 
 // Si non trouvé dans Enseignants, vérifier dans UtilisateursBackOffice
-$sql = "SELECT identifiant, nom, prenom, mail, mdp, 'backoffice' as role FROM UtilisateursBackOffice WHERE mail = :identifiant AND mdp = :motdepasse";
+$sql = "SELECT identifiant, nom, prenom, mail, mdp FROM UtilisateursBackOffice WHERE mail = :identifiant AND mdp = :motdepasse";
 $stmt = $pdo->prepare($sql);
 $stmt->bindParam(':identifiant', $identifiant);
 $stmt->bindParam(':motdepasse', $motdepasse);
@@ -39,7 +39,7 @@ $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if ($row) {
     session_start();
-    $_SESSION['role'] = $row['role'];
+
     $_SESSION['identifiant'] = $row['mail'];
     header("Location: back/mainAdministration.php");
     exit();

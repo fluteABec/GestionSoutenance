@@ -1,4 +1,8 @@
 <!DOCTYPE html>
+
+<?php require '../db.php';
+?>
+
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -9,9 +13,34 @@
 
 <body>
     <div class="containerHAUT">
-        <h1>Bienvenue, <span id="professor-name"></span></h1>
-    </div>
-    
+<?php
+// Vérifier si l'utilisateur est connecté
+session_start();
+// Récupérer l'identifiant du professeur depuis la session
+if (!isset($_SESSION['identifiant']) ) {
+    header("Location: ../indedddx.html");
+    exit();
+}
+$identifiant = $_SESSION['identifiant'];
+$professorName = 'Default';
+
+// Récupérer le nom du professeur depuis la base de données
+$sql = "SELECT nom FROM Enseignants WHERE mail = :identifiant";
+$stmt = $pdo->prepare($sql);
+$stmt->bindParam(':identifiant', $identifiant);
+$stmt->execute();
+$professor = $stmt->fetch(PDO::FETCH_ASSOC);
+
+// Vérifier si le professeur a été trouvé
+if ($professor) {
+    $professorName = $professor['nom'];
+} else {
+    $professorName = 'Inconnu';
+}
+
+echo "<h1>Bienvenue, professorName </h1>"
+
+?>
     <div class="containerBAS">
         <h2>Liste des étudiants associés</h2>
         <table class="student-table">
@@ -19,7 +48,7 @@
                 <tr>
                     <th>Nom</th>
                     <th>Prénom</th>
-                    <th>Email</th>
+                    <th>Email</th>  
                     <th>Grilles d'évaluation</th>
                 </tr>
             </thead>
@@ -31,7 +60,7 @@
     <script>
         // Récupérer le nom du professeur depuis la session (via PHP)
         document.addEventListener('DOMContentLoaded', function() {
-            fetch('../front.php?action=getProfessorName')
+            fetch('front.php?action=getProfessorName')
                 .then(response => response.json())
                 .then(data => {
                     document.getElementById('professor-name').textContent = data.professorName;

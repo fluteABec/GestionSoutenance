@@ -516,6 +516,80 @@ INSERT INTO `SectionCritereEval` (`IdSection`, `titre`, `description`) VALUES
 (2, 'Forme de la soutenance', 'évaluer la soutenance à travers des critères de forme'),
 (3, 'Contenu de la soutenance', 'évaluer la soutenance pour ce qui a été décidé de mettre en avant');
 
+-- nouvelles données
+-- un ancienne grille d'évaluation d'anglais de 2023 
+-- un ancienne grille d'évaluation de stage  de 2023 
+-- une grille de portfolio 2025 2026 (le modele, son unique section  , ses critères .... cf annexe du sujet )
+-- une grille de rapport de stage  2025 2026 (le modele, ses 2 sections  , ses critères .... cf annexe du sujet )
+-- 3  étudiants en 2023  (un but2 sans stage, un but2 avec stage ,un bu3 avec appretnissage) 
+
+
+INSERT INTO `modelesgrilleeval` (`IdModeleEval`, `natureGrille`, `noteMaxGrille`, `nomModuleGrilleEvaluation`, `anneeDebut`) VALUES
+(4, 'ANGLAIS', 20, 'Avienne grille 2024 2025 (ne devrait plus être utilisée !!)', 2024),
+(5, 'STAGE', 2023, 'c\'est une anvienne grille d\'évaluation de stage 2023 ', 2023),
+(6, 'PORTFOLIO', 20, 'Grille portfolio  \r\nCréer pour l\'année 2025 2026 ', 2025),
+(7, 'RAPPORT', 10, 'Grille d\'évaluation du rapport de stage \r\ncréee pendant l\'annéé 2025 2026 ', 2025);
+
+INSERT INTO `sectioncritereeval` (`IdSection`, `titre`, `description`) VALUES
+(5, 'Section eval stage 2023 ', 'une section d\'une acienne grille 2023  ... ne devrait pas apparaitre '),
+(6, 'Section EVal Portfolio ', 'unique session de la grille d\'évaluation du portfolio 2025 2026 '),
+(7, 'Eval Rapport : Section Contenu 2025 ', 'criteres d\'évaluation sur le contenu du rapport  2025 2026 '),
+(8, 'Eval Rapport : Section FORME 2025 ', 'criteres d\'évaluation sur la FORME du rapport  2025 2026 ');
+
+
+INSERT INTO `sectionseval` (`IdSection`, `IdModeleEval`) VALUES
+(5, 5),
+(6, 6),
+(7, 7),
+(8, 7);
+
+INSERT INTO `critereseval` (`IdCritere`, `descLongue`, `descCourte`) VALUES
+(17, 'criter eval stage 2023 \r\n\r\nc\'est un critere d\'une ancienne grille . ne devrait pas apparaître . conservé pour historique', 'criter eval stage 2023 '),
+(18, 'Présentation claire de l’organisation générale du portfolio (page, d’accueil, catégories, navigation, types de contenus). Explication du lien entre la construction du portfolio et le projet personnel et professionnel de l’étudiant (PPP).', 'Introduction du portfolio'),
+(19, 'Utilisation de visuels pertinents (captures, vidéos, schémas…). Mise en page lisible, hiérarchie claire de l\'information, design cohérent avec le projet professionnel', 'Qualité et pertinence du portfolio'),
+(20, 'Contexte, objectifs, étapes du projet et outils utilisés expliqués de manière synthétique et structurée.', 'Présentation d’un projet spécifique'),
+(21, 'Capacité à identifier, illustrer et articuler les compétences développées (techniques et humaines), avec un lien explicite au PPP.', 'Approche réflexive'),
+(22, 'Posture, gestion du temps, articulation, regard, gestuelle. L’étudiant capte l’attention du jury', 'Communication orale'),
+(23, 'L’étudiant s’appuie habilement sur son portfolio pour illustrer son propos', 'Appui du support pour la mise en valeur'),
+(24, 'Originalité de la présentation ou difficulté dans la réalisation du portfolio', 'BONUS'),
+(25, 'Contexte bien posé, objectifs clairs, cheminement annoncé. Conclusion synthétique, bilan et ouverture professionnelle.', 'Pertinence de l’introduction et de la conclusion'),
+(26, 'Entreprise bien décrite (structure, organisation, équipe, missions). Place de l\'étudiant clairement identifiée.', 'Présentation du contexte professionnel'),
+(27, 'Présentation claire des missions, structuration en partie générale et technique. Problèmes identifiés et solutions argumentées.', 'Qualité de l’analyse expérimentale'),
+(28, 'Compétences techniques et humaines identifiées. Lien explicite avec le projet personnel et professionnel.', 'Développement des compétences et PPP'),
+(29, 'Qualité des procédés graphiques utilisés (captures d’écran, schémas, images, photos) et pertinence de l’explication associée. Présence d’au moins 10 sources de qualité (ouvrages de référence, articles scientifiques, sources spécialisées). Bibliographie structurée et correctement référencée.', 'Utilisation de procédés graphiques et sources pertinentes'),
+(30, 'Présence de tous les éléments attendus : couverture, page de garde, sommaire, tables des illustrations, pagination, remerciements, illustrations légendées, bibliographie, annexes.', 'Respect de la structure demandée'),
+(31, 'Titres hiérarchisés, alinéas, texte justifié, présentation agréable. Graphiques et tableaux lisibles, bien insérés et numérotés.', 'Clarté de la mise en page'),
+(32, 'Orthographe correcte, syntaxe claire, vocabulaire maîtrisé. Pas de fautes récurrentes ou grossières. Un style d’écriture grossièrement robotique est pénalisé.', 'Langue et orthographe'),
+(33, 'Légendes aux illustrations, renvois aux annexes, index/glossaire si nécessaire. Table des illustrations placée après le sommaire', 'Cohérence graphique et rigueur documentaire'),
+(34, 'Longueur du texte (20–25 pages hors annexes), format PDF, poids < 10 Mo, rendu via UCA Suivi Stage.', 'Respect des consignes de rendu');
+
+
+INSERT INTO `sectioncontenircriteres` (`IdCritere`, `IdSection`, `ValeurMaxCritereEVal`) VALUES
+(17, 5, 2023),
+(18, 6, 3),
+(19, 6, 3),
+(20, 6, 3),
+(21, 6, 3),
+(22, 6, 3),
+(23, 6, 2),
+(24, 6, 2),
+(25, 7, 1),
+(26, 7, 1),
+(27, 7, 2),
+(28, 7, 0.5),
+(29, 7, 0.5),
+(30, 8, 1),
+(31, 8, 1),
+(32, 8, 1.5),
+(33, 8, 1),
+(34, 8, 0.5);
+
+
+INSERT INTO `anneestage` (`anneeDebut`, `IdEtudiant`, `IdEntreprise`, `but3sinon2`, `alternanceBUT3`, `nomMaitreStageApp`, `sujet`, `noteEntreprise`, `typeMission`, `cadreMission`) VALUES
+(2023, 40, NULL, 0, 0, NULL, '', NULL, NULL, NULL),
+(2023, 41, 1, 0, 0, 'maitre stape airbus 2023 ', 'sujet stage airbus 2023 but2 ', NULL, NULL, 'mission airbus 2023 but2 '),
+(2023, 42, 2, 1, 1, 'maitre app renault 2023 but3 app ', 'sujet  app renault 2023 but3 app ', NULL, NULL, 'mission  app renault 2023 but3 app ');
+
 -- --------------------------------------------------------
 
 --
