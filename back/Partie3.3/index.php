@@ -293,6 +293,27 @@ function envoiCVS_mail_BUT3($pdo) {
     envoieMail($identifiantAdmin, $sujet, $message, $nom_fichier);
 }
 
+function autoriserSaisie($pdo, $idEtudiant, $isBUT3 = false) {
+    $stmd = $pdo->prepare("UPDATE EvalStage SET Statut = 'SAISIE' WHERE IdEtudiant = ? AND Statut = 'REMONTEE'");
+    $stmd->execute([$idEtudiant]);
+    $stmd = $pdo->prepare("UPDATE EvalPortfolio SET Statut = 'SAISIE' WHERE IdEtudiant = ? AND Statut = 'REMONTEE'");
+    $stmd->execute([$idEtudiant]);
+
+    if ($isBUT3) {
+
+        $stmd = $pdo->prepare("UPDATE EvalAnglais SET Statut = 'SAISIE' WHERE IdEtudiant = ? AND Statut = 'REMONTEE'");
+        $stmd->execute([$idEtudiant]);
+    }
+
+    // Ici tu peux aussi gérer les sous-grilles : rapport + soutenance
+    $stmd = $pdo->prepare("UPDATE EvalRapport SET Statut = 'SAISIE' WHERE IdEtudiant = ? AND Statut = 'REMONTEE'");
+    $stmd->execute([$idEtudiant]);
+
+    $stmd = $pdo->prepare("UPDATE EvalSoutenance SET Statut = 'SAISIE' WHERE IdEtudiant = ? AND Statut = 'REMONTEE'");
+    $stmd->execute([$idEtudiant]);
+}
+
+
 //------------------------------------------------------
 // CODE PRINCIPALE
 //------------------------------------------------------
@@ -363,6 +384,12 @@ function envoiCVS_mail_BUT3($pdo) {
             remonterTout($pdo);
             echo "<div class='message'>Toutes les notes prêtes ont été remontées.</div>";
         }
+
+        if ($_GET['action'] === 'autoriser') {
+        autoriserSaisie($pdo, $idEtudiant, $isBUT3);
+        echo "<div class='message'>La saisie a été ré-autorisée pour l'étudiant ID $idEtudiant</div>";
+        }
+
 
         echo "<form method='post'>
         <button type='submit' name='remonter_tout'>Remonter tout les élèves</button>
@@ -447,7 +474,11 @@ function envoiCVS_mail_BUT3($pdo) {
                     <td>{$etudiant['IdEtudiant']}</td>
                     <td>{$etudiant['statut_stage']}</td>
                     <td>{$etudiant['statut_portfolio']}</td>
-                    <td><a href='?action=bloquer&id={$etudiant['IdEtudiant']}&but3=0'>Bloquer</a></td>
+                    <td>
+                        <a href='?action=bloquer&id={$etudiant['IdEtudiant']}&but3=0'>Bloquer</a>
+                        <a href='?action=autoriser&id={$etudiant['IdEtudiant']}&but3=0'>Autoriser saisie</a>
+                    </td>
+                    
                 </tr>";
             }
             echo "</table>";
@@ -469,7 +500,10 @@ function envoiCVS_mail_BUT3($pdo) {
                     <td>{$etudiant['statut_stage']}</td>
                     <td>{$etudiant['statut_portfolio']}</td>
                     <td>{$etudiant['statut_anglais']}</td>
-                    <td><a href='?action=bloquer&id={$etudiant['IdEtudiant']}&but3=1'>Bloquer</a></td>
+                    <td>
+                        <a href='?action=bloquer&id={$etudiant['IdEtudiant']}&but3=1'>Bloquer</a>
+                        <a href='?action=autoriser&id={$etudiant['IdEtudiant']}&but3=0'>Autoriser saisie</a>
+                    </td>
                 </tr>";
             }
             echo "</table>";
