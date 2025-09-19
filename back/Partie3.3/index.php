@@ -97,7 +97,7 @@ function remonterNotes($pdo, $idEtudiant, $isBUT3 = false) { // remonte les note
         $stmd = $pdo->prepare("UPDATE EvalAnglais SET Statut = 'REMONTEE' WHERE IdEtudiant = ? AND Statut = 'BLOQUEE'");
         $stmd->execute([$idEtudiant]);
     }
-    $mail = getMailEtudiant($pdo, $idEtudiant);
+    $mail = isset($_SESSION['identifiant']) ? $_SESSION['identifiant'] : null;
     if ($mail) {
         $sujet = "Vos évaluations ont été remonté";
         $message = "<p>Bonjour,<br>Vos notes ont été <b>remontées</b> par l'administration.<br>Cordialement.</p>";
@@ -144,7 +144,7 @@ function bloquerNotes($pdo, $idEtudiant, $isBUT3 = false) { // rebloque les note
         $stmd = $pdo->prepare("UPDATE EvalAnglais SET Statut = 'BLOQUEE' WHERE IdEtudiant = ? AND Statut = 'REMONTEE'");
         $stmd->execute([$idEtudiant]);
     }
-    $mail = getMailEtudiant($pdo, $idEtudiant);
+    $mail = isset($_SESSION['identifiant']) ? $_SESSION['identifiant'] : null;
     if ($mail) {
         $sujet = "Vos évaluations ont été bloqué";
         $message = "<p>Bonjour,<br>Vos notes ont été <b>bloquées</b> par l'administration.<br>Cordialement.</p>";
@@ -176,14 +176,11 @@ function envoieMail($mail_destinataire, $sujet, $message, $fichier_joint = null)
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
 
-        // Expéditeur
         $mail->setFrom('u1840518965@gmail.com', 'IUT - Administration');
 
-        // Destinataire
         $mail->addAddress($mail_destinataire);
 
-        // Ajout de la pièce jointe si fournie
-        if ($fichier_joint && file_exists($fichier_joint)) {
+        if ($fichier_joint && file_exists($fichier_joint)) { // pour les fichier
             $mail->addAttachment($fichier_joint);
         }
 
@@ -207,7 +204,7 @@ function getMailEtudiant($pdo, $idEtudiant) {  // récupère le mail d'un étudi
     return $stmd->fetchColumn();
 }
 function rappelMail($pdo, $idEtudiant) { // plus ou moins la même fonction que remonterNotes mais pour envoyer un mail de rappel
-    $mail = getMailEtudiant($pdo, $idEtudiant);
+    $mail = isset($_SESSION['identifiant']) ? $_SESSION['identifiant'] : null;
     if ($mail) {
         $sujet = "Rappel : vos évaluations doivent être validé";
         $message = "<p>Bonjour,<br>Votre soutenance est passée mais vos évaluations sont encore en <b>SAISIE</b>.<br>
