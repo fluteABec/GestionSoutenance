@@ -18,19 +18,24 @@ require __DIR__ . '/vendor/autoload.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
+//------------------------------------------------------
+// Variables de configuration
+//------------------------------------------------------
 
+$identifiant = $_POST['identifiant'];
 
-
-        // Connexion
-        function getPDO() {
-            return new PDO('mysql:host=localhost;dbname=EvaluationStages;charset=utf8', 'root', '', [
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-            ]);
-        }
+ // Connexion
+ function getPDO() {
+     return new PDO('mysql:host=localhost;dbname=EvaluationStages;charset=utf8', 'root', '', [
+         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+     ]);
+ }
 //------------------------------------------------------
 // Fonctions SQL et fonctionnement du site
 //------------------------------------------------------
-        
+
+
+
 function getEtudiantsBUT2($pdo){ // récupère les étudiants BUT2 prêts à la remontée
     $stmd = $pdo->query("
         SELECT e.IdEtudiant, e.nom, e.prenom,
