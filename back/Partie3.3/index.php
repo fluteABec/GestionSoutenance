@@ -14,6 +14,7 @@
     </header>
     <div class="container">
         <?php
+session_start();
 require __DIR__ . '/vendor/autoload.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
@@ -22,7 +23,7 @@ use PHPMailer\PHPMailer\Exception;
 // Variables de configuration
 //------------------------------------------------------
 
-$identifiant = $_POST['identifiant'];
+$identifiant = isset($_SESSION['identifiant']) ? $_SESSION['identifiant'] : null;
 
  // Connexion
  function getPDO() {
@@ -233,10 +234,10 @@ function get_liste_eleve_remonter3A($pdo) {
     return $stmd->fetchAll(PDO::FETCH_ASSOC);
 }
 
-function get_mail_admin($pdo) {
-    $stmd = $pdo->query("SELECT mail FROM `utilisateursbackoffice` WHERE 1");
-    return $stmd->fetchColumn();
-}
+// function get_mail_admin($pdo) {
+//     $stmd = $pdo->query("SELECT mail FROM `utilisateursbackoffice` WHERE 1");
+//     return $stmd->fetchColumn();
+// }
 
 function get_liste_eleve_remonter2A($pdo) {
     $stmd = $pdo->query("
@@ -271,11 +272,11 @@ function envoiCVS_mail_BUT2($pdo) {
     $nom_fichier = __DIR__ . "/export_remontee_BUT2.csv";
     ecriture_des_donnees_csv($liste, $nom_fichier);
 
-    $id_Administrateur = get_mail_admin($pdo);
+    $identifiantAdmin = isset($_SESSION['identifiant']) ? $_SESSION['identifiant'] : null;
     $sujet = "Export de vos notes";
-    $message = "<p>Bonjour,<br>Veuillez trouver ci-joint vos résultats au format CSV.</p>";
+    $message = "<p>Bonjour,<br>Veuillez trouver ci-joint les résultats au format CSV.</p>";
 
-    envoieMail($id_Administrateur, $sujet, $message, $nom_fichier);
+    envoieMail($identifiantAdmin, $sujet, $message, $nom_fichier);
 }
 
 function envoiCVS_mail_BUT3($pdo) {
@@ -285,11 +286,11 @@ function envoiCVS_mail_BUT3($pdo) {
     ecriture_des_donnees_csv($liste, $nom_fichier);
 
     
-    $id_Administrateur = get_mail_admin($pdo);
+    $identifiantAdmin = isset($_SESSION['identifiant']) ? $_SESSION['identifiant'] : null;
     $sujet = "Export de vos notes";
-    $message = "<p>Bonjour,<br>Veuillez trouver ci-joint vos résultats au format CSV.</p>";
+    $message = "<p>Bonjour,<br>Veuillez trouver ci-joint les résultats au format CSV.</p>";
 
-    envoieMail($id_Administrateur, $sujet, $message, $nom_fichier);
+    envoieMail($identifiantAdmin, $sujet, $message, $nom_fichier);
 }
 
 //------------------------------------------------------
