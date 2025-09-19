@@ -15,13 +15,8 @@ l'affichage des résultats sous forme de tableau -->
     <link rel="stylesheet" href="/projet_sql/3.3.css">
 </head>
 <body>
-    <div class="navbar">
-        <div class="brand"><span class="logo"></span><span>Évaluations IUT</span></div>
-        <a class="nav-item" href="/projet_sql/back/Partie3.1/3_1_natan.php">Tâches enseignants</a>
-        <a class="nav-item" href="/projet_sql/back/Partie3.3/index.php">Évaluations IUT</a>
-        <a class="nav-item" href="/projet_sql/back/Partie3.4/index.php">Diffusion résultats</a>
-        <a class="nav-item" href="/projet_sql/back/mainAdministration.php">Administration</a>
-    </div>
+    <?php include '../navbar.php'; ?>
+
     <header>
         <h1>Gestion des Évaluations - IUT</h1>
     </header>
