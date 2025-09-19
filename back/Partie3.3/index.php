@@ -31,6 +31,7 @@ $identifiant = isset($_SESSION['identifiant']) ? $_SESSION['identifiant'] : null
          PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
      ]);
  }
+
 //------------------------------------------------------
 // Fonctions SQL et fonctionnement du site
 //------------------------------------------------------

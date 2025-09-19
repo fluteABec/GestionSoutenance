@@ -24,7 +24,7 @@ if ($row) {
     session_start();
     $_SESSION['identifiant'] = $row['mail'];
     $_SESSION['professeur_id'] = $row['IdEnseignant'];
-    header("Location: front/front_office.php");
+    header("Location: front/Front_PartieA/public/index.php");
     exit();
 }
 
