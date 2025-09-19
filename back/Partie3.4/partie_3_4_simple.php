@@ -107,28 +107,6 @@ $etudiantsCandidats = getEtudiantsCandidats($pdo);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Partie 3.4 - Diffusion des résultats</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
-        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1 { color: #333; text-align: center; margin-bottom: 30px; }
-        h2 { color: #555; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
-        .alert { padding: 15px; margin: 20px 0; border-radius: 5px; }
-        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .btn { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
-        .btn:hover { background: #0056b3; }
-        .btn-danger { background: #dc3545; }
-        .btn-danger:hover { background: #c82333; }
-        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-        th { background: #f8f9fa; font-weight: bold; }
-        tr:nth-child(even) { background: #f8f9fa; }
-        .niveau { padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; }
-        .but2 { background: #28a745; color: white; }
-        .but3 { background: #007bff; color: white; }
-        .alternance { background: #ffc107; color: black; }
-        .actions { text-align: center; margin: 30px 0; }
-        .info { background: #e7f3ff; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #007bff; }
-    </style>
 </head>
 <body>
     <div class="container">
@@ -237,7 +215,7 @@ $etudiantsCandidats = getEtudiantsCandidats($pdo);
                                 <span class="niveau <?= $class ?>"><?= $niveau ?></span>
                             </td>
                             <td><?= htmlspecialchars($etudiant['entreprise']) ?></td>
-                            <td><span style="background: #e2e3e5; color: #383d41; padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold;">DIFFUSÉ</span></td>
+                            <td><span>DIFFUSÉ</span></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
