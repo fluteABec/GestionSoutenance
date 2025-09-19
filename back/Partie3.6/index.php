@@ -26,29 +26,10 @@ function h($s) { return htmlspecialchars((string)$s, ENT_QUOTES | ENT_SUBSTITUTE
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Analyses soutenances BUT2/BUT3</title>
-<style>
-body{font-family:Arial,Helvetica,sans-serif;background-color:#006666;margin:0}
-header{position:sticky;top:0;background:#005e5e;padding:12px 16px;z-index:2;color:#fff}
-h1{font-size:20px;margin:0;font-style:italic}
-.container{padding:16px;display:flex;flex-direction:column;align-items:center}
-.panel{background:#fff;border-radius:10px;box-shadow:0 0 20px rgba(0,0,0,.2);padding:16px;max-width:1200px;width:100%;margin:10px auto}
-.panel h2{font-size:16px;margin:0 0 8px 0;color:#006666}
-table{width:100%;border-collapse:collapse}
-th,td{padding:8px;border:1px solid #ddd;text-align:left}
-th{background:#006666;color:#fff}
-tr:nth-child(even){background:#f2f2f2}
-.filters{display:flex;gap:8px;align-items:center;margin-left:auto}
-input,select,button{background:#fff;border:1px solid #ccc;color:#222;border-radius:5px;padding:8px 10px}
-button{background:#006666;color:#fff;border:none;cursor:pointer}
-button:hover{background:#005555}
-.actions a{color:#006666;text-decoration:none;margin-right:10px}
-.grid{display:grid;gap:16px}
-@media(min-width:900px){.grid{grid-template-columns:1fr 1fr}}
-</style>
 </head>
 <body>
 <header>
-  <div style="display:flex;gap:12px;align-items:center">
+  <div>
     <h1>Analyses soutenances BUT2/BUT3</h1>
     <form method="get" class="filters">
       <label>Année

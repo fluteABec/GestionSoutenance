@@ -1,0 +1,46 @@
+-- ===========================
+-- INSERTIONS DE DONNÉES TEST
+-- ===========================
+
+-- 🔹 Évaluations de stage
+INSERT INTO EvalStage 
+(IdEvalStage, note, commentaireJury, presenceMaitreStageApp, confidentiel, date_h, IdEnseignantTuteur, Statut, IdSecondEnseignant, anneeDebut, IdModeleEval, IdEtudiant, IdSalle) 
+VALUES
+(1, 15.5, 'Bon stage, étudiant investi', 1, 0, '2025-06-20 09:00:00', 1, 'VALIDEE', 2, 2025, 2, 1, '261'), -- ⚠️ ce statut n’existe pas, je corrige
+(1, 15.5, 'Bon stage, étudiant investi', 1, 0, '2025-06-20 09:00:00', 1, 'BLOQUEE', 2, 2025, 2, 1, '261'),
+(2, 12.0, 'Travail correct mais manque d autonomie', 1, 0, '2025-06-21 10:30:00', 3, 'BLOQUEE', 4, 2025, 2, 2, '264'),
+(3, 18.0, 'Excellent travail, soutenance remarquable', 1, 0, '2025-06-22 14:00:00', 5, 'DIFFUSEE', 6, 2025, 2, 3, 'AmphiB1'),
+(4, NULL, NULL, 0, 0, '2025-06-25 15:00:00', 7, 'SAISIE', 8, 2025, 2, 4, '262');
+
+-- 🔹 Évaluations de soutenance
+INSERT INTO EvalSoutenance 
+(IdEvalSoutenance, note, commentaireJury, anneeDebut, IdModeleEval, IdEtudiant, Statut) 
+VALUES
+(1, 8.5, 'Bonne clarté de présentation', 2025, 1, 1, 'BLOQUEE'),
+(2, 6.0, 'Langage correct mais support visuel faible', 2025, 1, 2, 'BLOQUEE'),
+(3, 9.5, 'Très bonne maîtrise technique', 2025, 1, 3, 'DIFFUSEE'),
+(4, NULL, NULL, 2025, 1, 4, 'SAISIE');
+
+-- 🔹 Notes par critère pour les soutenances
+INSERT INTO LesCriteresNotesSoutenance (IdCritere, IdEvalSoutenance, noteCritere) VALUES
+(5, 1, '0.8'), (6, 1, '0.9'), (7, 1, '0.7'), (8, 1, '0.8'),
+(10, 2, '1.0'), (11, 2, '0.8'), (12, 2, '0.6'), (13, 2, '0.7'),
+(5, 3, '1.0'), (6, 3, '1.0'), (7, 3, '0.9'), (8, 3, '0.9');
+
+-- 🔹 Évaluations de rapport
+INSERT INTO EvalRapport 
+(IdEvalRapport, note, commentaireJury, Statut, anneeDebut, IdModeleEval, IdEtudiant) 
+VALUES
+(1, 14.0, 'Rapport bien structuré, manque un peu de détails techniques', 'BLOQUEE', 2025, 2, 1),
+(2, 11.5, 'Rapport trop descriptif, pas assez analytique', 'BLOQUEE', 2025, 2, 2),
+(3, 17.0, 'Rapport excellent, clair et complet', 'DIFFUSEE', 2025, 2, 3),
+(4, NULL, NULL, 'SAISIE', 2025, 2, 4);
+
+-- 🔹 Évaluations d’anglais
+INSERT INTO EvalAnglais 
+(IdEvalAnglais, dateS, note, commentaireJury, Statut, IdSalle, IdEnseignant, anneeDebut, IdModeleEval, IdEtudiant) 
+VALUES
+(1, '2025-05-10 09:00:00', 14.5, 'Bonne expression orale', 'BLOQUEE', '355', 7, 2025, 1, 1),
+(2, '2025-05-10 10:00:00', 12.0, 'Manque de fluidité', 'BLOQUEE', '355', 8, 2025, 1, 2),
+(3, '2025-05-11 09:30:00', 16.0, 'Très bon niveau', 'DIFFUSEE', '355', 9, 2025, 1, 3),
+(4, '2025-05-11 10:30:00', NULL, NULL, 'SAISIE', '355', 10, 2025, 1, 4);

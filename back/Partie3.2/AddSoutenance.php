@@ -127,10 +127,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <head>
         <meta charset="UTF-8">
         <title>Ajout Soutenance</title>
-        <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="/projet_sql/stylee.css">
     </head>
     
 <body>
+<?php include '../navbar.php'; ?>
 <h2>Ajout d'une Soutenance</h2>
 <form method="post">
     <label>Nature :</label>

@@ -2,6 +2,7 @@
 function getInfosEtudiant($idEtudiant) {
     global $pdo;
     $sql = "SELECT e.IdEtudiant as idEtu, e.nom, e.prenom, a.sujet, ent.nom AS entreprise, a.nomMaitreStageApp As maitreStage, es.date_h, es.Statut As Statut,s.description AS salle
+
             FROM EtudiantsBUT2ou3 e
             JOIN AnneeStage a ON a.IdEtudiant = e.IdEtudiant
             JOIN Entreprises ent ON ent.IdEntreprise = a.IdEntreprise
