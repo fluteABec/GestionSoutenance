@@ -1,11 +1,3 @@
-<!-- Désoler le code est un vrai bordel mais il fonctionne en 3 parties :
-le html et le CSS
-les fonction php avec requête SQL et les fonctionnalités (c'est tout en fonction)
-l'affichage des résultats sous forme de tableau -->
-
-
-
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -156,6 +148,17 @@ function bloquerNotes($pdo, $idEtudiant, $isBUT3 = false) { // rebloque les note
         $sujet = "Vos évaluations ont été bloqué";
         $message = "<p>Bonjour,<br>Vos notes ont été <b>bloquées</b> par l'administration.<br>Cordialement.</p>";
         envoieMail($mail, $sujet, $message);
+    }
+}
+
+function remonterTout($pdo) { // remonte les notes de tous les étudiants prêts à la remontée
+    $etudiantsBUT2 = getEtudiantsBUT2($pdo);
+    foreach ($etudiantsBUT2 as $etudiant) {
+        remonterNotes($pdo, $etudiant['IdEtudiant'], false);
+    }
+    $etudiantsBUT3 = getEtudiantsBUT3($pdo);
+    foreach ($etudiantsBUT3 as $etudiant) {
+        remonterNotes($pdo, $etudiant['IdEtudiant'], true);
     }
 }
 
@@ -354,6 +357,15 @@ function envoiCVS_mail_BUT3($pdo) {
                 echo "<div class='message'>Le CSV BUT3 a été envoyé par mail.</div>";
             }
         }
+
+        if (isset($_POST['remonter_tout'])) {
+            remonterTout($pdo);
+            echo "<div class='message'>Toutes les notes prêtes ont été remontées.</div>";
+        }
+
+        echo "<form method='post'>
+        <button type='submit' name='remonter_tout'>Remonter tout les élèves</button>
+        </form>";
 
         echo "<h2>Étudiants BUT2 prêts à la remontée :</h2>";
         $etudiantsBUT2 = getEtudiantsBUT2($pdo);
