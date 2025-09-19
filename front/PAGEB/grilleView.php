@@ -13,6 +13,7 @@ function afficherEtudiantAvecLiens($etudiant, $idUser, $role) {
 			echo "<tr><th>Maitre Stage</th><td>{$etu['maitreStage']}</td></tr>";
 			echo "<tr><th>Sujet</th><td>{$etu['sujet']}</td></tr>";
 			echo "<tr><th>Date soutenance</th><td>{$etu['date_h']}</td></tr>";
+			echo "<tr><th>Statut</th><td>{$etu['Statut']}</td></tr>";
 			echo "<tr><th>Salle</th><td>{$etu['salle']}</td></tr>";
 			echo "</table>";
 		}
@@ -25,6 +26,7 @@ function afficherEtudiantAvecLiens($etudiant, $idUser, $role) {
 			echo "<tr><th>Maitre Stage</th><td>{$etu['maitreStage']}</td></tr>";
 			echo "<tr><th>Sujet</th><td>{$etu['sujet']}</td></tr>";
 			echo "<tr><th>Date soutenance</th><td>{$etu['date_h']}</td></tr>";
+			echo "<tr><th>Statut</th><td>{$etu['Statut']}</td></tr>";
 			echo "<tr><th>Salle</th><td>{$etu['salle']}</td></tr>";
 			echo "</table>";
 		}
