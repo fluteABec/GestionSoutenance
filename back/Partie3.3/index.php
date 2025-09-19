@@ -310,6 +310,13 @@ function autoriserSaisie($pdo, $idEtudiant, $isBUT3 = false) {
     $stmd->execute([$idEtudiant]);
 }
 
+function recuperer_mails_admin($pdo) {
+    $stmd = $pdo->query("SELECT mail FROM `utilisateursbackoffice`");
+    return $stmd->fetchAll(PDO::FETCH_COLUMN);
+}
+
+$tableauMailsAdmin = 
+
 
 //------------------------------------------------------
 // CODE PRINCIPALE
@@ -383,8 +390,14 @@ function autoriserSaisie($pdo, $idEtudiant, $isBUT3 = false) {
         }
 
         if ($_GET['action'] === 'autoriser') {
-        autoriserSaisie($pdo, $idEtudiant, $isBUT3);
-        echo "<div class='message'>La saisie a été ré-autorisée pour l'étudiant ID $idEtudiant</div>";
+            $listeAutorises = recuperer_mails_admin(getPDO());
+            $mailActuel = isset($_SESSION['identifiant']) ? $_SESSION['identifiant'] : null;
+            if ($mailActuel && in_array($mailActuel, $listeAutorises)) {
+            autoriserSaisie($pdo, $idEtudiant, $isBUT3);
+            echo "<div class='message'>La saisie a été ré-autorisée pour l'étudiant ID $idEtudiant</div>";
+            } else {
+                echo "<div class='error'>Vous n'êtes pas autorisé à effectuer cette action.</div>";
+            }
         }
 
 
