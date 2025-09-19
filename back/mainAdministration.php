@@ -37,34 +37,17 @@ if (isset($_GET['success'])) {
 <head>
     <meta charset="UTF-8">
     <title>Administration - Gestion des Soutenances</title>
-    <link rel="stylesheet" href="style.css">
-    <style>
-        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-        th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-        th { background: #f2f2f2; }
-        .actions button { margin: 2px; }
-        #searchInput { width: 300px; padding: 6px; margin-bottom: 10px; }
-    </style>
+    <link rel="stylesheet" href="../stylee.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
 
-<h2>📋 Gestion des Soutenances</h2>
-
-<?php if ($message): ?>
-    <p style="color:green;"><?= htmlspecialchars($message) ?></p>
-<?php endif; ?>
-
-<a href="Partie3.1/3_1_natan.php">
-    <button>Visualisation des tâches enseignants</button>
-</a>
-
-<a href="Partie3.3/index.php">
-    <button>Gestion des Évaluations - IUT</button>
-</a>
-
-<a href="Partie3.4/index.php">
-    <button>Outils de diffusion des résultats</button>
-</a>
+<div class="navbar">
+    <div class="brand"><span class="logo"></span><span>Administration</span></div>
+    <a class="nav-item" href="Partie3.1/3_1_natan.php">Tâches enseignants</a>
+    <a class="nav-item" href="Partie3.3/index.php">Évaluations IUT</a>
+    <a class="nav-item" href="Partie3.4/index.php">Diffusion résultats</a>
+</div>
 
 <!-- Barre de recherche -->
 <input type="text" id="searchInput" placeholder="🔍 Rechercher un étudiant...">
@@ -119,7 +102,7 @@ if (isset($_GET['success'])) {
                         <button>✏️ Modifier</button>
                     </a>
                     <a href="Partie3.2/DeleteSoutenance.php?id=<?= $soutenance['id'] ?>&type=<?= $soutenance['type'] ?>" onclick="return confirm('Supprimer cette soutenance ?')">
-                        <button style="color:red;">❌ Supprimer</button>
+                        <button>❌ Supprimer</button>
                     </a>
                 </td>
             <?php else: ?>
@@ -147,6 +130,8 @@ document.getElementById('searchInput').addEventListener('keyup', function() {
     });
 });
 </script>
+
+</div>
 
 </body>
 </html>

@@ -1,0 +1,569 @@
+-- diff / version 11/09
+-- Table evalStage : 
+-- la contrainte NOT NULL a été retirée pour les champs suivants pour faciliter la tache en 3.5.3
+--    presenceMaitreStageApp boolean  ,
+--    confidentiel 	boolean  ,
+--    IdSalle 		varchar(10) 
+
+DROP TABLE IF EXISTS AnneeGrilleEval;
+DROP TABLE IF EXISTS LesCriteresNotesStage;
+DROP TABLE IF EXISTS LesCriteresNotesAnglais;
+DROP TABLE IF EXISTS LesCriteresNotesPortFolio;
+DROP TABLE IF EXISTS SectionContenirCriteres;
+-- DROP TABLE IF EXISTS SalleSoutenanceStagePortfolio;    ;  -- correction erreur de cardinalité MCD
+DROP TABLE IF EXISTS LesCriteresNotesSoutenance; 
+DROP TABLE IF EXISTS LesCriteresNotesRapport; 
+DROP TABLE IF EXISTS AnneeStage;
+DROP TABLE IF EXISTS SectionsEval;
+DROP TABLE IF EXISTS SectionContenirCriteres;
+-- DROP TABLE IF EXISTS AnneeGrilleEval ;  -- correction erreur de cardinalité dans MCD
+DROP TABLE IF EXISTS EvalStage;
+DROP TABLE IF EXISTS EvalRapport;
+DROP TABLE IF EXISTS evalportfolio;
+DROP TABLE IF EXISTS evalanglais;
+DROP TABLE IF EXISTS Entreprises  ; 
+DROP TABLE IF EXISTS EvalSoutenance  ; 
+DROP TABLE IF EXISTS StatutsEval ;
+DROP TABLE IF EXISTS Salles ;
+DROP TABLE IF EXISTS EtudiantsBUT2ou3;
+DROP TABLE IF EXISTS Enseignants  ; 
+DROP TABLE IF EXISTS ModelesGrilleEval;
+DROP TABLE IF EXISTS SectionCritereEval ; 
+DROP TABLE IF EXISTS CriteresEval;
+DROP TABLE IF EXISTS AnneesUniversitaires;
+
+-- Des AUTO_INCREMENT ont été ajoutés pour la plupart des clés primaires de type SMALLINT et sans sémantique
+
+CREATE TABLE AnneesUniversitaires(
+   anneeDebut SMALLINT check (anneeDebut > 2020),
+   fin 	       SMALLINT unique NOT NULL check (fin>anneeDebut),      -- c'est une clé candidate
+   PRIMARY KEY(anneeDebut)
+);
+CREATE TABLE CriteresEval(
+   IdCritere 	SMALLINT  AUTO_INCREMENT,
+   descLongue 	VARCHAR(500),
+   descCourte 	VARCHAR(100) NOT NULL,
+   -- noteMaxCritere FLOAT NOT NULL    Check (noteMaxCritere >0.5),   a été supprimée
+   -- la note est déjà dans SectionContenirCriteres entre critère et section
+   -- l'intérêt de la laisser dans SectionContenirCriteres est qu'un même critère pourrait 
+   -- etre utilisé plusieurs fois avec des notes différentes 
+   -- (e.g. changement d'une année à l'autre pour ajuster les grilles)
+   PRIMARY KEY(IdCritere)
+);
+CREATE TABLE SectionCritereEval(
+   IdSection 	SMALLINT  AUTO_INCREMENT,
+   titre 	VARCHAR(50) NOT NULL,
+   description VARCHAR(300),
+   PRIMARY KEY(IdSection)
+);
+
+CREATE TABLE ModelesGrilleEval(
+   IdModeleEval SMALLINT  AUTO_INCREMENT,
+   natureGrille ENUM('ANGLAIS ', 'SOUTENANCE', 'RAPPORT', ' STAGE', ' PORTFOLIO')  NOT NULL,
+   noteMaxGrille FLOAT  Check (noteMaxGrille >0),
+   nomModuleGrilleEvaluation VARCHAR(80) UNIQUE  NOT NULL,
+   anneeDebut 	SMALLINT NOT NULL,	-- correction erreur de cardinalité dans MCD
+   PRIMARY KEY(IdModeleEval) ,
+   FOREIGN KEY(anneeDebut) REFERENCES AnneesUniversitaires(anneeDebut)
+
+);
+
+-- Pour l'accès au front office, c'est la table Enseignants ci-dessous qui sera utilisée
+-- Pour l'accès au back office, c'est la table UtilisateursBackOffice (plus loin)  qui sera utilisée
+-- il n'est pas nécessaire de prévoir le cas ou traitement particulier d'un enseignant qui suivrit des 
+-- stage et qui serait aussi autorisé à accéder au BackOffice : le doubler dans les 2 tables  
+CREATE TABLE Enseignants(
+   IdEnseignant 	SMALLINT  AUTO_INCREMENT,
+   nom 			VARCHAR(50) NOT NULL,
+   prenom 		VARCHAR(50) NOT NULL,
+   mail 		VARCHAR(80) UNIQUE NOT NULL,       -- c'est une clé candidate
+   mdp  		VARCHAR(255) NOT NULL,
+   PRIMARY KEY(IdEnseignant)
+);
+
+
+
+
+CREATE TABLE EtudiantsBUT2ou3(
+   IdEtudiant 		SMALLINT  AUTO_INCREMENT,
+   nom 			VARCHAR(50) NOT NULL,
+   prenom 		VARCHAR(50) NOT NULL,
+   mail 		VARCHAR(80) UNIQUE NOT NULL,      -- c'est une clé candidate
+   PRIMARY KEY(IdEtudiant)
+);
+
+CREATE TABLE Salles(
+   IdSalle 	VARCHAR(10),
+   description VARCHAR(50),
+   PRIMARY KEY(IdSalle)
+);
+
+CREATE TABLE StatutsEval(
+   Statut VARCHAR(15)  check (statut in ('SAISIE', 'BLOQUEE', 'REMONTEE', 'VALIDEE', 'DIFFUSEE')),
+   PRIMARY KEY(Statut)
+);
+
+
+CREATE TABLE EvalSoutenance(
+   IdEvalSoutenance 	SMALLINT     AUTO_INCREMENT,
+   note 		FLOAT check (note >0),
+   commentaireJury 	VARCHAR(500),
+   anneeDebut 		SMALLINT NOT NULL,
+   IdModeleEval 	SMALLINT NOT NULL,
+   IdEtudiant 		SMALLINT NOT NULL,
+   Statut 		VARCHAR(15) NOT NULL,
+   PRIMARY KEY(IdEvalSoutenance),
+   FOREIGN KEY(Statut) REFERENCES StatutsEval(Statut),
+   FOREIGN KEY(anneeDebut) REFERENCES AnneesUniversitaires(anneeDebut),
+   FOREIGN KEY(IdModeleEval) REFERENCES ModelesGrilleEval(IdModeleEval),
+   FOREIGN KEY(IdEtudiant) REFERENCES EtudiantsBUT2ou3(IdEtudiant),
+   UNIQUE (IdEtudiant, IdModeleEval , anneeDebut)     -- c'est une clé candidate
+);
+
+CREATE TABLE EvalPortFolio(
+   IdEvalPortfolio SMALLINT     AUTO_INCREMENT,
+   -- date_h DATETIME,     a été supprimée
+   -- la date de soutenance du portfolio est la meme que la date de soutenance de stage
+   note FLOAT check (note >0) ,
+   commentaireJury VARCHAR(500),
+   anneeDebut SMALLINT NOT NULL,
+   IdModeleEval SMALLINT NOT NULL,
+   IdEtudiant SMALLINT NOT NULL,
+   Statut VARCHAR(15) NOT NULL,
+   PRIMARY KEY(IdEvalPortfolio),
+   FOREIGN KEY(Statut) REFERENCES StatutsEval(Statut),
+   FOREIGN KEY(anneeDebut) REFERENCES AnneesUniversitaires(anneeDebut),
+   FOREIGN KEY(IdModeleEval) REFERENCES ModelesGrilleEval(IdModeleEval),
+   FOREIGN KEY(IdEtudiant) REFERENCES EtudiantsBUT2ou3(IdEtudiant), 
+   UNIQUE (IdEtudiant, IdModeleEval , anneeDebut)             -- c'est une clé candidate
+
+);
+
+
+CREATE TABLE Entreprises(
+   IdEntreprise 	SMALLINT    AUTO_INCREMENT,
+   nom 			VARCHAR(50) UNIQUE NOT NULL,
+   villeE 		VARCHAR(50) NOT NULL,
+   codePostal 		VARCHAR(6) NOT NULL,
+   PRIMARY KEY(IdEntreprise)
+);
+
+CREATE TABLE EvalRapport(
+   IdEvalRapport SMALLINT     AUTO_INCREMENT,
+   note FLOAT check (note >0.5),
+   commentaireJury VARCHAR(200),
+   Statut VARCHAR(15) NOT NULL,
+   anneeDebut SMALLINT NOT NULL,
+   IdModeleEval SMALLINT NOT NULL,
+   IdEtudiant SMALLINT NOT NULL,
+   PRIMARY KEY(IdEvalRapport),
+   FOREIGN KEY(Statut) REFERENCES StatutsEval(Statut),
+   FOREIGN KEY(anneeDebut) REFERENCES AnneesUniversitaires(anneeDebut),
+   FOREIGN KEY(IdModeleEval) REFERENCES ModelesGrilleEval(IdModeleEval),
+   FOREIGN KEY(IdEtudiant) REFERENCES EtudiantsBUT2ou3(IdEtudiant),
+   UNIQUE (IdEtudiant, IdModeleEval , anneeDebut)        -- c'est une clé candidate
+
+);
+
+CREATE TABLE EvalAnglais(
+   IdEvalAnglais SMALLINT     AUTO_INCREMENT,
+   dateS DATETIME,
+   note FLOAT check (note >0),
+   commentaireJury VARCHAR(200),
+   Statut VARCHAR(15) NOT NULL,
+   IdSalle VARCHAR(10) NOT NULL,
+   IdEnseignant SMALLINT NOT NULL,
+   anneeDebut SMALLINT NOT NULL,
+   IdModeleEval SMALLINT NOT NULL,
+   IdEtudiant SMALLINT NOT NULL,
+   PRIMARY KEY(IdEvalAnglais),
+   FOREIGN KEY(Statut) REFERENCES StatutsEval(Statut),
+   FOREIGN KEY(IdSalle) REFERENCES Salles(IdSalle),
+   FOREIGN KEY(IdEnseignant) REFERENCES Enseignants(IdEnseignant),
+   FOREIGN KEY(anneeDebut) REFERENCES AnneesUniversitaires(anneeDebut),
+   FOREIGN KEY(IdModeleEval) REFERENCES ModelesGrilleEval(IdModeleEval),
+   FOREIGN KEY(IdEtudiant) REFERENCES EtudiantsBUT2ou3(IdEtudiant),
+   UNIQUE (IdEtudiant, IdModeleEval , anneeDebut)       -- c'est une clé candidate
+
+);
+
+CREATE TABLE EvalStage(
+   IdEvalStage 	SMALLINT     AUTO_INCREMENT,
+   note 		FLOAT,
+   commentaireJury 	VARCHAR(200),
+   presenceMaitreStageApp boolean  ,
+   confidentiel 	boolean  ,
+   date_h 		DATETIME,
+   IdEnseignantTuteur SMALLINT NOT NULL,
+   Statut VARCHAR(15) NOT NULL,
+   IdSecondEnseignant SMALLINT NOT NULL,
+   anneeDebut 		SMALLINT NOT NULL,
+   IdModeleEval 	SMALLINT NOT NULL,
+   IdEtudiant 		SMALLINT NOT NULL,
+   IdSalle 		varchar(10) ,	-- correction erreur de cardinalité dans MCD
+   PRIMARY KEY(IdEvalStage),
+   FOREIGN KEY(IdEnseignantTuteur) 	REFERENCES Enseignants(IdEnseignant),
+   FOREIGN KEY(Statut) 		REFERENCES StatutsEval(Statut),
+   FOREIGN KEY(IdSecondEnseignant) 	REFERENCES Enseignants(IdEnseignant),
+   FOREIGN KEY(anneeDebut) 		REFERENCES AnneesUniversitaires(anneeDebut),
+   FOREIGN KEY(IdModeleEval) 		REFERENCES ModelesGrilleEval(IdModeleEval),
+   FOREIGN KEY(IdEtudiant) 		REFERENCES EtudiantsBUT2ou3(IdEtudiant) ,
+   FOREIGN KEY(IdSalle) 		REFERENCES salles(IdSalle), -- correction err card MCD
+   UNIQUE (IdEtudiant, IdModeleEval , anneeDebut)     -- c'est une clé candidate
+);
+
+CREATE TABLE AnneeGrilleEval(
+   anneeDebut SMALLINT,
+   IdModeleEval SMALLINT,
+   PRIMARY KEY(anneeDebut, IdModeleEval),
+   FOREIGN KEY(anneeDebut) REFERENCES AnneesUniversitaires(anneeDebut),
+   FOREIGN KEY(IdModeleEval) REFERENCES ModelesGrilleEval(IdModeleEval)
+);
+
+CREATE TABLE SectionContenirCriteres(
+   IdCritere SMALLINT,
+   IdSection SMALLINT,
+   ValeurMaxCritereEVal FLOAT NOT NULL,
+   PRIMARY KEY(IdCritere, IdSection),
+   FOREIGN KEY(IdCritere) REFERENCES CriteresEval(IdCritere),
+   FOREIGN KEY(IdSection) REFERENCES SectionCritereEval(IdSection)
+);
+
+CREATE TABLE SectionsEval(
+   IdSection SMALLINT,
+   IdModeleEval SMALLINT,
+   PRIMARY KEY(IdSection, IdModeleEval),
+   FOREIGN KEY(IdSection) REFERENCES SectionCritereEval(IdSection),
+   FOREIGN KEY(IdModeleEval) REFERENCES ModelesGrilleEval(IdModeleEval)
+);
+
+CREATE TABLE AnneeStage(
+   anneeDebut SMALLINT,
+   IdEtudiant SMALLINT,
+   IdEntreprise SMALLINT,
+   but3sinon2 BOOLEAN NOT NULL,
+   alternanceBUT3 BOOLEAN NOT NULL,
+   nomMaitreStageApp VARCHAR(50),
+   sujet VARCHAR(200) NOT NULL,
+   noteEntreprise FLOAT check (noteEntreprise>0.5),
+   typeMission VARCHAR(50),
+   cadreMission VARCHAR(200),
+   PRIMARY KEY(anneeDebut, IdEtudiant),
+   FOREIGN KEY(anneeDebut) REFERENCES AnneesUniversitaires(anneeDebut),
+   FOREIGN KEY(IdEtudiant) REFERENCES EtudiantsBUT2ou3(IdEtudiant),
+   FOREIGN KEY(IdEntreprise) REFERENCES Entreprises(IdEntreprise)
+);
+
+CREATE TABLE LesCriteresNotesRapport(
+   IdCritere SMALLINT,
+   IdEvalRapport SMALLINT,
+   noteCritere VARCHAR(50) check (noteCritere > 0),
+   PRIMARY KEY(IdCritere, IdEvalRapport),
+   FOREIGN KEY(IdCritere) REFERENCES CriteresEval(IdCritere),
+   FOREIGN KEY(IdEvalRapport) REFERENCES EvalRapport(IdEvalRapport)
+);
+
+CREATE TABLE LesCriteresNotesSoutenance(
+   IdCritere SMALLINT,
+   IdEvalSoutenance SMALLINT,
+   noteCritere VARCHAR(50),
+   PRIMARY KEY(IdCritere, IdEvalSoutenance),
+   FOREIGN KEY(IdCritere) REFERENCES CriteresEval(IdCritere),
+   FOREIGN KEY(IdEvalSoutenance) REFERENCES EvalSoutenance(IdEvalSoutenance)
+);
+
+
+CREATE TABLE LesCriteresNotesPortFolio(
+   IdCritere SMALLINT,
+   IdEvalPortfolio SMALLINT,
+   noteCritere VARCHAR(50),
+   PRIMARY KEY(IdCritere, IdEvalPortfolio),
+   FOREIGN KEY(IdCritere) REFERENCES CriteresEval(IdCritere),
+   FOREIGN KEY(IdEvalPortfolio) REFERENCES EvalPortFolio(IdEvalPortfolio)
+);
+
+CREATE TABLE LesCriteresNotesAnglais(
+   IdCritere SMALLINT,
+   IdEvalAnglais SMALLINT,
+   noteCritere VARCHAR(50),
+   PRIMARY KEY(IdCritere, IdEvalAnglais),
+   FOREIGN KEY(IdCritere) REFERENCES CriteresEval(IdCritere),
+   FOREIGN KEY(IdEvalAnglais) REFERENCES EvalAnglais(IdEvalAnglais)
+);
+
+CREATE TABLE LesCriteresNotesStage(
+   IdCritere SMALLINT,
+   IdEvalStage SMALLINT,
+   noteCritere VARCHAR(50),
+   PRIMARY KEY(IdCritere, IdEvalStage),
+   FOREIGN KEY(IdCritere) REFERENCES CriteresEval(IdCritere),
+   FOREIGN KEY(IdEvalStage) REFERENCES EvalStage(IdEvalStage)
+);
+
+-- La table suivante n'est pas liée aux autres tables.
+-- Elle recense les utilisateurs autorisés à se connecter au back office.
+-- Il pourront s'identifier par leur identifiant ou leur mail(clé candidate). 
+
+-- Pour l'accès au front office, c'est la table enseignant qui sera utilisée
+
+CREATE TABLE UtilisateursBackOffice (
+   Identifiant SMALLINT,
+   nom VARCHAR(50) NOT NULL,
+   prenom VARCHAR(50) NOT NULL,
+   mail VARCHAR(150) UNIQUE NOT NULL,
+   mdp  VARCHAR(255) NOT NULL,
+   PRIMARY KEY(Identifiant)
+);
+
+
+
+DELETE  FROM  SectionContenirCriteres ; 
+DELETE  FROM  sectionseval;
+DELETE  FROM  sectioncritereeval;
+DELETE  FROM  salles;
+DELETE  FROM  modelesgrilleeval;
+DELETE  FROM  etudiantsbut2ou3;
+DELETE  FROM  enseignants;
+DELETE  FROM  critereseval;
+DELETE  FROM  statutseval;
+DELETE  FROM  anneesuniversitaires;
+--
+-- Déchargement des données de la table `anneesuniversitaires`
+--
+
+INSERT INTO `anneesuniversitaires` (`anneeDebut`, `fin`) VALUES
+(2022, 2023),
+(2023, 2024),
+(2024, 2025),
+(2025, 2026);
+
+
+--
+-- Déchargement des données de la table `statutseval`
+--
+
+INSERT INTO `statutseval` (`Statut`) VALUES
+('BLOQUEE'),
+('DIFFUSEE'),
+('REMONTEE'),
+('SAISIE'),
+('VALIDEE');
+
+
+--
+-- Déchargement des données de la table `critereseval`
+--
+
+INSERT INTO `critereseval` (`IdCritere`, `descLongue`, `descCourte`) VALUES
+(1, 'à remplir uniquement par l\'enseignant responsable du stage : l\'ENSEIGNANT TUTEUR\nRespecter scrupuleusement l\'évaluation fournis par l\'entreprise', 'Evaluation du stage par l\'entreprise'),
+(2, 'A titre indicatif : ci-dessous les critères d’évaluation  Niveau de travail demandé / 5 :Le niveau de travail demandé par l entreprise était :\\r\\n 0 Insuffisant 0.5 Très Facile 1 Facile 2 Classique 3 Difficile 4 Très difficile 5 exceptionnel (dépassant le BUT) \\r\\n\\r\\nLa qualité / quantité du travail fourni /5    \\n La qualité et  la quantité du travail fourni par le stagiaire était : 0 Très 0.5 Insuffisant 1 Insuffisant 2 Moyen 3 Bon 4 Très bon 5 exceptionnel (dépassant le BUT)', 'Evaluation du stage par l\'enseignant TUTEUR'),
+(3, 'Cette note est le résultat de la grille d\'évaluation du rapport de stage, remplie par l\'enseignant tuteur qui a suivi le stage', 'Evaluation du rapport de stage'),
+(4, 'cette note est le résultat des grilles d\'évaluation des stages remplies par les 2 enseignants du jury.  Elle ne devrait pas être modifiée ', 'Evaluation de la soutenance de stage'),
+(5, 'Présentation claire de l’entreprise et de son secteur d’activité, des enjeux de la structure, et des missions confiées ainsi que de l’utilité du travail réalisé pour l’entreprise.', 'Contexte et missions'),
+(6, 'Le point technique présenté est pertinent, bien expliqué, avec un bon niveau de complexité.', 'Choix du point technique et complexité'),
+(7, 'L’étudiant utilise un vocabulaire professionnel précis, adapté au domaine d’activité. Il montre qu’il comprend ce qu’il dit et qu’il maîtrise la thématique abordée. Il sait vulgariser les concepts techniques pour un public non expert. Il sait approfondir son propos face à un public expert.', 'Maîtrise du langage professionnel'),
+(8, 'La démonstration doit porter sur un livrable finalisé ou un outil utilisé durant le stage. Elle est en lien avec les missions présentées. Les explications sont claires pendant la manipulation. Le discours est accessible, vulgarisé et appuyé d’exemples concrets. La démonstration est intégrée avec fluidité dans la présentation.', 'Qualité de la démonstration'),
+(9, 'La conclusion permet l’identification des compétences techniques et humaines acquises. L’étudiant fait le lien avec son projet professionnel. Une conclusion improvisée sera pénalisée.', 'Développement des compétences et PPP'),
+(10, 'Diapositives lisibles, structurées, illustrées (graphiques, images, schémas légendés), sans surcharge. Cohérence visuelle. Pas de fautes récurrentes ou grossières. Aucun texte seul. La diapo conclusion est structurée.', 'Qualité du support visuel'),
+(11, 'Le support est utilisé pour illustrer activement les propos (pas un simple décor ni une lecture de texte).', 'Exploitation du support'),
+(12, 'Expression fluide, rythme, voix posée, regard, gestuelle, gestion du temps, langage soutenu. Pas d’expression ou de mot familiers.', 'Communication orale'),
+(13, 'Posture professionnelle, écoute active, capacité à accueillir les remarques pendant les questions.', 'Attitude et maturité');
+
+
+
+--
+-- Déchargement des données de la table `enseignants`
+--
+
+INSERT INTO `enseignants` (`IdEnseignant`, `nom`, `prenom`, `mail`, `mdp`) VALUES
+(1, 'Martin', 'Sophie', 'sophie.martin@univ-lyon.fr', 'pwdSophie1'),
+(2, 'Durand', 'Pierre', 'pierre.durand@univ-lyon.fr', 'pwdPierre2'),
+(3, 'Bernard', 'Claire', 'claire.bernard@univ-lyon.fr', 'pwdClaire3'),
+(4, 'Petit', 'Julien', 'julien.petit@univ-lyon.fr', 'pwdJulien4'),
+(5, 'Robert', 'Isabelle', 'isabelle.robert@univ-lyon.fr', 'pwdIsa5'),
+(6, 'Richard', 'Thomas', 'thomas.richard@univ-lyon.fr', 'pwdThomas6'),
+(7, 'Durieux', 'Camille', 'camille.durieux@univ-lyon.fr', 'pwdCam7'),
+(8, 'Moreau', 'Lucas', 'lucas.moreau@univ-lyon.fr', 'pwdLucas8'),
+(9, 'Simon', 'Nathalie', 'nathalie.simon@univ-lyon.fr', 'pwdNath9'),
+(10, 'Laurent', 'Antoine', 'antoine.laurent@univ-lyon.fr', 'pwdAntoine10'),
+(11, 'Michel', 'Elise', 'elise.michel@univ-lyon.fr', 'pwdElise11'),
+(12, 'Garcia', 'David', 'david.garcia@univ-lyon.fr', 'pwdDavid12'),
+(13, 'Roux', 'Caroline', 'caroline.roux@univ-lyon.fr', 'pwdCaro13'),
+(14, 'Fournier', 'Alexandre', 'alexandre.fournier@univ-lyon.fr', 'pwdAlex14'),
+(15, 'Girard', 'Hélène', 'helene.girard@univ-lyon.fr', 'pwdHelene15');
+
+
+--
+-- Déchargement des données de la table `etudiantsbut2ou3`
+--
+
+INSERT INTO `etudiantsbut2ou3` (`IdEtudiant`, `nom`, `prenom`, `mail`) VALUES
+(1, 'Dubois', 'Mathieu', 'mathieu.dubois@etu.univ-lyon.fr'),
+(2, 'Lefevre', 'Alice', 'alice.lefevre@etu.univ-lyon.fr'),
+(3, 'Morel', 'Hugo', 'hugo.morel@etu.univ-lyon.fr'),
+(4, 'Lambert', 'Emma', 'emma.lambert@etu.univ-lyon.fr'),
+(5, 'Fontaine', 'Lucas', 'lucas.fontaine@etu.univ-lyon.fr'),
+(6, 'Chevalier', 'Sarah', 'sarah.chevalier@etu.univ-lyon.fr'),
+(7, 'Blanc', 'Thomas', 'thomas.blanc@etu.univ-lyon.fr'),
+(8, 'Guillaume', 'Manon', 'manon.guillaume@etu.univ-lyon.fr'),
+(9, 'Legrand', 'Nathan', 'nathan.legrand@etu.univ-lyon.fr'),
+(10, 'Marchand', 'Chloé', 'chloe.marchand@etu.univ-lyon.fr'),
+(11, 'Perrin', 'Julien', 'julien.perrin@etu.univ-lyon.fr'),
+(12, 'Barbier', 'Camille', 'camille.barbier@etu.univ-lyon.fr'),
+(13, 'Renard', 'Léo', 'leo.renard@etu.univ-lyon.fr'),
+(14, 'Renaud', 'Inès', 'ines.renaud@etu.univ-lyon.fr'),
+(15, 'Charles', 'Adrien', 'adrien.charles@etu.univ-lyon.fr'),
+(16, 'Moulin', 'Sophie', 'sophie.moulin@etu.univ-lyon.fr'),
+(17, 'Lopez', 'Antoine', 'antoine.lopez@etu.univ-lyon.fr'),
+(18, 'Garnier', 'Laura', 'laura.garnier@etu.univ-lyon.fr'),
+(19, 'Faure', 'Clément', 'clement.faure@etu.univ-lyon.fr'),
+(20, 'Andre', 'Eva', 'eva.andre@etu.univ-lyon.fr'),
+(21, 'Mercier', 'Alexandre', 'alexandre.mercier@etu.univ-lyon.fr'),
+(22, 'Dupuis', 'Lina', 'lina.dupuis@etu.univ-lyon.fr'),
+(23, 'Meyer', 'Maxime', 'maxime.meyer@etu.univ-lyon.fr'),
+(24, 'Lucas', 'Elodie', 'elodie.lucas@etu.univ-lyon.fr'),
+(25, 'Henry', 'Bastien', 'bastien.henry@etu.univ-lyon.fr'),
+(26, 'Riviere', 'Amélie', 'amelie.riviere@etu.univ-lyon.fr'),
+(27, 'Noel', 'Victor', 'victor.noel@etu.univ-lyon.fr'),
+(28, 'Giraud', 'Mélanie', 'melanie.giraud@etu.univ-lyon.fr'),
+(29, 'Francois', 'Alexis', 'alexis.francois@etu.univ-lyon.fr'),
+(30, 'Collet', 'Justine', 'justine.collet@etu.univ-lyon.fr'),
+(31, 'Schmitt', 'Paul', 'paul.schmitt@etu.univ-lyon.fr'),
+(32, 'Fernandez', 'Clara', 'clara.fernandez@etu.univ-lyon.fr'),
+(33, 'Benoit', 'Arthur', 'arthur.benoit@etu.univ-lyon.fr'),
+(34, 'Perrot', 'Amandine', 'amandine.perrot@etu.univ-lyon.fr'),
+(35, 'Dupont', 'Hugo', 'hugo.dupont@etu.univ-lyon.fr'),
+(36, 'Masson', 'Julie', 'julie.masson@etu.univ-lyon.fr'),
+(37, 'Caron', 'Romain', 'romain.caron@etu.univ-lyon.fr'),
+(38, 'Pires', 'Sonia', 'sonia.pires@etu.univ-lyon.fr'),
+(39, 'Bonnet', 'Quentin', 'quentin.bonnet@etu.univ-lyon.fr'),
+(40, 'Colin', 'Aurélie', 'aurelie.colin@etu.univ-lyon.fr'),
+(41, 'Rolland', 'Benoît', 'benoit.rolland@etu.univ-lyon.fr'),
+(42, 'Olivier', 'Marion', 'marion.olivier@etu.univ-lyon.fr'),
+(43, 'Da Silva', 'Kevin', 'kevin.dasilva@etu.univ-lyon.fr'),
+(44, 'Hubert', 'Marine', 'marine.hubert@etu.univ-lyon.fr'),
+(45, 'Gaillard', 'Samuel', 'samuel.gaillard@etu.univ-lyon.fr'),
+(46, 'Brun', 'Charlotte', 'charlotte.brun@etu.univ-lyon.fr'),
+(47, 'Baron', 'Florian', 'florian.baron@etu.univ-lyon.fr'),
+(48, 'Menard', 'Océane', 'oceane.menard@etu.univ-lyon.fr'),
+(49, 'Jacquet', 'Yanis', 'yanis.jacquet@etu.univ-lyon.fr'),
+(50, 'Rodriguez', 'Anaïs', 'anais.rodriguez@etu.univ-lyon.fr');
+
+--
+-- Déchargement des données de la table `modelesgrilleeval`
+--
+
+INSERT INTO `modelesgrilleeval` (`IdModeleEval`, `natureGrille`, `noteMaxGrille`, `nomModuleGrilleEvaluation`, `anneeDebut`) VALUES
+(1, 'SOUTENANCE', 10, 'Grille d\'évaluation des soutenances de stage 2025', 2025),
+(2, ' STAGE', 20, 'la grille d\'évaluation de stage BUT2 ou BUT3  2025 2026', 2025);
+
+--
+-- Déchargement des données de la table `salles`
+--
+
+INSERT INTO `salles` (`IdSalle`, `description`) VALUES
+('261', 'Salle de TD avec Grand Ecran  Interactif'),
+('264', 'Salle de TD&TP  avec Grand Ecran  Interactif'),
+('355', 'Salle de TP avec Grand Ecran Tactile'),
+('AmphiB1', 'Amphi 90 places avec vidéoprojecteur'),
+('T21', 'Salle de TP du plateau technique (BUT3)'),
+('T22', 'Salle de TP du plateau technique (BUT3)');
+
+
+--
+-- Déchargement des données de la table `sectioncritereeval`
+--
+
+INSERT INTO `sectioncritereeval` (`IdSection`, `titre`, `description`) VALUES
+(1, 'Evaluation du stage', 'rassembler les 4 critères d\'évaluation : note Entreprise , note Ttueur , note soutance et note rapport, chacune sur 10. La note finale sera une note sur 20'),
+(2, 'Forme de la soutenance', 'évaluer la soutenance à travers des critères de forme'),
+(3, 'Contenu de la soutenance', 'évaluer la soutenance pour ce qui a été décidé de mettre en avant');
+
+
+--
+-- Déchargement des données de la table `sectionseval`
+--
+
+INSERT INTO `sectionseval` (`IdSection`, `IdModeleEval`) VALUES
+(1, 2),
+(2, 1),
+(3, 1);
+
+-- --------------------------------------------------------
+
+
+--
+-- Déchargement des données de la table `SectionContenirCriteres`
+--
+
+INSERT INTO `SectionContenirCriteres` (`IdCritere`, `IdSection`, `ValeurMaxCritereEVal`) VALUES
+(1, 1, 10),
+(2, 1, 10),
+(3, 1, 10),
+(4, 1, 10),
+(5, 3, 1),
+(6, 3, 1),
+(7, 3, 1),
+(8, 3, 1),
+(9, 3, 1),
+(10, 2, 1.5),
+(11, 2, 1.5),
+(12, 2, 1),
+(13, 2, 1);
+
+
+
+
+data pour les tables entreprises , anneestage
+--
+-- Déchargement des données de la table `entreprises`
+--
+
+INSERT INTO `entreprises` (`IdEntreprise`, `nom`, `villeE`, `codePostal`) VALUES
+(1, 'Airbus', 'Toulouse', '31000'),
+(2, 'Renault', 'Boulogne-Billancourt', '92100'),
+(3, 'TotalEnergies', 'Courbevoie', '92400'),
+(4, 'Orange', 'Paris', '75015'),
+(5, 'SNCF', 'Saint-Denis', '93200'),
+(6, 'EDF', 'Paris', '75008'),
+(7, 'Dassault Aviation', 'Saint-Cloud', '92210'),
+(8, 'Safran', 'Issy-les-Moulineaux', '92130'),
+(9, 'Thales', 'La Défense', '92000'),
+(10, 'Bouygues Construction', 'Guyancourt', '78280'),
+(11, 'Capgemini', 'Paris', '75017'),
+(12, 'Engie', 'Courbevoie', '92400'),
+(13, 'Suez', 'La Défense', '92000'),
+(14, 'Veolia', 'Aubervilliers', '93300'),
+(15, 'Saint-Gobain', 'Courbevoie', '92400'),
+(16, 'PSA Peugeot Citroën', 'Poissy', '78300'),
+(17, 'Michelin', 'Clermont-Ferrand', '63000'),
+(18, 'Alstom', 'Saint-Ouen', '93400'),
+(19, 'Vinci', 'Rueil-Malmaison', '92500'),
+(20, 'AccorHotels', 'Issy-les-Moulineaux', '92130'),
+(21, 'Publicis Groupe', 'Paris', '75008'),
+(22, 'Société Générale', 'Paris', '75009'),
+(23, 'BNP Paribas', 'Paris', '75009'),
+(24, 'Crédit Agricole', 'Montrouge', '92120'),
+(25, 'AXA', 'Paris', '75008'),
+(26, 'La Poste', 'Paris', '75015'),
+(27, 'Carrefour', 'Massy', '91300'),
+(28, 'Auchan Retail', 'Villeneuve-d’Ascq', '59650'),
+(29, 'Decathlon', 'Villeneuve-d’Ascq', '59650'),
+(30, 'LVMH', 'Paris', '75008');
+
+
+
+--
+-- Déchargement des données de la table `anneestage`
+--
+
+INSERT INTO `anneestage` (`anneeDebut`, `IdEtudiant`, `IdEntreprise`, `but3sinon2`, `alternanceBUT3`, `nomMaitreStageApp`, `sujet`, `noteEntreprise`, `typeMission`, `cadreMission`) VALUES
+(2024, 1, 11, 0, 0, 'Maitre app CAPGEMINI 2024 ', 'app web ', NULL, 'dev back office', NULL),
+(2025, 1, 20, 1, 0, 'maitre app dubois', 'creation d\'une site web', NULL, NULL, NULL),
+(2025, 2, 2, 1, 1, 'maitre app Renault', 'application VR avec Unity ', NULL, 'dev 3D ', NULL),
+(2025, 3, 3, 0, 0, 'MAitre Stage BUT2  ', 'dev en pyhton - info indus.', NULL, 'programmation', NULL),
+(2025, 4, 3, 1, 1, 'Maitre App Toal ', 'solution de simulation ', NULL, 'dev3D & VR', '?'),
+(2025, 5, 4, 1, 0, 'maitre stage orange', 'sitre intranet', NULL, 'dev web ', NULL),
+(2025, 6, 6, 0, 0, 'maitre app EDF 2025 ', 'dev app mobile ', NULL, 'developpement et UI ', NULL),
+(2025, 7, 7, 1, 1, 'MA Dassault 2025 ', 'App RA ', NULL, 'dev c# ', 'Confidentiel  ');
+
