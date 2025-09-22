@@ -1,6 +1,5 @@
 <?php
 function afficherEtudiantAvecLiens($etudiant, $idUser, $role) {
-	session_start();
 	echo "<h2>Informations sur l'étudiant</h2>";
 	foreach ($etudiant as $etu) {
 		$_SESSION['idEtu'] = $etu['idEtu'];
@@ -37,7 +36,6 @@ function afficherEtudiantAvecLiens($etudiant, $idUser, $role) {
     echo "<h3>Actions disponibles pour $role</h3>";
     echo "<ul>";
     //echo "<li><a href='pageSuivante.php?action=portfolio&idUser=$idUser&idEtudiant={$etu['IdEtudiant']}'>Saisir/Consulter les grilles</a></li>";
-    echo "<li><a href='pageSuivante.php?<?php echo htmlspecialchars(SID); ?>'>Saisir/Consulter les grilles</a></li>"; 
 	echo "</ul>";
 	}
 }
