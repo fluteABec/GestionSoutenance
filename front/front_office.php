@@ -4,6 +4,7 @@
 <?php
 require '../db.php';
 session_start();
+
 // Vérifier si l'utilisateur est connecté
 if (!isset($_SESSION['identifiant']) ) {
     header("Location: ../index.html");
@@ -44,7 +45,6 @@ if (!isset($_SESSION['identifiant']) ) {
         echo "<h1>Bienvenue, $professorName</h1>"
     ?>
     
-    </div>
     <div class="containerBAS">
         <h2>Liste des étudiants associés</h2>
         <table class="student-table">
