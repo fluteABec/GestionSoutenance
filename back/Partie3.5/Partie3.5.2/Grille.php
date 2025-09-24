@@ -57,7 +57,12 @@ if ($result->num_rows > 0) {
     echo "Aucune donnée trouvée.";
 }
 
+
+
 $conn->close();
 
 
 ?>
+
+
+<p><a href="../../mainAdministration.php">← Retour</a></p>
