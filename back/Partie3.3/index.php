@@ -35,8 +35,6 @@ use PHPMailer\PHPMailer\Exception;
 // Fonctions SQL et fonctionnement du site
 //------------------------------------------------------
 
-
-
 function getEtudiantsBUT2($pdo){ // récupère les étudiants BUT2 prêts à la remontée
     $stmd = $pdo->query("
         SELECT e.IdEtudiant, e.nom, e.prenom,
@@ -197,7 +195,6 @@ function envoieMail($mail_destinataire, $sujet, $message, $fichier_joint = null)
     }
 }
 
-
 function getMailEtudiant($pdo, $idEtudiant) {  // récupère le mail d'un étudiant via son ID pour l'envoi de mail
     $stmd = $pdo->prepare("SELECT mail FROM EtudiantsBUT2ou3 WHERE IdEtudiant = ?");
     $stmd->execute([$idEtudiant]);
@@ -228,7 +225,6 @@ function get_liste_eleve_remonter3A($pdo) {
     return $stmd->fetchAll(PDO::FETCH_ASSOC);
 }
 
-
 function get_liste_eleve_remonter2A($pdo) {
     $stmd = $pdo->query("
     SELECT e.IdEtudiant, e.nom, e.prenom, e.mail,  p.note AS note_portfolio, s.note AS note_stage
@@ -242,7 +238,6 @@ function get_liste_eleve_remonter2A($pdo) {
     ");
     return $stmd->fetchAll(PDO::FETCH_ASSOC);
 }
-
 
 function ecriture_des_donnees_csv($liste, $nom_fichier) {
             $output = fopen($nom_fichier, "w");
@@ -274,7 +269,6 @@ function envoiCVS_mail_BUT2($pdo) {
     }
 }
 
-
 function envoiCVS_mail_BUT3($pdo) {
 
     $liste = get_liste_eleve_remonter3A($pdo);
@@ -286,7 +280,6 @@ function envoiCVS_mail_BUT3($pdo) {
     $nom_fichier = sys_get_temp_dir() . "/export_remontee_BUT3.csv";
     ecriture_des_donnees_csv($liste, $nom_fichier);
 
-    
     $identifiantAdmin = $_SESSION['identifiant'] ?? null;
     if ($identifiantAdmin){
         $sujet = "Export de vos notes";
@@ -328,7 +321,6 @@ function recuperer_mails_enseignat_tuteur($pdo, $idEtudiant) {
     $stmd->execute([$idEtudiant]);
     return $stmd->fetchColumn(); 
 }
-
 
 //------------------------------------------------------
 // CODE PRINCIPALE
@@ -395,11 +387,13 @@ function recuperer_mails_enseignat_tuteur($pdo, $idEtudiant) {
             }
         }
 
+        //bouton remonter tout
         if (isset($_POST['remonter_tout'])) {
             remonterTout($pdo);
             echo "<div class='message'>Toutes les notes prêtes ont été remontées.</div>";
         }
 
+        // Bouton autoriser saisie
         if (isset($_GET['action']) && $_GET['action'] === 'autoriser') {
             $listeAutorises = recuperer_mails_admin(getPDO());
             $mailActuel = isset($_SESSION['identifiant']) ? $_SESSION['identifiant'] : null;
@@ -542,9 +536,7 @@ echo "<form method='post'>
         <button type='submit' name='export_csv_mail' value='but2'>Exporter BUT2 en CSV et envoyer par mail</button>
         <button type='submit' name='export_csv_mail' value='but3'>Exporter BUT3 en CSV et envoyer par mail</button>
     </form>";
-
-
-        ?>
+?>
     </div>
 </body>
 </html>
