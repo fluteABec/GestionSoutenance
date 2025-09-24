@@ -236,13 +236,40 @@ class EmailService {
      * Envoie un email
      */
     private function envoyerEmail($destinataire, $sujet, $message) {
-        $headers = "From: " . EMAIL_FROM_NAME . " <" . EMAIL_FROM . ">\r\n";
-        $headers .= "Reply-To: " . EMAIL_FROM . "\r\n";
-        $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
-        $headers .= "X-Mailer: PHP/" . phpversion() . "\r\n";
-        
-        return mail($destinataire, $sujet, $message, $headers);
+    // Inclure PHPMailer
+    require_once __DIR__ . '/../Partie3.3/vendor/autoload.php';
+    $mail = new PHPMailer\PHPMailer\PHPMailer(true);
+
+    try {
+        // Config serveur SMTP Gmail
+        $mail->isSMTP();
+        $mail->Host       = 'smtp.gmail.com';
+        $mail->SMTPAuth   = true;
+        $mail->Username   = 'u1840518965@gmail.com';   // Ton compte Gmail
+        $mail->Password   = 'ooeo bavi hozw pndl';     // Ton mot de passe d'application
+        $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port       = 587;
+
+        // Expéditeur
+        $mail->setFrom('u1840518965@gmail.com', 'IUT - Administration');
+
+        // Destinataire
+        $mail->addAddress($destinataire);
+
+        // Contenu
+        $mail->isHTML(false); // pour garder ton format texte brut
+        $mail->Subject = $sujet;
+        $mail->Body    = $message;
+
+        $mail->send();
+        return true;
+
+    } catch (Exception $e) {
+        error_log("Erreur PHPMailer : " . $mail->ErrorInfo);
+        return false;
     }
+}
+
     
     /**
      * Enregistre la date d'envoi de l'email (fonction supprimée car pas de colonne dateConsultation)
