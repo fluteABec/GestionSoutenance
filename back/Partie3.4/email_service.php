@@ -241,12 +241,11 @@ class EmailService {
     $mail = new PHPMailer\PHPMailer\PHPMailer(true);
 
     try {
-        // Config serveur SMTP Gmail
         $mail->isSMTP();
         $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
-        $mail->Username   = 'u1840518965@gmail.com';   // Ton compte Gmail
-        $mail->Password   = 'ooeo bavi hozw pndl';     // Ton mot de passe d'application
+        $mail->Username   = 'u1840518965@gmail.com';
+        $mail->Password   = 'ooeo bavi hozw pndl';
         $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
 
@@ -265,7 +264,7 @@ class EmailService {
         return true;
 
     } catch (Exception $e) {
-        error_log("Erreur PHPMailer : " . $mail->ErrorInfo);
+        error_log("Erreur PHPMailer : " . $e->getMessage() . " / " . $mail->ErrorInfo);
         return false;
     }
 }
