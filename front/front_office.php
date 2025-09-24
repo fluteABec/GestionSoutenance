@@ -1,9 +1,25 @@
 <!DOCTYPE html>
+
+<!-- Connexion à la base de données et à la session-->
+<?php
+require '../db.php';
+session_start();
+
+// Vérifier si l'utilisateur est connecté
+if (!isset($_SESSION['identifiant']) ) {
+    header("Location: ../index.html");
+    exit();
+}
+?>
+
+<!-- Header HTML -->
+
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Front Office - Gestion des évaluations</title>
+
     <link rel="stylesheet" href="../stylee.css">
 </head>
 
@@ -19,7 +35,9 @@
                 <tr>
                     <th>Nom</th>
                     <th>Prénom</th>
-                    <th>Email</th>
+                    <th>Email</th>  
+
+                 
                     <th>Grilles d'évaluation</th>
                 </tr>
             </thead>
@@ -31,7 +49,8 @@
     <script>
         // Récupérer le nom du professeur depuis la session (via PHP)
         document.addEventListener('DOMContentLoaded', function() {
-            fetch('../front.php?action=getProfessorName')
+            fetch('front.php?action=getProfessorName')
+
                 .then(response => response.json())
                 .then(data => {
                     document.getElementById('professor-name').textContent = data.professorName;

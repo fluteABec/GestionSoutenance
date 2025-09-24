@@ -43,7 +43,19 @@ if (isset($_GET['success'])) {
 <body>
 <?php include 'navbarAdmin.php'; ?>
 
-<div class="container">
+<div class="navbar">
+    <div class="brand"><span class="logo"></span><span>Administration</span></div>
+    <a class="nav-item" href="Partie3.1/3_1_natan.php">Tâches enseignants</a>
+    <a class="nav-item" href="Partie3.3/index.php">Évaluations IUT</a>
+    <a class="nav-item" href="Partie3.4/index.php">Diffusion résultats</a>
+    <a class="nav-item" href="Partie3.5/Partie3.5.2/Grille.php">Gestion Grille</a>
+
+</div>
+
+<!-- Barre de recherche -->
+<input type="text" id="searchInput" placeholder="🔍 Rechercher un étudiant...">
+
+
 <table id="tableEtudiants">
     <thead>
         <tr>

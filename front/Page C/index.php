@@ -9,7 +9,8 @@
     // Variables
     session_start();
     $idEnseignant;
-
+    $infoEtud; 
+    
     if (isset($_SESSION["professeur_id"])) {
         $idEnseignant = $_SESSION["professeur_id"];
     } else {
@@ -17,7 +18,7 @@
         $idEnseignant = 0; 
     }
 
-    $infoEtud; 
+    
 
     // Création des requetes (qui vont chacune retournée un resultat)
     function getIdEtud($mysqli)

@@ -1,0 +1,68 @@
+Saisie des notes de fin d'année BUT2 et BUT3 concernant le stage : 3 soutenances (stage, anglais et portfolio)
+1. Etude de cas
+L'existant
+Le département informatique organise des soutenances de fin d'années. Chaque étudiant de 2ème année BUT2 passent 2 soutenances ; Chaque étudiant de 3ème année BUT3 passent 3 soutenances.
+Les soutenances peuvent avoir lieu sur 2 périodes : juin ou août. Pour chaque période, il y a 3 jours possibles de soutenances. Pour certaines soutenances il y a plusieurs enseignants dans le jury.
+A l'heure actuelle, les documents sont des fichiers PDF diffusés "manuellement" aux enseignants (cf .AnnexeA) Ces derniers remplissent ces documents pdf ou une impression de ces documents. Les notes sont remontées (papier ou pdf par mail) au secrétariat ou responsable de stage pour être à nouveau saisies sur un logiciel de notes dédiés.
+Le fonctionnement n'est pas satisfaisant pour l'intégrité des données : risque d'erreur lors du calcul de note, risque de perte d'informations dans l'enregistrement des infos dans les pdf, risque d'erreur dans la transmission d'informations, dans la recopie des notes, etc.
+Le fonctionnement est aussi chronophage dans la préparation des informations et leur transmission.
+Vous allez proposer une base de données qui assurera au maximum l'intégrité des données, autant pour leur valeur, leur compatibilité et leur non redondance.
+Vous allez en parallèle proposer un outils en ligne pour sécuriser, consolider et simplifier ces évaluations. Une partie de la solution (Front Office) sera à destination des enseignants qui évaluent. Une autre partie (Back Office) sera destinée aux gestionnaires : secrétaires, responsables des stages et direction des études .
+_____________________________________________________________________
+Les données, les règles de gestion, les flux et les procédures
+Soutenances et grille
+Les soutenances portent sur le portfolio et le stage. Pour les BUT3, il y a une soutenance supplémentaire en anglais. Il existe une grille d'évaluation pour chaque soutenance.
+Il existe également une grille d'évaluation pour le rapport de stage.
+Une partie des étudiant de 3ème année sont des apprentis : ils effectuent leur année en alternance entre une entreprise où ils travaillent et l'IUT où ils étudient. Cela ne change pas les critères d'évaluation.
+Chaque grille donne lieu à une évaluation : une note sur 20, généralement.
+Qui complète ces grilles ?
+La grille définit des critères d'évaluations que le jury évalue pendant la soutenance.
+Un seul enseignant compose le jury des soutenances d'anglais des BUT3 : un seul enseignant remplit donc la grille d'évaluation pour chaque soutenance en anglais.
+Deux enseignants composent un même jury pour les soutenances de portfolio et de stage (BUT2 et BUT3) ; Ces deux enseignants sont l'enseignant tuteur de stage et le second enseignant.
+
+C'est l'enseignant tuteur qui remplit les grilles d'évaluation de portfolio et de stage, en concertation avec le
+second enseignant.
+Remarque : un enseignant(d'anglais) qui assure la soutenance d'anglais pour un stage pourrait également être
+l'enseignant tuteur ou le second enseignant pour ce stage. Evidemment, un enseignant qui est tuteur pour un
+stage ne peut être aussi identifié comme le second enseignant.
+
+Composition générale d'une grille, modification et calcul
+Les critères sont répartis en 1 à 3 sections. Chaque section contient de 1 à 5 critères au maximum. Une note maximale est attribuée à chaque critère. La valeur minimum pour cette note maximale est 0.5 point.
+La note finale d'une grille est ramenée à une note comprise entre 0 et MaxNoteGrille. Il n'y a pas de règle sur la valeur de la note finale même si, à l'usage, les notes sur 10 ou sur 20 sont les plus utilisées. La note finale est calculée de la façon suivante : la somme des notes obtenues pour chaque critère, divisée par la somme des notes maximales de chaque critère(noteMaxCritere) puis multipliée par MaxNoteGrille.
+Par défaut , chaque grille a un statut "Saisie", ce qui signifie que la saisie est possible, éventuellement en cours mais n'a pas encore été validée.
+Les grilles d'anglais et de portfolio peuvent être modifiées à tout moment (mais pas après la remontée de notes au secrétariat, voir plus loin)
+Les grilles de soutenances de stage et de rapport de stage peuvent être modifiées tant que la grille d'évaluation de stage n'est pas bloquée
+La grille "finale" : La grille d'évaluation du stage
+En parallèle des évaluations de soutenance et de leur grille associée, il existe une quatrième grille d'évaluation qui permet de donner une note de stage. Cette grille d'évaluation du stage est composée de 4 critères : la note entreprise, la note tuteur, la note soutenance et la note rapport.
+Pour chacun des 4 critères, la note doit être comprise entre 0 et NoteMax. Ce maximum doit être >= à 1 mais peut être différent pour chaque critère. Pour chaque stage, il y a deux enseignants associés.
+Un enseignant principal ou enseignant tuteur est celui affecté pour le suivi du stagiaire. Il doit remplir et valider cette grille. Il reporte sans la modifier une note entreprise pour son stagiaire. Idéalement, ce critère serait déjà renseigné.
+Il donne une note tuteur qui est son estimation de la difficulté du travail demandé, de la charge de travail et du résultat fourni.
+La note soutenance est la note calculée à partir des grilles d'évaluation de soutenance de stage. La note rapport est la note calculée à partir des grilles d'évaluation des rapports.
+Valider et bloquer les évaluations
+Cette grille d'évaluation de stage ne pourra donc pas être remplie tant que les grilles d'évaluation de rapport de stage et celle de soutenance ne seront pas validées. Si elles le sont, le tuteur de stage peut compléter sa grille d'évaluation de stage avec la note de l'entreprise et sa note de tuteur;
+Il peut ensuite valider cette grille d'évaluation de stage ainsi complète : cette grille devient "bloqueeé"
+Toute grille bloquée par le tuteur de stage empêchera toute modification ultérieure et permettra la remontée des notes au secrétariat.
+
+Si une grille d'évaluation de stage est bloquée, les autres grilles d'évaluation de rapport de stage et de soutenance sont également bloquées.
+L'enseignant tuteur peut débloquer une grille d'évaluation de stage tant qu'elle n'a pas le statut "Remontée" (voir plus loin section remontée des notes). S'il la débloque, cette grille revient au statut "Saisie" , son statut par défaut. Dans ce cas, les autres grilles d'évaluation de rapport de stage et de soutenance sont également débloquées. Si une modification est effectuée sur l'une d'entre elles, sa nouvelle valeur est reportée sur la grille d'évaluation de stage.
+Quoi qu'il en soit, cette grille d'évaluation de stage devra à nouveau être bloquée pour pouvoir être remontée au secrétariat (voir plus loin).
+Une fois que le statut de la grille d'évaluation de stage est "Bloquée" ou "Remontée" , les 3 grilles (rapport , soutenance, stage) restent accessibles mais uniquement en lecture seule.
+Evolution
+Le nombre et le thème des grilles ne changera pas. En revanche, leur structure peut changer : les notes pour chaque critère, le nombre de critères et le texte des critères peut changer. Comme il faut garder l'historique des notes des années précédentes, il faudra aussi garder les différents modèles de grille d'évaluations. Une même structure/grille peut être conservée sur plusieurs années.
+
+2. La solution Web / les outils FRONT OFFICE
+2.1. Outil de saisie des grilles d'évaluation (front office)
+L'enseignant choisit un des étudiants qu'il doit évaluer et la liste des gilles à remplir est proposée. S'il s'agit d'un étudiant pour lequel l'enseignant est le tuteur de stage, les grilles de rapport de stage, de soutenance de stage, la grille d'évaluation du stage et celle du portfolio sont proposées la saisie.
+S'il s'agit d'un étudiant pour lequel l'enseignant est le second enseignant du jury, seules les grilles de de soutenance de stage et celle du porfolio sont proposées pour être renseignées.
+La solution devra proposer un tableau synthétique résumant l'état de l'ensemble des grilles : à remplir et à valider (statut "Saisie") , validée et à remonter (statut "Bloquée"), remontée au secrétariat (statut "remontée") ou diffusées à l'étudiant (statut "Diffusée"). Pour chaque grille, il y aura un lien qui ouvrira la grille à remplir dans un nouvel onglet.
+Le tableau pourra être trié par ordre alphabétique des étudiants, par ordre des tâches à réaliser ou par ordre de passage des soutenances à venir.
+Page A : tableau des soutenances
+Afficher :
+- Le nom de l'enseignant connecté
+- Un tableau qui présente la liste des soutenances à venir. La liste est triée par date croissante des
+soutenances à venir, une ligne par étudiant. Préciser pour chaque stage si l'enseignant est tuteur ou second enseignant, e.g. avec un code couleur. Préciser pour chaque stage s'il s'agit d'un stage 2A , d'un stage 3A ou d'une alternance en 3A. Préciser s'il est confidentiel. Vous pourrez utiliser des colonnes et informations supplémentaires ou des code couleurs légendés.
+
+- Un tableau qui rappelle la liste des soutenances déjà effectuées des étudiants pour lequel il est l'enseignant tuteur. Un code couleur ou des informations dans des colonnes indiquent si les grilles d'évaluation sont toujours en attente de validation pour un étudiant ainsi que les autres statut possibles.
+
+
+
