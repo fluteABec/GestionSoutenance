@@ -11,7 +11,7 @@ if (!$date) {
 
 $sql = "
     SELECT s.IdSalle, s.description
-    FROM salles s
+    FROM Salles s
     WHERE s.IdSalle NOT IN (
         SELECT es.IdSalle
         FROM EvalStage es

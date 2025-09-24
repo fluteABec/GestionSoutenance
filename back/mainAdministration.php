@@ -56,6 +56,7 @@ if (isset($_GET['success'])) {
         <tr>
             <th>Étudiant</th>
             <th>Tuteur</th>
+            <th>Enseignant Secondaire</th>
             <th>Soutenance</th>
             <th>Date</th>
             <th>Salle</th>
@@ -66,10 +67,10 @@ if (isset($_GET['success'])) {
     <?php foreach ($etudiantsBUT2 as $etu): ?>
         <?php
         $sql = "
-            SELECT 'stage' AS type, IdEvalStage AS id, date_h AS date, IdSalle, IdEnseignantTuteur
+            SELECT 'stage' AS type, IdEvalStage AS id, date_h AS date, IdSalle, IdEnseignantTuteur, IdSecondEnseignant
             FROM EvalStage WHERE IdEtudiant = :id
             UNION
-            SELECT 'anglais' AS type, IdEvalAnglais AS id, dateS AS date, IdSalle, NULL
+            SELECT 'anglais' AS type, IdEvalAnglais AS id, dateS AS date, IdSalle, NULL, NULL
             FROM EvalAnglais WHERE IdEtudiant = :id
             LIMIT 1
         ";
@@ -78,18 +79,40 @@ if (isset($_GET['success'])) {
         $soutenance = $stmt->fetch();
 
         $tuteurNom = "-";
-        if ($soutenance && $soutenance['type'] === 'stage' && $soutenance['IdEnseignantTuteur']) {
-            $stmt = $pdo->prepare("SELECT nom, prenom FROM Enseignants WHERE IdEnseignant = :id");
-            $stmt->execute(['id' => $soutenance['IdEnseignantTuteur']]);
-            $tuteur = $stmt->fetch();
-            if ($tuteur) {
-                $tuteurNom = htmlspecialchars($tuteur['nom'] . " " . $tuteur['prenom']);
+        $secondEnseignant ="-";
+
+        // Enseignant tuteur/second
+        if ($soutenance && $soutenance['type'] === 'stage') {
+            if ($soutenance['IdEnseignantTuteur'])
+            {
+                $stmt = $pdo->prepare("SELECT nom, prenom FROM Enseignants WHERE IdEnseignant = :id");
+                $stmt->execute(['id' => $soutenance['IdEnseignantTuteur']]);
+                $tuteur = $stmt->fetch();
+                if ($tuteur) {
+                    $tuteurNom = htmlspecialchars($tuteur['nom'] . " " . $tuteur['prenom']);
+                }
             }
+
+            if ($soutenance["IdSecondEnseignant"])
+            {
+                $stmt = $pdo->prepare("SELECT nom, prenom FROM Enseignants WHERE IdEnseignant = :id");
+                $stmt->execute(['id' => $soutenance['IdSecondEnseignant']]);
+                $second = $stmt->fetch();
+                if ($second) {
+                    $secondEnseignant = htmlspecialchars($second['nom'] . " " . $second['prenom']);
+                }
+            }
+            
         }
+
+        
+
+
         ?>
         <tr>
             <td><?= htmlspecialchars($etu['nom'] . " " . $etu['prenom']) ?></td>
             <td><?= $tuteurNom ?></td>
+            <td><?= $secondEnseignant ?></td>
             <?php if ($soutenance): ?>
                 <td><?= $soutenance['type'] === 'stage' ? "Portfolio & Stage" : "Anglais" ?></td>
                 <td><?= htmlspecialchars($soutenance['date']) ?></td>
