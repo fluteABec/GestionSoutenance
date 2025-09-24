@@ -23,7 +23,6 @@ use PHPMailer\PHPMailer\Exception;
 // Variables de configuration
 //------------------------------------------------------
 
-$identifiant = isset($_SESSION['identifiant']) ? $_SESSION['identifiant'] : null;
 
  // Connexion
  function getPDO() {
@@ -204,8 +203,7 @@ function getMailEtudiant($pdo, $idEtudiant) {  // récupère le mail d'un étudi
     $stmd->execute([$idEtudiant]);
     return $stmd->fetchColumn();
 }
-function rappelMail($pdo, $idEtudiant) { // plus ou moins la même fonction que remonterNotes mais pour envoyer un mail de rappel
-    $mail = isset($_SESSION['identifiant']) ? $_SESSION['identifiant'] : null;
+function rappelMail($pdo, $mail) { // plus ou moins la même fonction que remonterNotes mais pour envoyer un mail de rappel
     if ($mail) {
         $sujet = "Rappel : vos évaluations doivent être validé";
         $message = "<p>Bonjour,<br>Votre soutenance est passée mais vos évaluations sont encore en <b>SAISIE</b>.<br>
@@ -216,7 +214,7 @@ function rappelMail($pdo, $idEtudiant) { // plus ou moins la même fonction que 
 
 function get_liste_eleve_remonter3A($pdo) {
     $stmd = $pdo->query("
-    SELECT e.IdEtudiant, e.nom, e.prenom, e.mail,  a.note AS note_angalis, p.note AS note_portfolio, s.note AS note_stage
+    SELECT e.IdEtudiant, e.nom, e.prenom, e.mail,  a.note AS note_anglais, p.note AS note_portfolio, s.note AS note_stage
         FROM EtudiantsBUT2ou3 e
         JOIN EvalStage s ON e.IdEtudiant = s.IdEtudiant
         JOIN EvalPortfolio p ON e.IdEtudiant = p.IdEtudiant
@@ -227,15 +225,9 @@ function get_liste_eleve_remonter3A($pdo) {
           AND p.Statut = 'REMONTEE'
           AND a.Statut = 'REMONTEE'
     ");
-
-
     return $stmd->fetchAll(PDO::FETCH_ASSOC);
 }
 
-// function get_mail_admin($pdo) {
-//     $stmd = $pdo->query("SELECT mail FROM `utilisateursbackoffice` WHERE 1");
-//     return $stmd->fetchColumn();
-// }
 
 function get_liste_eleve_remonter2A($pdo) {
     $stmd = $pdo->query("
@@ -248,7 +240,6 @@ function get_liste_eleve_remonter2A($pdo) {
           AND s.Statut = 'REMONTEE'
           AND p.Statut = 'REMONTEE';
     ");
-
     return $stmd->fetchAll(PDO::FETCH_ASSOC);
 }
 
@@ -265,30 +256,44 @@ function ecriture_des_donnees_csv($liste, $nom_fichier) {
 }
 
 function envoiCVS_mail_BUT2($pdo) {
-    // Génère un CSV temporaire
     $liste = get_liste_eleve_remonter2A($pdo);
-    $nom_fichier = __DIR__ . "/export_remontee_BUT2.csv";
+
+    if (empty($liste)) {
+        echo "<div class='error'>Aucun étudiant BUT2 en REMONTEE → CSV non généré.</div>";
+        return;
+    }
+
+    $nom_fichier = sys_get_temp_dir() . "/export_remontee_BUT2.csv";
     ecriture_des_donnees_csv($liste, $nom_fichier);
 
-    $identifiantAdmin = isset($_SESSION['identifiant']) ? $_SESSION['identifiant'] : null;
-    $sujet = "Export de vos notes";
-    $message = "<p>Bonjour,<br>Veuillez trouver ci-joint les résultats au format CSV.</p>";
-
-    envoieMail($identifiantAdmin, $sujet, $message, $nom_fichier);
+    $identifiantAdmin = $_SESSION['identifiant'] ?? null;
+    if ($identifiantAdmin) {
+        $sujet = "Export des notes BUT2";
+        $message = "<p>Bonjour,<br>Veuillez trouver ci-joint les résultats BUT2 au format CSV.</p>";
+        envoieMail($identifiantAdmin, $sujet, $message, $nom_fichier);
+    }
 }
 
+
 function envoiCVS_mail_BUT3($pdo) {
-    // Génère un CSV temporaire
+
     $liste = get_liste_eleve_remonter3A($pdo);
-    $nom_fichier = __DIR__ . "/export_remontee_BUT3.csv";
+    if (empty($liste)) {
+        echo "<div class='error'>Aucun étudiant BUT2 en REMONTEE → CSV non généré.</div>";
+        return;
+    }
+
+    $nom_fichier = sys_get_temp_dir() . "/export_remontee_BUT3.csv";
     ecriture_des_donnees_csv($liste, $nom_fichier);
 
     
-    $identifiantAdmin = isset($_SESSION['identifiant']) ? $_SESSION['identifiant'] : null;
-    $sujet = "Export de vos notes";
-    $message = "<p>Bonjour,<br>Veuillez trouver ci-joint les résultats au format CSV.</p>";
-
-    envoieMail($identifiantAdmin, $sujet, $message, $nom_fichier);
+    $identifiantAdmin = $_SESSION['identifiant'] ?? null;
+    if ($identifiantAdmin){
+        $sujet = "Export de vos notes";
+        $message = "<p>Bonjour,<br>Veuillez trouver ci-joint les résultats au format CSV.</p>";
+        envoieMail($identifiantAdmin, $sujet, $message, $nom_fichier);
+    }
+    
 }
 
 function autoriserSaisie($pdo, $idEtudiant, $isBUT3 = false) {
@@ -303,7 +308,6 @@ function autoriserSaisie($pdo, $idEtudiant, $isBUT3 = false) {
         $stmd->execute([$idEtudiant]);
     }
 
-    // Ici tu peux aussi gérer les sous-grilles : rapport + soutenance
     $stmd = $pdo->prepare("UPDATE EvalRapport SET Statut = 'SAISIE' WHERE IdEtudiant = ? AND Statut = 'REMONTEE'");
     $stmd->execute([$idEtudiant]);
 
@@ -316,7 +320,14 @@ function recuperer_mails_admin($pdo) {
     return $stmd->fetchAll(PDO::FETCH_COLUMN);
 }
 
-$tableauMailsAdmin = 
+function recuperer_mails_enseignat_tuteur($pdo, $idEtudiant) {
+    $stmd = $pdo->prepare("
+        SELECT enseignants.mail FROM evalstage
+        JOIN enseignants ON enseignants.IdEnseignant = evalstage.IdEnseignantTuteur
+        WHERE evalstage.IdEtudiant = ?");
+    $stmd->execute([$idEtudiant]);
+    return $stmd->fetchColumn(); 
+}
 
 
 //------------------------------------------------------
@@ -338,14 +349,13 @@ $tableauMailsAdmin =
                 echo "<div class='message'>Statuts re-bloqués et mail envoyé à l'étudiant ID $idEtudiant</div>";
             }
             if ($_GET['action'] === 'rappel') {
-                rappelMail($pdo, $idEtudiant);
-                echo "<div class='message'>Mail de rappel envoyé à l'étudiant ID $idEtudiant</div>";
+                $mail_prof = recuperer_mails_enseignat_tuteur($pdo, $idEtudiant);
+                rappelMail($pdo, $mail_prof);
+                echo "<div class='message'>Mail de rappel envoyé à l'enseigant $mail_prof</div>";
             }
         }
 
         // Fonction pour écrire les données dans un fichier CSV
-        
-
         if (isset($_POST['export_csv'])) {
             if ($_POST['export_csv'] === 'but2') {
                 $liste = get_liste_eleve_remonter2A($pdo);
@@ -390,7 +400,7 @@ $tableauMailsAdmin =
             echo "<div class='message'>Toutes les notes prêtes ont été remontées.</div>";
         }
 
-        if (isset($_GET['action']) === 'autoriser') {
+        if (isset($_GET['action']) && $_GET['action'] === 'autoriser') {
             $listeAutorises = recuperer_mails_admin(getPDO());
             $mailActuel = isset($_SESSION['identifiant']) ? $_SESSION['identifiant'] : null;
             if ($mailActuel && in_array($mailActuel, $listeAutorises)) {
