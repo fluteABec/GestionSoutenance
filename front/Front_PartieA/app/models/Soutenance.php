@@ -10,6 +10,7 @@ class Soutenance {
     public function getSoutenancesAVenir($idEnseignant) {
         $sql = "
             SELECT 
+                e.idEtudiant,
                 e.nom AS etudiant_nom,
                 e.prenom AS etudiant_prenom,
                 ent.nom AS entreprise,
@@ -48,6 +49,7 @@ class Soutenance {
     public function getSoutenancesPassees($idEnseignant) {
     $sql = "
         SELECT 
+            e.idEtudiant,
             e.nom AS etudiant_nom,
             e.prenom AS etudiant_prenom,
             ent.nom AS entreprise,
