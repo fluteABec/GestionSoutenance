@@ -63,6 +63,11 @@ img{max-width:100%;height:auto;display:block}
   justify-content: center;
 }
 
+/* Right side actions in navbar */
+.nav-actions{display:flex;align-items:center;gap:12px;margin-left:auto}
+.nav-search{min-width:260px;max-width:360px;width:28vw;padding:8px 12px;border:1px solid var(--border);border-radius:20px;background:#fff}
+.nav-search:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 4px rgba(23,143,150,.12)}
+
 .nav-item {
   display: flex;
   align-items: center;

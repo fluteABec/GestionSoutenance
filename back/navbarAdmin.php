@@ -10,4 +10,7 @@
         <a class="nav-item<?php if(strpos($_SERVER['PHP_SELF'], 'Partie3.4')!==false) echo ' selected'; ?>" href="Partie3.4/index.php">Diffusion résultats</a>
         <a class="nav-item<?php if(strpos($_SERVER['PHP_SELF'], 'mainAdministration.php')!==false) echo ' selected'; ?>" href="../mainAdministration.php">Administration</a>
     </div>
+    <div class="nav-actions">
+        <input type="text" id="searchInput" class="nav-search" placeholder="🔍 Rechercher un étudiant...">
+    </div>
 </nav>

@@ -43,9 +43,7 @@ if (isset($_GET['success'])) {
 <body>
 <?php include 'navbarAdmin.php'; ?>
 
-<!-- Barre de recherche -->
-<input type="text" id="searchInput" placeholder="🔍 Rechercher un étudiant...">
-
+<div class="container">
 <table id="tableEtudiants">
     <thead>
         <tr>
@@ -112,6 +110,8 @@ if (isset($_GET['success'])) {
     </tbody>
 </table>
 
+</div>
+
 <script>
 // Recherche dynamique
 document.getElementById('searchInput').addEventListener('keyup', function() {
@@ -124,8 +124,6 @@ document.getElementById('searchInput').addEventListener('keyup', function() {
     });
 });
 </script>
-
-</div>
 
 </body>
 </html>
