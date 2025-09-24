@@ -11,6 +11,24 @@ $sql = "SELECT IdEnseignant, nom, prenom FROM Enseignants ORDER BY nom, prenom";
 $stmt = $pdo->query($sql);
 $listeEnseignant = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+$sql = "SELECT e.IdEtudiant, e.nom, e.prenom
+        FROM EtudiantsBUT2ou3 e
+        JOIN AnneeStage a ON e.IdEtudiant = a.IdEtudiant
+        WHERE a.but3sinon2 = TRUE";
+$etudiantsBUT3 = $pdo->query($sql)->fetchAll();
+
+$idEtudiant = $_GET["idEtudiant"] ?? NULL;
+
+// Vérifier si c'est un étudiant BUT3
+$estBut3 = false;
+foreach ($etudiantsBUT3 as $e) {
+    if ($e["IdEtudiant"] == $idEtudiant) {
+        $estBut3 = true;
+        break;
+    }
+}
+
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nature = $_POST['NatureSoutenance'];
     $date   = $_POST['DateSoutenance'];
@@ -107,9 +125,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-    ?>
 
-        <!DOCTYPE html>
+?>
+
+    <!DOCTYPE html>
     <html lang="fr">
     <head>
         <meta charset="UTF-8">
@@ -124,8 +143,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <label>Nature :</label>
     <select name="NatureSoutenance">
         <option value="portfolio&stage">Portfolio & Stage</option>
-        <option value="anglais">Anglais</option>
+        <?php if ($estBut3): ?>
+            <option value="anglais">Anglais</option>
+        <?php endif; ?>
     </select><br>
+
+
 
    <label>Date et heure :</label>
 <input type="datetime-local" name="DateSoutenance" id="DateSoutenance"><br>
