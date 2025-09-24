@@ -34,12 +34,19 @@ else
 //}
 
 // Affichage informatif pour le debug / test
-echo "<p style='background:#f0f0f0;padding:8px;border:1px solid #ddd'>
-        Mode TEST : idUser = <strong>{$idUser}</strong>, idEtudiant = <strong>{$idEtudiant}</strong>.
-      </p>";
+// echo "<p style='background:#f0f0f0;padding:8px;border:1px solid #ddd'>
+//         Mode TEST : idUser = <strong>{$idUser}</strong>, idEtudiant = <strong>{$idEtudiant}</strong>.
+//       </p>";
 
 // Appelle la fonction du contrôleur qui affiche la page pour cet étudiant
 // (selon ta structure, cette fonction doit exister dans grilleController.php)
 afficherPageEtudiant($idUser, $idEtudiant);
+
+
+?>
+
+<p><a href="../Front_PartieA/public/index.php">← Retour</a></p>
+
+<?php
 
 // Pour tester d'autres cas, ouvre : index.php?idUser=2&idEtudiant=3

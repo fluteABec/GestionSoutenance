@@ -36,7 +36,7 @@ function afficherEtudiantAvecLiens($etudiant, $idUser, $role) {
 
     echo "<h3>Actions disponibles pour $role</h3>";
     echo "<ul>";
-    echo "<li><a href='../PAGEC/index.php?<?php echo htmlspecialchars(SID); ?>action=idEtu=idEtu={$etu['idEtu']}'>Saisir/Consulter les grilles</a></li>"; 
+    echo "<li><a href='../Page C/index.php?<?php echo htmlspecialchars(SID); ?>action=idEtu=idEtu={$etu['idEtu']}'>Saisir/Consulter les grilles</a></li>"; 
 	echo "</ul>";
 	}
 }
