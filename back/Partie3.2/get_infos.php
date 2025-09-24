@@ -1,22 +1,6 @@
 <?php
-$host = 'localhost';
-$db   = 'evaluationstages';
-$user = 'root';
-$pass = '';
-$charset = 'utf8mb4';
 
-$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
-$options = [
-    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-];
-
-try {
-    $pdo = new PDO($dsn, $user, $pass, $options);
-} catch (PDOException $e) {
-    echo json_encode(["error" => $e->getMessage()]);
-    exit;
-}
+require_once "/opt/lampp/htdocs/projet_sql/db.php";
 
 // Récup paramètres
 $idEtudiant  = $_GET['etudiant'] ?? null;
@@ -59,7 +43,7 @@ if ($idSalle) {
 if ($idEtudiant) {
     $sql = "SELECT ens.IdEnseignant, ens.nom, ens.prenom, ens.mail
             FROM evalstage es
-            INNER JOIN enseignants ens ON ens.IdEnseignant = es.IdEnseignantTuteur
+            INNER JOIN Enseignants ens ON ens.IdEnseignant = es.IdEnseignantTuteur
             WHERE es.IdEtudiant = :id
             LIMIT 1";
     $stmt = $pdo->prepare($sql);

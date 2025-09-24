@@ -1,23 +1,10 @@
 <?php
-$host = 'localhost';
-$db   = 'evaluationstages';
-$user = 'root';
-$pass = '';
-$charset = 'utf8mb4';
 
-$idEtudiant = $_GET['idEtudiant'];
-$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
-$options = [
-    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-];
+require_once "/opt/lampp/htdocs/projet_sql/db.php";
 
-try {
-    $pdo = new PDO($dsn, $user, $pass, $options);
-} catch (PDOException $e) {
-    echo "Erreur de connexion : " . $e->getMessage();
-    exit;
-}
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 
 // Liste des enseignants
 $sql = "SELECT IdEnseignant, nom, prenom FROM Enseignants ORDER BY nom, prenom";
@@ -38,29 +25,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Vérifier conflits
         $sqlConflits = "
             SELECT 'Salle' AS type, IdSalle AS ressource
-            FROM evalstage
+            FROM EvalStage
             WHERE IdSalle = :salle
             AND :date BETWEEN date_h AND DATE_ADD(date_h, INTERVAL 1 HOUR)
-            UNION
-            SELECT 'Salle', IdSalle FROM evalanglais
+            UNION 
+            SELECT 'Salle', IdSalle FROM EvalAnglais
             WHERE IdSalle = :salle
             AND :date BETWEEN dateS AND DATE_ADD(dateS, INTERVAL 1 HOUR)
 
             UNION
-            SELECT 'Etudiant', IdEtudiant FROM evalstage
+            SELECT 'Etudiant', IdEtudiant FROM EvalStage
             WHERE IdEtudiant = :idEtudiant
             AND :date BETWEEN date_h AND DATE_ADD(date_h, INTERVAL 1 HOUR)
             UNION
-            SELECT 'Etudiant', IdEtudiant FROM evalanglais
+            SELECT 'Etudiant', IdEtudiant FROM EvalAnglais
             WHERE IdEtudiant = :idEtudiant
             AND :date BETWEEN dateS AND DATE_ADD(dateS, INTERVAL 1 HOUR)
 
             UNION
-            SELECT 'Tuteur', IdEnseignantTuteur FROM evalstage
+            SELECT 'Tuteur', IdEnseignantTuteur FROM EvalStage
             WHERE IdEnseignantTuteur = :tuteur
             AND :date BETWEEN date_h AND DATE_ADD(date_h, INTERVAL 1 HOUR)
             UNION
-            SELECT 'Second', IdSecondEnseignant FROM evalstage
+            SELECT 'Second', IdSecondEnseignant FROM EvalStage
             WHERE IdSecondEnseignant = :second
             AND :date BETWEEN date_h AND DATE_ADD(date_h, INTERVAL 1 HOUR)
         ";
@@ -82,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo "</p>";
         } else {
             // INSERT stage
-            $sql = "INSERT INTO evalstage 
+            $sql = "INSERT INTO EvalStage 
                 (date_h, IdEtudiant, IdEnseignantTuteur, IdSecondEnseignant, IdSalle, anneeDebut, IdModeleEval, Statut, note, commentaireJury, presenceMaitreStageApp, confidentiel)
                 VALUES (:date, :idEtudiant, :tuteur, :second, :salle, :annee, 1, :statut, NULL, NULL, 0, 0)";
             $stmt = $pdo->prepare($sql);
@@ -103,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($nature === 'anglais') {
         $ens = $_POST['SecondEnseignant'];
 
-        $sql = "INSERT INTO evalanglais 
+        $sql = "INSERT INTO EvalAnglais 
             (dateS, IdEtudiant, IdEnseignant, IdSalle, anneeDebut, note, Statut)
             VALUES (:date, :idEtudiant, :ens, :salle, :annee, NULL, :statut)";
         $stmt = $pdo->prepare($sql);
