@@ -36,12 +36,12 @@ if (isset($_GET['success'])) {
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Administration - Gestion des Souhfftenances</title> s
+    <title>Administration - Gestion des Soutenances</title> 
     <link rel="stylesheet" href="../stylee.css">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
-<?php include 'navbar.php'; ?>
+<?php include 'navbarAdmin.php'; ?>
 
 <!-- Barre de recherche -->
 <input type="text" id="searchInput" placeholder="🔍 Rechercher un étudiant...">
