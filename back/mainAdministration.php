@@ -47,6 +47,8 @@ if (isset($_GET['success'])) {
     <a class="nav-item" href="Partie3.1/3_1_natan.php">Tâches enseignants</a>
     <a class="nav-item" href="Partie3.3/index.php">Évaluations IUT</a>
     <a class="nav-item" href="Partie3.4/index.php">Diffusion résultats</a>
+    <a class="nav-item" href="Partie3.5/Partie3.5.2/Grille.php">Gestion Grille</a>
+
 </div>
 
 <!-- Barre de recherche -->

@@ -1,4 +1,9 @@
 <?php
+// Démarrer la session si pas déjà démarrée
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 // Fonction d'échappement HTML
 function e($s) {
     return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
@@ -208,12 +213,13 @@ if (!isset($enseignantFullName) || !isset($enseignant)) {
           <tbody>
 <?php foreach ($aVenir as $s) : ?>
   <?php
-    $conf = !empty($s['confidentiel']);
-    $role = isset($s['role']) ? $s['role'] : '';
-    $rowClass = $conf ? 'confidentiel' : ($role === 'tuteur' ? 'tuteur' : ($role === 'second' ? 'second' : ''));
+  $conf = !empty($s['confidentiel']);
+  $role = isset($s['role']) ? $s['role'] : '';
+  $rowClass = $conf ? 'confidentiel' : ($role === 'tuteur' ? 'tuteur' : ($role === 'second' ? 'second' : ''));
   ?>
+
   <tr class="<?= e($rowClass) ?>">
-    <td><?= e(trim(($s['etudiant_nom'] ?? '') . ' ' . ($s['etudiant_prenom'] ?? '')) ?: '—') ?></td>
+    <td><a href="../../PAGEB/index.php?<?= htmlspecialchars(SID) ?>&etudiant_id=<?= e($s['idEtudiant'] ?? '') ?>"><?= e(trim(($s['etudiant_nom'] ?? '') . ' ' . ($s['etudiant_prenom'] ?? '')) ?: '—') ?></a></td>
     <td><?= e($s['entreprise'] ?? '—') ?></td>
     <td><?= e(($s['maitre'] ?? '—') . ' (' . ((isset($s['maitre_present']) && $s['maitre_present']) ? 'Oui' : 'Non') . ')') ?></td>
     <td><?= e(!empty($s['date_heure']) ? date('d/m/Y', strtotime($s['date_heure'])) : '—') ?></td>
@@ -247,8 +253,9 @@ if (!isset($enseignantFullName) || !isset($enseignant)) {
           </thead>
           <tbody>
 <?php foreach ($passees as $s) : ?>
+  <?php // Ne pas manipuler la session ici : utiliser le paramètre GET dans le lien vers la page B ?>
     <tr>
-        <td><?= e($s['etudiant_nom'] . ' ' . $s['etudiant_prenom']) ?></td>
+        <td><a href="../../PAGEB/index.php?<?= htmlspecialchars(SID) ?>&etudiant_id=<?= e($s['idEtudiant'] ?? '') ?>"><?= e(trim(($s['etudiant_nom'] ?? '') . ' ' . ($s['etudiant_prenom'] ?? ''))) ?></a></td>
         <td><?= e($s['entreprise']) ?></td>
         <td><?= e($s['Statut']) ?></td>
         <td><?= e(date('d/m/Y', strtotime($s['date_heure']))) ?></td>
@@ -261,6 +268,7 @@ if (!isset($enseignantFullName) || !isset($enseignant)) {
     </section>
   </div>
   <script>
+
     document.addEventListener('DOMContentLoaded', function() {
       // Gestion des filtres
       const filterButtons = document.querySelectorAll('.filter-btn');
@@ -384,6 +392,7 @@ if (!isset($enseignantFullName) || !isset($enseignant)) {
         return 0;
       }
     });
+
   </script>
   </body>
 </html>
