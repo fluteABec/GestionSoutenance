@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestion des Évaluations - IUT</title>
-    <link rel="stylesheet" href="/projet_sql/3.3.css">
+    <link rel="stylesheet" href="../../stylee.css">
 </head>
 <body>
     <?php include '../navbar.php'; ?>

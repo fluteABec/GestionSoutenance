@@ -13,37 +13,20 @@ if (!isset($_SESSION['identifiant']) ) {
 ?>
 
 <!-- Header HTML -->
+
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Front Office - Gestion des évaluations</title>
-    <link rel="stylesheet" href="style.css">
-</head>
 
+    <link rel="stylesheet" href="../stylee.css">
+</head>
 
 <body>
     <div class="containerHAUT">
-    
-    <?php
-        $professorName = 'Default';
-
-        // Récupérer le nom du professeur depuis la base de données
-        $sql = "SELECT nom FROM Enseignants WHERE mail = :identifiant";
-        $stmt = $pdo->prepare($sql);
-        $stmt->bindParam(':identifiant', $identifiant);
-        $stmt->execute();
-        $professor = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        // Vérifier si le professeur a été trouvé
-        if ($professor) {
-            $professorName = $professor['nom'];
-        } else {
-            $professorName = 'Inconnu';
-        }
-
-        echo "<h1>Bienvenue, $professorName</h1>"
-    ?>
+        <h1>Bienvenue, <span id="professor-name"></span></h1>
+    </div>
     
     <div class="containerBAS">
         <h2>Liste des étudiants associés</h2>
@@ -53,6 +36,8 @@ if (!isset($_SESSION['identifiant']) ) {
                     <th>Nom</th>
                     <th>Prénom</th>
                     <th>Email</th>  
+
+                 
                     <th>Grilles d'évaluation</th>
                 </tr>
             </thead>
@@ -65,6 +50,7 @@ if (!isset($_SESSION['identifiant']) ) {
         // Récupérer le nom du professeur depuis la session (via PHP)
         document.addEventListener('DOMContentLoaded', function() {
             fetch('front.php?action=getProfessorName')
+
                 .then(response => response.json())
                 .then(data => {
                     document.getElementById('professor-name').textContent = data.professorName;
