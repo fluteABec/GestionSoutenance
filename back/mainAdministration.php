@@ -10,13 +10,13 @@ ini_set('display_errors', 1);
 $sql = "SELECT e.IdEtudiant, e.nom, e.prenom
         FROM EtudiantsBUT2ou3 e
         JOIN AnneeStage a ON e.IdEtudiant = a.IdEtudiant
-        WHERE a.but3sinon2 = FALSE";
+        WHERE a.but3sinon2 = FALSE AND a.anneeDebut = YEAR(CURDATE())";
 $etudiantsBUT2 = $pdo->query($sql)->fetchAll();
 
 $sql = "SELECT e.IdEtudiant, e.nom, e.prenom
         FROM EtudiantsBUT2ou3 e
         JOIN AnneeStage a ON e.IdEtudiant = a.IdEtudiant
-        WHERE a.but3sinon2 = TRUE";
+        WHERE a.but3sinon2 = TRUE AND a.anneeDebut = YEAR(CURDATE())";
 $etudiantsBUT3 = $pdo->query($sql)->fetchAll();
 
 // Messages
