@@ -115,43 +115,7 @@ if ($etudiant['but3sinon2']) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Résultats d'évaluation - <?= htmlspecialchars($etudiant['prenom'] . ' ' . $etudiant['nom']) ?></title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
-        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #007bff; }
-        .header h1 { color: #333; margin-bottom: 10px; }
-        .header p { color: #666; font-size: 1.1em; }
-        .student-info { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
-        .student-info h3 { margin-top: 0; color: #495057; }
-        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
-        .info-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e9ecef; }
-        .info-item:last-child { border-bottom: none; }
-        .info-label { font-weight: bold; color: #495057; }
-        .info-value { color: #6c757d; }
-        .evaluation-card { background: white; border: 2px solid #e9ecef; border-radius: 10px; padding: 25px; margin-bottom: 25px; }
-        .evaluation-card h3 { color: #495057; margin-top: 0; margin-bottom: 20px; font-size: 1.4em; }
-        .note-display { text-align: center; margin: 20px 0; }
-        .note-number { font-size: 3em; font-weight: bold; color: #28a745; margin-bottom: 5px; }
-        .note-max { color: #6c757d; font-size: 1.2em; }
-        .comment { background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 20px; border-left: 4px solid #007bff; }
-        .comment h4 { margin-top: 0; color: #495057; }
-        .summary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 10px; margin-top: 30px; }
-        .summary h3 { margin-top: 0; text-align: center; }
-        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; margin-top: 20px; }
-        .summary-item { text-align: center; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; }
-        .summary-item strong { display: block; margin-bottom: 5px; font-size: 1.1em; }
-        .summary-item .note { font-size: 1.5em; font-weight: bold; }
-        .footer { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e9ecef; color: #6c757d; font-size: 0.9em; }
-        .niveau-badge { display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 0.9em; font-weight: bold; margin-left: 10px; }
-        .but2 { background: #28a745; color: white; }
-        .but3 { background: #007bff; color: white; }
-        .alternance { background: #ffc107; color: black; }
-        @media (max-width: 768px) {
-            .container { padding: 20px; }
-            .info-grid { grid-template-columns: 1fr; }
-            .summary-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-    </style>
+    
 </head>
 <body>
     <div class="container">

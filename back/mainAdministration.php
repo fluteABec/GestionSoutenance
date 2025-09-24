@@ -36,18 +36,12 @@ if (isset($_GET['success'])) {
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Administration - Gestion des Soutenances</title>
+    <title>Administration - Gestion des Souhfftenances</title> s
     <link rel="stylesheet" href="../stylee.css">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
-
-<div class="navbar">
-    <div class="brand"><span class="logo"></span><span>Administration</span></div>
-    <a class="nav-item" href="Partie3.1/3_1_natan.php">Tâches enseignants</a>
-    <a class="nav-item" href="Partie3.3/index.php">Évaluations IUT</a>
-    <a class="nav-item" href="Partie3.4/index.php">Diffusion résultats</a>
-</div>
+<?php include 'navbar.php'; ?>
 
 <!-- Barre de recherche -->
 <input type="text" id="searchInput" placeholder="🔍 Rechercher un étudiant...">
