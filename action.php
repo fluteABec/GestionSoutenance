@@ -1,5 +1,4 @@
 <?php
-
 // Activer l'affichage des erreurs
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -11,16 +10,14 @@ require 'db.php';
 $identifiant = $_POST['identifiant'];
 $motdepasse = $_POST['motdepasse'];
 
-// Préparer et exécuter la requête pour vérifier les informations d'identification => connexion 
 // Vérifier d'abord dans la table Enseignants
-$sql = "SELECT IdEnseignant, nom, prenom, mail, mdp FROM Enseignants WHERE mail = :identifiant AND mdp = :motdepasse";
+$sql = "SELECT IdEnseignant, nom, prenom, mail, mdp FROM Enseignants WHERE mail = :identifiant";
 $stmt = $pdo->prepare($sql);
 $stmt->bindParam(':identifiant', $identifiant);
-$stmt->bindParam(':motdepasse', $motdepasse);
 $stmt->execute();
 $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if ($row) {
+if ($row && password_verify($motdepasse, $row['mdp'])) {
     session_start();
     $_SESSION['identifiant'] = $row['mail'];
     $_SESSION['professeur_id'] = $row['IdEnseignant'];
@@ -29,24 +26,20 @@ if ($row) {
 }
 
 // Si non trouvé dans Enseignants, vérifier dans UtilisateursBackOffice
-$sql = "SELECT identifiant, nom, prenom, mail, mdp FROM UtilisateursBackOffice WHERE mail = :identifiant AND mdp = :motdepasse";
+$sql = "SELECT identifiant, nom, prenom, mail, mdp FROM UtilisateursBackOffice WHERE mail = :identifiant";
 $stmt = $pdo->prepare($sql);
 $stmt->bindParam(':identifiant', $identifiant);
-$stmt->bindParam(':motdepasse', $motdepasse);
 $stmt->execute();
 $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if ($row) {
+if ($row && password_verify($motdepasse, $row['mdp'])) {
     session_start();
     $_SESSION['identifiant'] = $row['mail'];
     header("Location: back/mainAdministration.php");
     exit();
+} else {
+    // Redirection avec un paramètre d'erreur
+    header("Location: index.html?error=1");
 }
-
- else {
-// Redirection avec un paramètre d'erreur
-header("Location: index.html?error=1");
- }
-
- exit();
+exit();
 ?>
