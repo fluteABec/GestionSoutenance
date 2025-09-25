@@ -22,12 +22,30 @@ $etudiantsBUT3 = $pdo->query($sql)->fetchAll();
 // Messages
 $message = "";
 if (isset($_GET['success'])) {
-    $message = "✅ Soutenance mise à jour avec succès.";
-} elseif (isset($_GET['deleted'])) {
-    $message = "🗑️ Soutenance supprimée avec succès.";
-} elseif (isset($_GET['added'])) {
-    $message = "✅ Soutenance ajoutée avec succès.";
+    $message = "✅ Action réussie.";
+} elseif (isset($_GET['err'])) {
+    switch ($_GET['err']) {
+        case 'same':
+            $message = "⚠️ Le tuteur et le second enseignant doivent être différents.";
+            break;
+        case 'invalid':
+            $message = "⚠️ Requête invalide.";
+            break;
+        case 'badteacher':
+            $message = "⚠️ Enseignant introuvable.";
+            break;
+        case 'nosalle':
+            $message = "⚠️ Aucune salle disponible dans la table Salles (créez-en au moins une).";
+            break;
+        case 'dberror':
+        default:
+            $message = "⚠️ Erreur serveur (base de données).";
+            break;
+    }
 }
+if ($message) echo "<p style='color: #c33; font-weight: bold;'>".htmlspecialchars($message)."</p>";
+
+
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -108,35 +126,44 @@ if (isset($_GET['success'])) {
         ?>
         <tr>
             <td><?= htmlspecialchars($etu['nom'] . " " . $etu['prenom']) ?></td>
-             <td>
-                <form action="Partie3.2/SaveEnseignant.php" method="post">
-                    <input type="hidden" name="idEtudiant" value="<?= $etu['IdEtudiant'] ?>">
-                    <select name="tuteur" onchange="this.form.submit()">
-                        <option value="">-- Choisir --</option>
-                        <?php
-                            $enseignants = $pdo->query("SELECT IdEnseignant, nom, prenom FROM Enseignants ORDER BY nom")->fetchAll();
-                            foreach ($enseignants as $ens) {
-                                $selected = ($soutenance && $soutenance['IdEnseignantTuteur'] == $ens['IdEnseignant']) ? "selected" : "";
-                                echo "<option value='{$ens['IdEnseignant']}' $selected>" . htmlspecialchars($ens['nom']." ".$ens['prenom']) . "</option>";
-                            }
-                        ?>
-                    </select>
-                </form>
-             </td>
 
             <td>
-            <form action="Partie3.2/SaveEnseignant.php" method="post">
-                <input type="hidden" name="idEtudiant" value="<?= $etu['IdEtudiant'] ?>">
-                <select name="second" onchange="this.form.submit()">
-                    <option value="">-- Choisir --</option>
-                        <?php
-                            foreach ($enseignants as $ens) {
-                                $selected = ($soutenance && $soutenance['IdSecondEnseignant'] == $ens['IdEnseignant']) ? "selected" : "";
-                                echo "<option value='{$ens['IdEnseignant']}' $selected>" . htmlspecialchars($ens['nom']." ".$ens['prenom']) . "</option>";
-                            }
-                        ?>
-                </select>
-            </form>
+                <?php if ($soutenance): ?>
+                    <form action="Partie3.2/SaveEnseignant.php?type=stage" method="post">
+                        <input type="hidden" name="idEtudiant" value="<?= $etu['IdEtudiant'] ?>">
+                        <select name="tuteur" onchange="this.form.submit()">
+                            <option value="">-- Choisir --</option>
+                            <?php
+                                $enseignants = $pdo->query("SELECT IdEnseignant, nom, prenom FROM Enseignants ORDER BY nom")->fetchAll();
+                                foreach ($enseignants as $ens) {
+                                    $selected = ($soutenance['IdEnseignantTuteur'] == $ens['IdEnseignant']) ? "selected" : "";
+                                    echo "<option value='{$ens['IdEnseignant']}' $selected>" . htmlspecialchars($ens['nom']." ".$ens['prenom']) . "</option>";
+                                }
+                            ?>
+                        </select>
+                    </form>
+                <?php else: ?>
+                    -
+                <?php endif; ?>
+            </td>
+
+            <td>
+                <?php if ($soutenance): ?>
+                    <form action="Partie3.2/SaveEnseignant.php?type=stage" method="post">
+                        <input type="hidden" name="idEtudiant" value="<?= $etu['IdEtudiant'] ?>">
+                        <select name="second" onchange="this.form.submit()">
+                            <option value="">-- Choisir --</option>
+                            <?php
+                                foreach ($enseignants as $ens) {
+                                    $selected = ($soutenance['IdSecondEnseignant'] == $ens['IdEnseignant']) ? "selected" : "";
+                                    echo "<option value='{$ens['IdEnseignant']}' $selected>" . htmlspecialchars($ens['nom']." ".$ens['prenom']) . "</option>";
+                                }
+                            ?>
+                        </select>
+                    </form>
+                <?php else: ?>
+                    -
+                <?php endif; ?>
             </td>
 
             <?php if ($soutenance): ?>
@@ -219,35 +246,44 @@ if (isset($_GET['success'])) {
         ?>
         <tr>
             <td><?= htmlspecialchars($etu['nom'] . " " . $etu['prenom']) ?></td>
+            
             <td>
-                <form action="Partie3.2/SaveEnseignant.php" method="post">
-                    <input type="hidden" name="idEtudiant" value="<?= $etu['IdEtudiant'] ?>">
-                    <select name="tuteur" onchange="this.form.submit()">
-                        <option value="">-- Choisir --</option>
-                        <?php
-                            $enseignants = $pdo->query("SELECT IdEnseignant, nom, prenom FROM Enseignants ORDER BY nom")->fetchAll();
-                            foreach ($enseignants as $ens) {
-                                $selected = ($soutenance && $soutenance['IdEnseignantTuteur'] == $ens['IdEnseignant']) ? "selected" : "";
-                                echo "<option value='{$ens['IdEnseignant']}' $selected>" . htmlspecialchars($ens['nom']." ".$ens['prenom']) . "</option>";
-                            }
-                        ?>
-                    </select>
-                </form>
-             </td>
+                <?php if ($soutenance): ?>
+                    <form action="Partie3.2/SaveEnseignant.php?type=stage" method="post">
+                        <input type="hidden" name="idEtudiant" value="<?= $etu['IdEtudiant'] ?>">
+                        <select name="tuteur" onchange="this.form.submit()">
+                            <option value="">-- Choisir --</option>
+                            <?php
+                                $enseignants = $pdo->query("SELECT IdEnseignant, nom, prenom FROM Enseignants ORDER BY nom")->fetchAll();
+                                foreach ($enseignants as $ens) {
+                                    $selected = ($soutenance['IdEnseignantTuteur'] == $ens['IdEnseignant']) ? "selected" : "";
+                                    echo "<option value='{$ens['IdEnseignant']}' $selected>" . htmlspecialchars($ens['nom']." ".$ens['prenom']) . "</option>";
+                                }
+                            ?>
+                        </select>
+                    </form>
+                <?php else: ?>
+                    -
+                <?php endif; ?>
+            </td>
 
             <td>
-            <form action="Partie3.2/SaveEnseignant.php" method="post">
-                <input type="hidden" name="idEtudiant" value="<?= $etu['IdEtudiant'] ?>">
-                <select name="second" onchange="this.form.submit()">
-                    <option value="">-- Choisir --</option>
-                        <?php
-                            foreach ($enseignants as $ens) {
-                                $selected = ($soutenance && $soutenance['IdSecondEnseignant'] == $ens['IdEnseignant']) ? "selected" : "";
-                                echo "<option value='{$ens['IdEnseignant']}' $selected>" . htmlspecialchars($ens['nom']." ".$ens['prenom']) . "</option>";
-                            }
-                        ?>
-                </select>
-            </form>
+                <?php if ($soutenance): ?>
+                    <form action="Partie3.2/SaveEnseignant.php?type=stage" method="post">
+                        <input type="hidden" name="idEtudiant" value="<?= $etu['IdEtudiant'] ?>">
+                        <select name="second" onchange="this.form.submit()">
+                            <option value="">-- Choisir --</option>
+                            <?php
+                                foreach ($enseignants as $ens) {
+                                    $selected = ($soutenance['IdSecondEnseignant'] == $ens['IdEnseignant']) ? "selected" : "";
+                                    echo "<option value='{$ens['IdEnseignant']}' $selected>" . htmlspecialchars($ens['nom']." ".$ens['prenom']) . "</option>";
+                                }
+                            ?>
+                        </select>
+                    </form>
+                <?php else: ?>
+                    -
+                <?php endif; ?>
             </td>
 
             <?php if ($soutenance): ?>
@@ -314,21 +350,26 @@ if (isset($_GET['success'])) {
         <tr>
             <td><?= htmlspecialchars($etu['nom'] . " " . $etu['prenom']) ?></td>
 
-             <td>
-                <form action="Partie3.2/SaveEnseignant.php" method="post">
-                    <input type="hidden" name="idEtudiant" value="<?= $etu['IdEtudiant'] ?>">
-                    <select name="tuteur" onchange="this.form.submit()">
-                        <option value="">-- Choisir --</option>
-                        <?php
-                            $enseignants = $pdo->query("SELECT IdEnseignant, nom, prenom FROM Enseignants ORDER BY nom")->fetchAll();
-                            foreach ($enseignants as $ens) {
-                                $selected = ($soutenance && $soutenance['IdEnseignantTuteur'] == $ens['IdEnseignant']) ? "selected" : "";
-                                echo "<option value='{$ens['IdEnseignant']}' $selected>" . htmlspecialchars($ens['nom']." ".$ens['prenom']) . "</option>";
-                            }
-                        ?>
-                    </select>
-                </form>
-             </td>
+            <td>
+                <?php if ($soutenance): ?>
+                    <form action="Partie3.2/SaveEnseignant.php?type=anglais" method="post">
+                        <input type="hidden" name="idEtudiant" value="<?= $etu['IdEtudiant'] ?>">
+                        <select name="tuteur" onchange="this.form.submit()">
+                            <option value="">-- Choisir --</option>
+                            <?php
+                                $enseignants = $pdo->query("SELECT IdEnseignant, nom, prenom FROM Enseignants ORDER BY nom")->fetchAll();
+                                foreach ($enseignants as $ens) {
+                                    $selected = ($soutenance['IdEnseignantTuteur'] == $ens['IdEnseignant']) ? "selected" : "";
+                                    echo "<option value='{$ens['IdEnseignant']}' $selected>" . htmlspecialchars($ens['nom']." ".$ens['prenom']) . "</option>";
+                                }
+                            ?>
+                        </select>
+                    </form>
+                <?php else: ?>
+                    -
+                <?php endif; ?>
+            </td>
+
              
             <?php if ($soutenance): ?>
                 <td><?= $soutenance['type'] === 'stage' ? "Portfolio & Stage" : "Anglais" ?></td>
