@@ -172,22 +172,203 @@ if ($etudiant['but3sinon2']) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Résultats d'évaluation - <?= htmlspecialchars($etudiant['prenom'] . ' ' . $etudiant['nom']) ?></title>
     <style>
-        body{font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background:#f4f6fb; color:#222; padding:24px}
-        .card{max-width:980px;margin:18px auto;background:#fff;border-radius:10px;padding:24px;box-shadow:0 10px 30px rgba(20,30,50,0.06)}
-        h1{margin:0 0 6px;font-size:20px}
-        .muted{color:#6b7280}
-        .student-info{display:flex;gap:18px;flex-wrap:wrap}
-        .info-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
-        .niveau-badge{display:inline-block;padding:6px 10px;border-radius:999px;background:#eef2ff;color:#3730a3;font-weight:600}
-        .evaluation-card{margin-top:18px;padding:14px;border-radius:8px;background:#fbfbff}
-        .note-display{display:flex;align-items:baseline;gap:12px}
-        .note-number{font-size:28px;font-weight:700}
-        .note-max{color:#6b7280}
-        table{width:100%;border-collapse:collapse;margin-top:8px}
-        table th, table td{border:1px solid #e6e9ef;padding:6px;text-align:left}
-        .summary-grid{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
-        .summary-item{background:#fff;padding:10px;border-radius:8px;box-shadow:0 4px 10px rgba(20,30,50,0.04)}
-        .footer{margin-top:18px;color:#6b7280;font-size:13px}
+        /* Reset and base styles */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+        html {
+            font-family: "Barlow", Arial, sans-serif;
+            line-height: 1.5;
+            font-size: 15px;
+            background: #fff;
+            color: #1d2125;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        body {
+            margin: 0;
+            font-family: "Barlow", Arial, sans-serif;
+            font-size: .9375rem;
+            font-weight: 400;
+            color: #1d2125;
+            background: #fff;
+            text-align: left;
+        }
+        @media (max-width: 1200px) {
+            body {
+                font-size: calc(0.90375rem + 0.045vw);
+            }
+        }
+
+        .card {
+            max-width: 900px;
+            margin: 36px auto;
+            background: #fff;
+            border-radius: 12px;
+            padding: 32px 36px 28px 36px;
+            box-shadow: 0 8px 32px rgba(30, 60, 120, 0.10);
+            border: 1.5px solid #e3eafc;
+        }
+        .header h1 {
+            margin: 0 0 8px;
+            font-size: 2rem;
+            color: #006D82;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .muted {
+            color: #5c6bc0;
+            font-size: 1.05em;
+            margin-bottom: 18px;
+        }
+        .student-info {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            margin-bottom: 18px;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px 28px;
+            min-width: 320px;
+        }
+        .info-item {
+            margin-bottom: 2px;
+        }
+        .info-label {
+            font-weight: 600;
+            color: #006D82;
+            margin-right: 4px;
+        }
+        .info-value {
+            color: #222;
+        }
+        .niveau-badge {
+            display: inline-block;
+            padding: 5px 14px;
+            border-radius: 999px;
+            background: #006D82;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1em;
+            margin-left: 4px;
+            letter-spacing: 0.5px;
+        }
+        .niveau-badge.but2 { background: #006D82;}
+        .niveau-badge.but3 { background: #1d2125;}
+        .niveau-badge.alternance { background: #20c997;}
+        .evaluation-card {
+            margin-top: 24px;
+            padding: 20px 24px 16px 24px;
+            border-radius: 10px;
+            background: #f8f9fa;
+            border-left: 6px solid #006D82;
+            box-shadow: 0 2px 10px rgba(25, 118, 210, 0.04);
+            margin-bottom: 8px;
+        }
+        .evaluation-card h3 {
+            margin-top: 0;
+            color: #006D82;
+            font-size: 1.18em;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .note-display {
+            display: flex;
+            align-items: baseline;
+            gap: 16px;
+            margin-bottom: 8px;
+        }
+        .note-number {
+            font-size: 2.2em;
+            font-weight: 800;
+            color: #006D82;
+            letter-spacing: 1px;
+        }
+        .note-max {
+            color: #5c6bc0;
+            font-size: 1.1em;
+        }
+        .comment {
+            background: #e3eafc;
+            border-radius: 8px;
+            padding: 10px 16px;
+            margin-top: 10px;
+            color: #263238;
+            font-size: 1em;
+            border-left: 4px solid #006D82;
+        }
+        .comment h4 {
+            margin: 0 0 4px 0;
+            font-size: 1em;
+            color: #006D82;
+            font-weight: 700;
+        }
+        .summary {
+            margin-top: 32px;
+        }
+        .summary h3 {
+            color: #006D82;
+            font-size: 1.12em;
+            margin-bottom: 10px;
+        }
+        .summary-grid {
+            display: flex;
+            gap: 18px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+        .summary-item {
+            background: #fff;
+            padding: 14px 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(30, 60, 120, 0.06);
+            border: 1.5px solid #e3eafc;
+            min-width: 120px;
+            text-align: center;
+        }
+        .summary-item strong {
+            color: #006D82;
+            font-size: 1.05em;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .summary-item .note {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: #263238;
+        }
+        .footer {
+            margin-top: 28px;
+            color: #5c6bc0;
+            font-size: 0.98em;
+            text-align: center;
+            border-top: 1px solid #e3eafc;
+            padding-top: 14px;
+        }
+        @media (max-width: 767.98px) {
+            .card {
+                padding: 12px 4vw;
+            }
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            .summary-grid {
+                flex-direction: column;
+                gap: 10px;
+            }
+            #page-wrapper {
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+            }
+        }
+    </style>
+</style>
+
     </style>
 </head>
 <body>

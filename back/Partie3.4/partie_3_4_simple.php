@@ -88,7 +88,8 @@ function envoyerEmailSimple($email, $nom, $prenom, $etudiantId = null) {
     $message = "Bonjour $prenom $nom,\n\n";
     $message .= "Vos résultats d'évaluation sont disponibles.\n";
     $message .= "Cliquez sur ce lien pour les consulter :\n";
-    $message .= "$lien\n\n";
+    $message .= "$lien\n";
+    $message .= "Ce lien expirera dans 7 jours.\n\n";
     $message .= "Cordialement,\nL'équipe pédagogique";
 
     // Inclure PHPMailer
