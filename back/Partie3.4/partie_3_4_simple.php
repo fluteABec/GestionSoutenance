@@ -54,31 +54,86 @@ function diffuserResultats($pdo, $etudiantId) {
 }
 
 // Fonction pour envoyer un email simple
-function envoyerEmailSimple($email, $nom, $prenom) {
+// Fonction pour envoyer un email réel avec PHPMailer
+function envoyerEmailSimple($email, $nom, $prenom, $etudiantId = null) {
+    // Sujet + contenu
     $sujet = "Vos résultats d'évaluation - " . date('Y');
-    $lien = "http://localhost/envoie%20de%20mail/consultation_simple.php?id=" . $email;
-    
+    // Génération d'un token signé (id étudiant + expiration)
+    $expireSeconds = 60 * 60 * 24 * 7; // 7 jours
+    $expiresAt = time() + $expireSeconds;
+
+    // Si on n'a pas l'Id étudiant, tombe back sur email encodé (moins sûr)
+    $payload = json_encode([
+        'id' => $etudiantId ?? $email,
+        'exp' => $expiresAt
+    ]);
+
+    $signature = hash_hmac('sha256', $payload, APP_SECRET);
+    $token = base64_encode($payload) . '.' . $signature;
+
+    // Construire une URL absolue robuste : privilégier l'hôte courant si disponible
+    if (!empty($_SERVER['HTTP_HOST'])) {
+        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $base = $scheme . '://' . $_SERVER['HTTP_HOST'];
+        $scriptDir = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
+        if ($scriptDir === '.' || $scriptDir === '/' || $scriptDir === '\\') {
+            $scriptDir = '';
+        }
+        $lien = $base . $scriptDir . '/consultation_simple.php?token=' . urlencode($token);
+    } else {
+        // Fallback sur APP_URL si le script est exécuté en contexte sans _SERVER
+        $lien = rtrim(APP_URL, '/') . '/consultation_simple.php?token=' . urlencode($token);
+    }
+
     $message = "Bonjour $prenom $nom,\n\n";
     $message .= "Vos résultats d'évaluation sont disponibles.\n";
     $message .= "Cliquez sur ce lien pour les consulter :\n";
-    $message .= "$lien\n\n";
+    $message .= "$lien\n";
+    $message .= "Ce lien expirera dans 7 jours.\n\n";
     $message .= "Cordialement,\nL'équipe pédagogique";
-    
-    // Log au lieu d'envoyer pour éviter l'erreur SMTP
-    $logEntry = "[" . date('Y-m-d H:i:s') . "] Email pour $email ($prenom $nom)\n";
-    $logEntry .= "Sujet: $sujet\n";
-    $logEntry .= "Message: $message\n";
-    $logEntry .= "---\n\n";
-    
-    // Créer le dossier logs s'il n'existe pas
-    if (!file_exists('logs')) {
-        mkdir('logs', 0755, true);
+
+    // Inclure PHPMailer
+    require_once __DIR__ . '/../Partie3.3/vendor/autoload.php';
+    $mail = new PHPMailer\PHPMailer\PHPMailer(true);
+
+    try {
+        // Config serveur SMTP Gmail
+        $mail->isSMTP();
+        $mail->Host       = 'smtp.gmail.com';
+        $mail->SMTPAuth   = true;
+        $mail->Username   = 'u1840518965@gmail.com';   // ton adresse Gmail
+        $mail->Password   = 'ooeo bavi hozw pndl';     // mot de passe d’application
+        $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port       = 587;
+
+        // Expéditeur
+        $mail->setFrom('u1840518965@gmail.com', 'IUT - Administration');
+
+        // Destinataire
+        $mail->addAddress($email, "$prenom $nom");
+
+        // Contenu
+        $mail->isHTML(false); // email en texte brut
+        $mail->Subject = $sujet;
+        $mail->Body    = $message;
+
+        // Envoi
+        $mail->send();
+
+        // En parallèle, log local
+        $logEntry = "[" . date('Y-m-d H:i:s') . "] Email envoyé à $email ($prenom $nom)\n";
+        $logEntry .= "Sujet: $sujet\n$message\n---\n\n";
+        if (!file_exists('logs')) mkdir('logs', 0755, true);
+        file_put_contents('logs/emails.log', $logEntry, FILE_APPEND | LOCK_EX);
+
+        return true;
+
+    } catch (Exception $e) {
+        error_log("Erreur PHPMailer : " . $mail->ErrorInfo);
+        return false;
     }
-    
-    file_put_contents('logs/emails.log', $logEntry, FILE_APPEND | LOCK_EX);
-    
-    return true; // Simule un envoi réussi
 }
+
 
 // Traitement des actions
 $message = '';
@@ -89,7 +144,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $success = 0;
             foreach ($etudiants as $etudiant) {
                 if (diffuserResultats($pdo, $etudiant['IdEtudiant'])) {
-                    envoyerEmailSimple($etudiant['mail'], $etudiant['nom'], $etudiant['prenom']);
+                    // Passer l'IdEtudiant pour générer un token sécurisé
+                    envoyerEmailSimple($etudiant['mail'], $etudiant['nom'], $etudiant['prenom'], $etudiant['IdEtudiant']);
                     $success++;
                 }
             }
@@ -101,24 +157,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $etudiantsCandidats = getEtudiantsCandidats($pdo);
 ?>
 
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Partie 3.4 - Diffusion des résultats</title>
-        <link rel="stylesheet" href="../../3.1.css">
-
+    <link rel="stylesheet" href="../../stylee.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Partie 3.4 - Outils de diffusion des résultats</h1>
-        
+    <?php include '../../navbar.php'; ?>
+
+    <div class="admin-block">
+        <h1 class="section-title">Partie 3.4 - Outils de diffusion des résultats</h1>
         <?php if ($message): ?>
-            <div class="alert alert-success"><?= htmlspecialchars($message) ?></div>
+            <div class="alert alert-success" style="font-weight:600;color:var(--teal);margin-bottom:16px;">
+                <?= htmlspecialchars($message) ?>
+            </div>
         <?php endif; ?>
-        
-        <div class="info">
+        <div class="info-section">
             <h3>📋 Règles de diffusion :</h3>
             <ul>
                 <li><strong>BUT2 :</strong> Grilles de stage ET portfolio remontées</li>
@@ -126,15 +184,12 @@ $etudiantsCandidats = getEtudiantsCandidats($pdo);
                 <li><strong>Action irréversible :</strong> Une fois diffusée, la grille ne peut plus être modifiée</li>
             </ul>
         </div>
-        
-        <h2>Étudiants candidats à la diffusion</h2>
-        
+        <h2 class="section-title">Étudiants candidats à la diffusion</h2>
         <?php if (empty($etudiantsCandidats)): ?>
             <p>Aucun étudiant candidat à la diffusion.</p>
         <?php else: ?>
             <p><strong><?= count($etudiantsCandidats) ?></strong> étudiants peuvent recevoir leurs résultats.</p>
-            
-            <table>
+            <table class="styled-table">
                 <thead>
                     <tr>
                         <th>Étudiant</th>
@@ -163,17 +218,14 @@ $etudiantsCandidats = getEtudiantsCandidats($pdo);
                     <?php endforeach; ?>
                 </tbody>
             </table>
-            
-            <div class="actions">
+            <div class="actions" style="margin-top:24px;">
                 <form method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir diffuser les résultats à TOUS les étudiants ? Cette action est irréversible !')">
                     <input type="hidden" name="action" value="diffuser_tous">
                     <button type="submit" class="btn btn-danger">📧 Diffuser à tous les candidats</button>
                 </form>
             </div>
         <?php endif; ?>
-        
-        <h2>Étudiants ayant déjà reçu leurs résultats</h2>
-        
+        <h2 class="section-title">Étudiants ayant déjà reçu leurs résultats</h2>
         <?php
         $stmt = $pdo->prepare("
             SELECT e.nom, e.prenom, e.mail, an.but3sinon2, an.alternanceBUT3, ent.nom as entreprise
@@ -187,19 +239,17 @@ $etudiantsCandidats = getEtudiantsCandidats($pdo);
         $stmt->execute();
         $etudiantsDiffuses = $stmt->fetchAll();
         ?>
-        
         <?php if (empty($etudiantsDiffuses)): ?>
             <p>Aucun étudiant n'a encore reçu ses résultats.</p>
         <?php else: ?>
             <p><strong><?= count($etudiantsDiffuses) ?></strong> étudiants ont déjà reçu leurs résultats.</p>
-            
-            <table>
+            <table class="styled-table">
                 <thead>
                     <tr>
                         <th>Étudiant</th>
                         <th>Niveau</th>
                         <th>Entreprise</th>
-                        <th>Statut</th>
+                        <th>Email</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -217,22 +267,12 @@ $etudiantsCandidats = getEtudiantsCandidats($pdo);
                                 <span class="niveau <?= $class ?>"><?= $niveau ?></span>
                             </td>
                             <td><?= htmlspecialchars($etudiant['entreprise']) ?></td>
-                            <td><span>DIFFUSÉ</span></td>
+                            <td><?= htmlspecialchars($etudiant['mail']) ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
         <?php endif; ?>
-        
-        <div class="info">
-            <h3>💡 Fonctionnement :</h3>
-            <ol>
-                <li>Le système vérifie automatiquement que toutes les grilles sont remontées</li>
-                <li>Un email est envoyé à chaque étudiant avec un lien de consultation</li>
-                <li>Les statuts passent à "DIFFUSEE" (irréversible)</li>
-                <li>L'étudiant peut consulter ses résultats via le lien reçu</li>
-            </ol>
-        </div>
     </div>
 
         <p><a href="index.php">← Retour</a></p>

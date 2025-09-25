@@ -48,17 +48,15 @@ $stats['total'] = $stmt->fetchColumn();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Partie 3.4 - Test du système</title>
-    <link rel="stylesheet" href="../../3.4.css">
+    <link rel="stylesheet" href="../../stylee.css">
 </head>
 <body>
     <?php include '../navbar.php'; ?>
 
-    <div class="container">
-        <div class="header">
-            <h1>Partie 3.4 - Outils de diffusion des résultats</h1>
-            <p>Test du système de diffusion des résultats aux étudiants</p>
-        </div>
-        
+    <div class="admin-block">
+        <h1 style="margin-bottom:18px;">Outils de diffusion des résultats</h1>
+        <p style="margin-bottom:32px;color:var(--muted);font-size:1.08rem;">Test du système de diffusion des résultats aux étudiants</p>
+
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-number"><?= $stats['total'] ?></div>
@@ -73,14 +71,14 @@ $stats['total'] = $stmt->fetchColumn();
                 <div class="stat-label">Déjà diffusés</div>
             </div>
         </div>
-        
-        <div class="actions">
+
+        <div class="actions" style="margin:32px 0 24px 0;">
             <a href="partie_3_4_simple.php" class="btn btn-success">📧 Gérer la diffusion</a>
         </div>
-        
-        <div class="info-section">
-            <h3>📋 Règles de diffusion</h3>
-            <ul>
+
+        <div class="info-section" style="width:100%;max-width:700px;margin:0 auto;">
+            <h3 style="margin-bottom:12px;color:var(--navy);font-size:1.08rem;">📋 Règles de diffusion</h3>
+            <ul style="padding-left:20px;">
                 <li><strong>BUT2 :</strong> Grilles de stage ET portfolio remontées</li>
                 <li><strong>BUT3 :</strong> Grilles de stage ET portfolio ET anglais remontées</li>
                 <li><strong>Action irréversible :</strong> Une fois diffusée, la grille ne peut plus être modifiée</li>

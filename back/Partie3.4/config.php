@@ -19,6 +19,9 @@ define('EMAIL_FROM_NAME', 'IUT - Gestion des soutenances');
 
 // Configuration de l'application
 define('APP_URL', 'http://localhost/envoie%20de%20mail');
+// Clé secrète utilisée pour signer les liens envoyés par email
+// CHANGEZ cette valeur en une chaîne longue et aléatoire en production
+define('APP_SECRET', 'change_me_to_a_long_random_secret_please');
 
 // Fonction pour nettoyer les données d'entrée
 function sanitizeInput($data) {

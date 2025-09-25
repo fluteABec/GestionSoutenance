@@ -80,44 +80,42 @@ $annee  = $row['anneeDebut'];
 $years = $conn->query("SELECT anneeDebut FROM anneesuniversitaires ORDER BY anneeDebut DESC");
 ?>
 
+<?php include '../../../navbar.php'; ?>
 <!doctype html>
 <html lang="fr">
 <head>
 <meta charset="utf-8">
 <title>Modifier la grille</title>
+<link rel="stylesheet" href="../../../../stylee.css">
 </head>
 <body>
-    <h2>✏️ Modifier la grille #<?php echo $id_grille; ?></h2>
-
-    <form method="POST">
-        <!-- garder l'id en hidden pour le POST -->
-        <input type="hidden" name="id_grille" value="<?php echo $id_grille; ?>">
-
-        <label>Nature :</label>
-        <input type="text" name="natureGrille" value="<?php echo htmlspecialchars($nature); ?>" required>
-
-        <label>Note Max :</label>
-        <input type="number" name="noteMaxGrille" value="<?php echo htmlspecialchars($note); ?>" required>
-
-        <label>Nom du module :</label>
-        <input type="text" name="nomModuleGrilleEvaluation" value="<?php echo htmlspecialchars($nom); ?>" required>
-
-        <label>Année de début :</label>
-        <select name="anneeDebut" required>
-            <?php
-            if ($years) {
-                while ($y = $years->fetch_assoc()) {
-                    $val = $y['anneeDebut'];
-                    $sel = ($val == $annee) ? 'selected' : '';
-                    echo "<option value=\"" . htmlspecialchars($val) . "\" $sel>" . htmlspecialchars($val) . "</option>";
+    <div class="admin-block">
+        <h2 class="section-title">✏️ Modifier la grille #<?php echo $id_grille; ?></h2>
+        <form method="POST" style="max-width:500px;margin:0 auto;">
+            <input type="hidden" name="id_grille" value="<?php echo $id_grille; ?>">
+            <label for="natureGrille">Nature :</label>
+            <input type="text" name="natureGrille" id="natureGrille" value="<?php echo htmlspecialchars($nature); ?>" required>
+            <label for="noteMaxGrille">Note Max :</label>
+            <input type="number" name="noteMaxGrille" id="noteMaxGrille" value="<?php echo htmlspecialchars($note); ?>" required>
+            <label for="nomModuleGrilleEvaluation">Nom du module :</label>
+            <input type="text" name="nomModuleGrilleEvaluation" id="nomModuleGrilleEvaluation" value="<?php echo htmlspecialchars($nom); ?>" required>
+            <label for="anneeDebut">Année de début :</label>
+            <select name="anneeDebut" id="anneeDebut" class="btn" style="min-width:180px;" required>
+                <?php
+                if ($years) {
+                    while ($y = $years->fetch_assoc()) {
+                        $val = $y['anneeDebut'];
+                        $sel = ($val == $annee) ? 'selected' : '';
+                        echo "<option value='" . htmlspecialchars($val) . "' $sel>" . htmlspecialchars($val) . "</option>";
+                    }
                 }
-            }
-            ?>
-        </select>
-
-        <button type="submit">✅ Enregistrer</button>
-    </form>
-
-    <?php echo "<br><a href='../Grille.php'>📂 Retour aux Grilles</a>";?>
+                ?>
+            </select>
+            <div class="form-actions" style="margin-top:24px;display:flex;gap:16px;">
+                <button type="submit" class="btn btn-primary" style="min-width:160px;height:44px;font-size:1rem;">✅ Enregistrer</button>
+                <a href="../Grille.php" class="btn" style="background:var(--navy);color:#fff;min-width:160px;height:44px;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;">📂 Retour aux Grilles</a>
+            </div>
+        </form>
+    </div>
 </body>
 </html>

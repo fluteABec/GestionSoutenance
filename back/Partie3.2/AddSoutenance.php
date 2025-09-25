@@ -150,11 +150,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <head>
         <meta charset="UTF-8">
         <title>Ajout Soutenance</title>
-        <link rel="stylesheet" href="/projet_sql/stylee.css">
+        <link rel="stylesheet" href="../../stylee.css">
     </head>
     
 <body>
 <?php include '../navbar.php'; ?>
+
 <h2>Ajout d'une Soutenance</h2>
 <form method="post">
     <?php if (!$estBut3 || $estBut3 && $type === 'stage'): ?> 
@@ -182,22 +183,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </option>
         <?php endforeach; ?>
     </select><br>
+
 </div>
-
-<div id="secondEnsGroup">
-    <label>Second enseignant :</label>
-    <select name="SecondEnseignant" id="secondEnsSelect">
-        <?php foreach ($listeEnseignant as $e): ?>
-            <option value="<?= $e['IdEnseignant'] ?>">
-                <?= htmlspecialchars($e['nom']." ".$e['prenom']) ?>
-            </option>
-        <?php endforeach; ?>
-    </select><br>
-</div>
-
-
-    <button type="submit">Enregistrer</button>
-</form>
 
 <p><a href="../mainAdministration.php">← Retour</a></p>
 </body>

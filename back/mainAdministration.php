@@ -51,7 +51,7 @@ if ($message) echo "<p style='color: #c33; font-weight: bold;'>".htmlspecialchar
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Administration - Gestion des Soutenances</title>
+    <title>Administration - Gestion des Soutenances</title> 
     <link rel="stylesheet" href="../stylee.css">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
@@ -110,6 +110,7 @@ if ($message) echo "<p style='color: #c33; font-weight: bold;'>".htmlspecialchar
                 if ($tuteur) {
                     $tuteurNom = htmlspecialchars($tuteur['nom'] . " " . $tuteur['prenom']);
                 }
+
             }
 
             if ($soutenance["IdSecondEnseignant"])
@@ -306,6 +307,7 @@ if ($message) echo "<p style='color: #c33; font-weight: bold;'>".htmlspecialchar
     <?php endforeach; ?>
     </tbody>
 </table>
+
 
 <h3> Anglais </h3> <!-- Anglais -->
 <table class="tableEtudiants">
