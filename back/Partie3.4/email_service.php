@@ -156,7 +156,21 @@ class EmailService {
      * Génère le lien de consultation
      */
     private function genererLienConsultation($etudiantId) {
-        return APP_URL . "/consultation_resultats.php?id=" . $etudiantId;
+        // Crée un token signé contenant l'id et la date d'expiration (en secondes)
+        $expireSeconds = 60 * 60 * 24 * 7; // lien valable 7 jours
+        $expiresAt = time() + $expireSeconds;
+
+        $payload = json_encode([
+            'id' => $etudiantId,
+            'exp' => $expiresAt
+        ]);
+
+        // Signature HMAC
+        $signature = hash_hmac('sha256', $payload, APP_SECRET);
+
+        $token = base64_encode($payload) . '.' . $signature;
+
+        return APP_URL . "/consultation_resultats.php?token=" . urlencode($token);
     }
     
     /**
@@ -177,14 +191,15 @@ class EmailService {
         }
         
         $message = "Bonjour " . $etudiant['prenom'] . " " . $etudiant['nom'] . ",\n\n";
-        $message .= "Vos résultats d'évaluation pour l'année " . date('Y') . " sont maintenant disponibles.\n\n";
+    $message .= "Vos résultats d'évaluation pour l'année " . date('Y') . " sont maintenant disponibles.\n\n";
         $message .= "Niveau : $niveau\n";
         if ($etudiant['nomEntreprise']) {
             $message .= "Entreprise : " . $etudiant['nomEntreprise'] . "\n";
         }
         $message .= "\n";
-        $message .= "Vous pouvez consulter vos résultats en cliquant sur le lien suivant :\n";
-        $message .= $lienConsultation . "\n\n";
+    $message .= "Vous pouvez consulter vos résultats en cliquant sur le lien sécurisé suivant :\n";
+    $message .= $lienConsultation . "\n\n";
+    $message .= "Note : Ce lien est valable 7 jours à compter de la réception de ce message.\n\n";
         $message .= "IMPORTANT :\n";
         $message .= "- Ce lien est personnel et confidentiel\n";
         $message .= "- Ne le partagez pas avec d'autres personnes\n\n";
