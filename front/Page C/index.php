@@ -246,7 +246,7 @@
 <html>
     <head>
         <title>Grilles - Enseignant n°<?=$idEnseignant?></title>
-        <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="../../../stylee.css">
         <meta charset="UTF-8">
     </head>
     <body>

@@ -48,7 +48,7 @@ $stats['total'] = $stmt->fetchColumn();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Partie 3.4 - Test du système</title>
-    <link rel="stylesheet" href="../../3.4.css">
+    <link rel="stylesheet" href="../../stylee.css">
 </head>
 <body>
     <?php include '../navbar.php'; ?>

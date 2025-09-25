@@ -127,7 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <head>
         <meta charset="UTF-8">
         <title>Ajout Soutenance</title>
-        <link rel="stylesheet" href="/projet_sql/stylee.css">
+        <link rel="stylesheet" href="../../stylee.css">
     </head>
     
 <body>

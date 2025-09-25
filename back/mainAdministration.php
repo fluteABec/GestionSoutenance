@@ -36,11 +36,12 @@ if (isset($_GET['success'])) {
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Administration - Gestion des Soutenances</title>
+    <title>Administration - Gestion des Soutenances</title> 
     <link rel="stylesheet" href="../stylee.css">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
+<?php include 'navbarAdmin.php'; ?>
 
 <div class="navbar">
     <div class="brand"><span class="logo"></span><span>Administration</span></div>
@@ -53,6 +54,7 @@ if (isset($_GET['success'])) {
 
 <!-- Barre de recherche -->
 <input type="text" id="searchInput" placeholder="🔍 Rechercher un étudiant...">
+
 
 <table id="tableEtudiants">
     <thead>
@@ -120,6 +122,8 @@ if (isset($_GET['success'])) {
     </tbody>
 </table>
 
+</div>
+
 <script>
 // Recherche dynamique
 document.getElementById('searchInput').addEventListener('keyup', function() {
@@ -132,8 +136,6 @@ document.getElementById('searchInput').addEventListener('keyup', function() {
     });
 });
 </script>
-
-</div>
 
 </body>
 </html>
