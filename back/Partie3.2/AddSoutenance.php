@@ -46,69 +46,78 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $idTuteur = $_POST['Tuteur'];
         $secondEns = $_POST['SecondEnseignant'];
 
-        // Vérifier conflits
-        $sqlConflits = "
-            SELECT 'Salle' AS type, IdSalle AS ressource
-            FROM EvalStage
-            WHERE IdSalle = :salle
-            AND :date BETWEEN date_h AND DATE_ADD(date_h, INTERVAL 1 HOUR)
-            UNION 
-            SELECT 'Salle', IdSalle FROM EvalAnglais
-            WHERE IdSalle = :salle
-            AND :date BETWEEN dateS AND DATE_ADD(dateS, INTERVAL 1 HOUR)
 
-            UNION
-            SELECT 'Etudiant', IdEtudiant FROM EvalStage
-            WHERE IdEtudiant = :idEtudiant
-            AND :date BETWEEN date_h AND DATE_ADD(date_h, INTERVAL 1 HOUR)
-            UNION
-            SELECT 'Etudiant', IdEtudiant FROM EvalAnglais
-            WHERE IdEtudiant = :idEtudiant
-            AND :date BETWEEN dateS AND DATE_ADD(dateS, INTERVAL 1 HOUR)
+        if ($idTuteur == $secondEns) {
+            echo "<h2 style='color:red'>Le tuteur et le second enseignant doivent être différents.<h2>";
+        }
+        else
+        {
+            // Vérifier conflits
+            $sqlConflits = "
+                SELECT 'Salle' AS type, IdSalle AS ressource
+                FROM EvalStage
+                WHERE IdSalle = :salle
+                AND :date BETWEEN date_h AND DATE_ADD(date_h, INTERVAL 1 HOUR)
+                UNION 
+                SELECT 'Salle', IdSalle FROM EvalAnglais
+                WHERE IdSalle = :salle
+                AND :date BETWEEN dateS AND DATE_ADD(dateS, INTERVAL 1 HOUR)
 
-            UNION
-            SELECT 'Tuteur', IdEnseignantTuteur FROM EvalStage
-            WHERE IdEnseignantTuteur = :tuteur
-            AND :date BETWEEN date_h AND DATE_ADD(date_h, INTERVAL 1 HOUR)
-            UNION
-            SELECT 'Second', IdSecondEnseignant FROM EvalStage
-            WHERE IdSecondEnseignant = :second
-            AND :date BETWEEN date_h AND DATE_ADD(date_h, INTERVAL 1 HOUR)
-        ";
-        $stmt = $pdo->prepare($sqlConflits);
-        $stmt->execute([
-            'date' => $date,
-            'salle' => $salle,
-            'idEtudiant' => $idEtudiant,
-            'tuteur' => $idTuteur,
-            'second' => $secondEns
-        ]);
-        $conflits = $stmt->fetchAll();
+                UNION
+                SELECT 'Etudiant', IdEtudiant FROM EvalStage
+                WHERE IdEtudiant = :idEtudiant
+                AND :date BETWEEN date_h AND DATE_ADD(date_h, INTERVAL 1 HOUR)
+                UNION
+                SELECT 'Etudiant', IdEtudiant FROM EvalAnglais
+                WHERE IdEtudiant = :idEtudiant
+                AND :date BETWEEN dateS AND DATE_ADD(dateS, INTERVAL 1 HOUR)
 
-        if ($conflits) {
-            echo "<p style='color:red'>⚠️ Conflit détecté :<br>";
-            foreach ($conflits as $c) {
-                echo htmlspecialchars($c['type']) . " (" . htmlspecialchars($c['ressource']) . ") déjà occupé.<br>";
-            }
-            echo "</p>";
-        } else {
-            // INSERT stage
-            $sql = "INSERT INTO EvalStage 
-                (date_h, IdEtudiant, IdEnseignantTuteur, IdSecondEnseignant, IdSalle, anneeDebut, IdModeleEval, Statut, note, commentaireJury, presenceMaitreStageApp, confidentiel)
-                VALUES (:date, :idEtudiant, :tuteur, :second, :salle, :annee, 1, :statut, NULL, NULL, 0, 0)";
-            $stmt = $pdo->prepare($sql);
+                UNION
+                SELECT 'Tuteur', IdEnseignantTuteur FROM EvalStage
+                WHERE IdEnseignantTuteur = :tuteur
+                AND :date BETWEEN date_h AND DATE_ADD(date_h, INTERVAL 1 HOUR)
+                UNION
+                SELECT 'Second', IdSecondEnseignant FROM EvalStage
+                WHERE IdSecondEnseignant = :second
+                AND :date BETWEEN date_h AND DATE_ADD(date_h, INTERVAL 1 HOUR)
+            ";
+
+            $stmt = $pdo->prepare($sqlConflits);
             $stmt->execute([
                 'date' => $date,
+                'salle' => $salle,
                 'idEtudiant' => $idEtudiant,
                 'tuteur' => $idTuteur,
-                'second' => $secondEns,
-                'salle' => $salle,
-                'annee' => $anneeDebut,
-                'statut' => $statut
+                'second' => $secondEns
             ]);
-            header("Location: ../mainAdministration.php?added=1");
-            exit;
+            $conflits = $stmt->fetchAll();
+
+            if ($conflits) {
+                echo "<p style='color:red'>⚠️ Conflit détecté :<br>";
+                foreach ($conflits as $c) {
+                    echo htmlspecialchars($c['type']) . " (" . htmlspecialchars($c['ressource']) . ") déjà occupé.<br>";
+                }
+                echo "</p>";
+            } else {
+                // INSERT stage
+                $sql = "INSERT INTO EvalStage 
+                    (date_h, IdEtudiant, IdEnseignantTuteur, IdSecondEnseignant, IdSalle, anneeDebut, IdModeleEval, Statut, note, commentaireJury, presenceMaitreStageApp, confidentiel)
+                    VALUES (:date, :idEtudiant, :tuteur, :second, :salle, :annee, 1, :statut, NULL, NULL, 0, 0)";
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute([
+                    'date' => $date,
+                    'idEtudiant' => $idEtudiant,
+                    'tuteur' => $idTuteur,
+                    'second' => $secondEns,
+                    'salle' => $salle,
+                    'annee' => $anneeDebut,
+                    'statut' => $statut
+                ]);
+                header("Location: ../mainAdministration.php?added=1");
+                exit;
+            }
         }
+        
     }
 
     if ($nature === 'anglais') {

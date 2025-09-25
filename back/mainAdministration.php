@@ -139,7 +139,7 @@ if (isset($_GET['success'])) {
         <tr>
             <th>Étudiant</th>
             <th>Tuteur</th>
-            <th>Second Enseignant</th>
+            <th>Enseignant Secondaire</th>
             <th>Soutenance</th>
             <th>Date</th>
             <th>Salle</th>
@@ -149,23 +149,13 @@ if (isset($_GET['success'])) {
     <tbody>
     <?php foreach ($etudiantsBUT3 as $etu): ?>
         <?php
-        /*
-         $sql = "
-            SELECT 'stage' AS type, IdEvalStage AS id, date_h AS date, IdSalle, IdEnseignantTuteur, IdSecondEnseignant
-            FROM EvalStage WHERE IdEtudiant = :id
-            UNION
-            SELECT 'anglais' AS type, IdEvalAnglais AS id, dateS AS date, IdSalle, IdEnseignant AS IdEnseignantTuteur, NULL
-            FROM EvalAnglais WHERE IdEtudiant = :id
-            LIMIT 1
-        ";
-        */
+
         $sql = "
             SELECT 'stage' AS type, IdEvalStage AS id, date_h AS date, IdSalle, IdEnseignantTuteur, IdSecondEnseignant
             FROM EvalStage WHERE IdEtudiant = :id
             LIMIT 1
         ";
         
-
         $stmt = $pdo->prepare($sql);
         $stmt->execute(['id' => $etu['IdEtudiant']]);
         $soutenance = $stmt->fetch();
