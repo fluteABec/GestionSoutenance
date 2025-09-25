@@ -107,10 +107,6 @@ $etudList=$pdo->query('SELECT IdEtudiant, nom, prenom FROM EtudiantsBUT2ou3 ORDE
 <title>Gestion ressources</title>
 </head>
 <body>
-<nav>
-  <a href="index.php">← Retour</a>
-  <button onclick="toggleContent()">Gestion des ressources</button>
-</nav>
 <div>
   <a href="index.php">← Retour</a>
   <div><?php echo h($msg); ?></div>
