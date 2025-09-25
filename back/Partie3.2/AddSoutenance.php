@@ -132,47 +132,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
 <body>
 <?php include '../navbar.php'; ?>
-<h2>Ajout d'une Soutenance</h2>
-<form method="post">
-    <label>Nature :</label>
-    <select name="NatureSoutenance">
-        <option value="portfolio&stage">Portfolio & Stage</option>
-        <option value="anglais">Anglais</option>
-    </select><br>
+<div class="admin-block">
+    <h2 class="section-title">Ajout d'une Soutenance</h2>
+    <form method="post" style="width:100%;max-width:500px;margin:0 auto;">
+        <label for="NatureSoutenance">Nature :</label>
+        <select name="NatureSoutenance" id="NatureSoutenance">
+            <option value="portfolio&stage">Portfolio & Stage</option>
+            <option value="anglais">Anglais</option>
+        </select>
 
-   <label>Date et heure :</label>
-<input type="datetime-local" name="DateSoutenance" id="DateSoutenance"><br>
+        <label for="DateSoutenance">Date et heure :</label>
+        <input type="datetime-local" name="DateSoutenance" id="DateSoutenance">
 
-<label>Salle :</label>
-<select name="Salle" id="salleSelect">
-    <option value="">Choisir...</option>
-</select><br>
+        <label for="salleSelect">Salle :</label>
+        <select name="Salle" id="salleSelect">
+            <option value="">Choisir...</option>
+        </select>
 
-<div id="tuteurGroup">
-    <label id="tuteurLabel">Tuteur (Stage/Portfolio) :</label>
-    <select name="Tuteur" id="tuteurSelect">
-        <?php foreach ($listeEnseignant as $e): ?>
-            <option value="<?= $e['IdEnseignant'] ?>">
-                <?= htmlspecialchars($e['nom']." ".$e['prenom']) ?>
-            </option>
-        <?php endforeach; ?>
-    </select><br>
+        <div id="tuteurGroup">
+            <label id="tuteurLabel" for="tuteurSelect">Tuteur (Stage/Portfolio) :</label>
+            <select name="Tuteur" id="tuteurSelect">
+                <?php foreach ($listeEnseignant as $e): ?>
+                    <option value="<?= $e['IdEnseignant'] ?>">
+                        <?= htmlspecialchars($e['nom']." ".$e['prenom']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+
+        <div id="secondEnsGroup">
+            <label for="secondEnsSelect">Second enseignant :</label>
+            <select name="SecondEnseignant" id="secondEnsSelect">
+                <?php foreach ($listeEnseignant as $e): ?>
+                    <option value="<?= $e['IdEnseignant'] ?>">
+                        <?= htmlspecialchars($e['nom']." ".$e['prenom']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+
+        <div class="form-actions" style="margin-top:24px;">
+            <button type="submit" class="btn btn-primary">Enregistrer</button>
+            <a href="../mainAdministration.php" class="btn">Annuler</a>
+        </div>
+    </form>
 </div>
-
-<div id="secondEnsGroup">
-    <label>Second enseignant :</label>
-    <select name="SecondEnseignant" id="secondEnsSelect">
-        <?php foreach ($listeEnseignant as $e): ?>
-            <option value="<?= $e['IdEnseignant'] ?>">
-                <?= htmlspecialchars($e['nom']." ".$e['prenom']) ?>
-            </option>
-        <?php endforeach; ?>
-    </select><br>
-</div>
-
-
-    <button type="submit">Enregistrer</button>
-</form>
 
 <p><a href="../mainAdministration.php">← Retour</a></p>
 </body>

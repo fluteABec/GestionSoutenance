@@ -157,24 +157,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $etudiantsCandidats = getEtudiantsCandidats($pdo);
 ?>
 
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Partie 3.4 - Diffusion des résultats</title>
-        <link rel="stylesheet" href="../../3.1.css">
-
+    <link rel="stylesheet" href="../../stylee.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Partie 3.4 - Outils de diffusion des résultats</h1>
-        
+    <?php include '../../navbar.php'; ?>
+
+    <div class="admin-block">
+        <h1 class="section-title">Partie 3.4 - Outils de diffusion des résultats</h1>
         <?php if ($message): ?>
-            <div class="alert alert-success"><?= htmlspecialchars($message) ?></div>
+            <div class="alert alert-success" style="font-weight:600;color:var(--teal);margin-bottom:16px;">
+                <?= htmlspecialchars($message) ?>
+            </div>
         <?php endif; ?>
-        
-        <div class="info">
+        <div class="info-section">
             <h3>📋 Règles de diffusion :</h3>
             <ul>
                 <li><strong>BUT2 :</strong> Grilles de stage ET portfolio remontées</li>
@@ -182,15 +184,12 @@ $etudiantsCandidats = getEtudiantsCandidats($pdo);
                 <li><strong>Action irréversible :</strong> Une fois diffusée, la grille ne peut plus être modifiée</li>
             </ul>
         </div>
-        
-        <h2>Étudiants candidats à la diffusion</h2>
-        
+        <h2 class="section-title">Étudiants candidats à la diffusion</h2>
         <?php if (empty($etudiantsCandidats)): ?>
             <p>Aucun étudiant candidat à la diffusion.</p>
         <?php else: ?>
             <p><strong><?= count($etudiantsCandidats) ?></strong> étudiants peuvent recevoir leurs résultats.</p>
-            
-            <table>
+            <table class="styled-table">
                 <thead>
                     <tr>
                         <th>Étudiant</th>
@@ -219,17 +218,14 @@ $etudiantsCandidats = getEtudiantsCandidats($pdo);
                     <?php endforeach; ?>
                 </tbody>
             </table>
-            
-            <div class="actions">
+            <div class="actions" style="margin-top:24px;">
                 <form method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir diffuser les résultats à TOUS les étudiants ? Cette action est irréversible !')">
                     <input type="hidden" name="action" value="diffuser_tous">
                     <button type="submit" class="btn btn-danger">📧 Diffuser à tous les candidats</button>
                 </form>
             </div>
         <?php endif; ?>
-        
-        <h2>Étudiants ayant déjà reçu leurs résultats</h2>
-        
+        <h2 class="section-title">Étudiants ayant déjà reçu leurs résultats</h2>
         <?php
         $stmt = $pdo->prepare("
             SELECT e.nom, e.prenom, e.mail, an.but3sinon2, an.alternanceBUT3, ent.nom as entreprise
@@ -243,19 +239,17 @@ $etudiantsCandidats = getEtudiantsCandidats($pdo);
         $stmt->execute();
         $etudiantsDiffuses = $stmt->fetchAll();
         ?>
-        
         <?php if (empty($etudiantsDiffuses)): ?>
             <p>Aucun étudiant n'a encore reçu ses résultats.</p>
         <?php else: ?>
             <p><strong><?= count($etudiantsDiffuses) ?></strong> étudiants ont déjà reçu leurs résultats.</p>
-            
-            <table>
+            <table class="styled-table">
                 <thead>
                     <tr>
                         <th>Étudiant</th>
                         <th>Niveau</th>
                         <th>Entreprise</th>
-                        <th>Statut</th>
+                        <th>Email</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -273,22 +267,12 @@ $etudiantsCandidats = getEtudiantsCandidats($pdo);
                                 <span class="niveau <?= $class ?>"><?= $niveau ?></span>
                             </td>
                             <td><?= htmlspecialchars($etudiant['entreprise']) ?></td>
-                            <td><span>DIFFUSÉ</span></td>
+                            <td><?= htmlspecialchars($etudiant['mail']) ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
         <?php endif; ?>
-        
-        <div class="info">
-            <h3>💡 Fonctionnement :</h3>
-            <ol>
-                <li>Le système vérifie automatiquement que toutes les grilles sont remontées</li>
-                <li>Un email est envoyé à chaque étudiant avec un lien de consultation</li>
-                <li>Les statuts passent à "DIFFUSEE" (irréversible)</li>
-                <li>L'étudiant peut consulter ses résultats via le lien reçu</li>
-            </ol>
-        </div>
     </div>
 
         <p><a href="index.php">← Retour</a></p>
