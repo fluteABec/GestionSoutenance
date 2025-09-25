@@ -18,6 +18,12 @@ $sql = "SELECT e.IdEtudiant, e.nom, e.prenom
 $etudiantsBUT3 = $pdo->query($sql)->fetchAll();
 
 $idEtudiant = $_GET["idEtudiant"] ?? NULL;
+$type = $_GET["type"] ?? NULL;
+
+if (!in_array($type, ['stage', 'anglais'])) {
+    die("Erreur : type de soutenance invalide.");
+}
+
 
 // Vérifier si c'est un étudiant BUT3
 $estBut3 = false;
@@ -108,9 +114,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($nature === 'anglais') {
         $ens = $_POST['SecondEnseignant'];
 
+        
         $sql = "INSERT INTO EvalAnglais 
-            (dateS, IdEtudiant, IdEnseignant, IdSalle, anneeDebut, note, Statut)
-            VALUES (:date, :idEtudiant, :ens, :salle, :annee, NULL, :statut)";
+            (dateS, IdEtudiant, IdEnseignant, IdSalle, anneeDebut, note, Statut, IdModeleEval)
+            VALUES (:date, :idEtudiant, :ens, :salle, :annee, NULL, :statut, 1)";
+
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
             'date' => $date,
@@ -118,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'ens' => $ens,
             'salle' => $salle,
             'annee' => $anneeDebut,
-            'statut' => $statut
+            'statut' => $statut,
         ]);
         header("Location: ../mainAdministration.php?added=1");
         exit;
@@ -140,15 +148,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <?php include '../navbar.php'; ?>
 <h2>Ajout d'une Soutenance</h2>
 <form method="post">
-    <label>Nature :</label>
-    <select name="NatureSoutenance">
-        <option value="portfolio&stage">Portfolio & Stage</option>
-        <?php if ($estBut3): ?>
-            <option value="anglais">Anglais</option>
-        <?php endif; ?>
-    </select><br>
-
-
+    <?php if (!$estBut3 || $estBut3 && $type === 'stage'): ?> 
+        <h3 value="portfolio&stage">Nature : Portfolio & Stage</h3> 
+    <?php endif; ?> 
+        
+    <?php if ($estBut3 && $type === 'anglais'): ?> 
+        <h3 value="anglais">Nature : Anglais</h3> 
+    <?php endif; ?> 
 
    <label>Date et heure :</label>
 <input type="datetime-local" name="DateSoutenance" id="DateSoutenance"><br>
