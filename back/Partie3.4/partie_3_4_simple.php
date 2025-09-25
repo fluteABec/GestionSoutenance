@@ -54,31 +54,86 @@ function diffuserResultats($pdo, $etudiantId) {
 }
 
 // Fonction pour envoyer un email simple
-function envoyerEmailSimple($email, $nom, $prenom) {
+// Fonction pour envoyer un email réel avec PHPMailer
+function envoyerEmailSimple($email, $nom, $prenom, $etudiantId = null) {
+    // Sujet + contenu
     $sujet = "Vos résultats d'évaluation - " . date('Y');
-    $lien = "http://localhost/envoie%20de%20mail/consultation_simple.php?id=" . $email;
-    
+    // Génération d'un token signé (id étudiant + expiration)
+    $expireSeconds = 60 * 60 * 24 * 7; // 7 jours
+    $expiresAt = time() + $expireSeconds;
+
+    // Si on n'a pas l'Id étudiant, tombe back sur email encodé (moins sûr)
+    $payload = json_encode([
+        'id' => $etudiantId ?? $email,
+        'exp' => $expiresAt
+    ]);
+
+    $signature = hash_hmac('sha256', $payload, APP_SECRET);
+    $token = base64_encode($payload) . '.' . $signature;
+
+    // Construire une URL absolue robuste : privilégier l'hôte courant si disponible
+    if (!empty($_SERVER['HTTP_HOST'])) {
+        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $base = $scheme . '://' . $_SERVER['HTTP_HOST'];
+        $scriptDir = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
+        if ($scriptDir === '.' || $scriptDir === '/' || $scriptDir === '\\') {
+            $scriptDir = '';
+        }
+        $lien = $base . $scriptDir . '/consultation_simple.php?token=' . urlencode($token);
+    } else {
+        // Fallback sur APP_URL si le script est exécuté en contexte sans _SERVER
+        $lien = rtrim(APP_URL, '/') . '/consultation_simple.php?token=' . urlencode($token);
+    }
+
     $message = "Bonjour $prenom $nom,\n\n";
     $message .= "Vos résultats d'évaluation sont disponibles.\n";
     $message .= "Cliquez sur ce lien pour les consulter :\n";
-    $message .= "$lien\n\n";
+    $message .= "$lien\n";
+    $message .= "Ce lien expirera dans 7 jours.\n\n";
     $message .= "Cordialement,\nL'équipe pédagogique";
-    
-    // Log au lieu d'envoyer pour éviter l'erreur SMTP
-    $logEntry = "[" . date('Y-m-d H:i:s') . "] Email pour $email ($prenom $nom)\n";
-    $logEntry .= "Sujet: $sujet\n";
-    $logEntry .= "Message: $message\n";
-    $logEntry .= "---\n\n";
-    
-    // Créer le dossier logs s'il n'existe pas
-    if (!file_exists('logs')) {
-        mkdir('logs', 0755, true);
+
+    // Inclure PHPMailer
+    require_once __DIR__ . '/../Partie3.3/vendor/autoload.php';
+    $mail = new PHPMailer\PHPMailer\PHPMailer(true);
+
+    try {
+        // Config serveur SMTP Gmail
+        $mail->isSMTP();
+        $mail->Host       = 'smtp.gmail.com';
+        $mail->SMTPAuth   = true;
+        $mail->Username   = 'u1840518965@gmail.com';   // ton adresse Gmail
+        $mail->Password   = 'ooeo bavi hozw pndl';     // mot de passe d’application
+        $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port       = 587;
+
+        // Expéditeur
+        $mail->setFrom('u1840518965@gmail.com', 'IUT - Administration');
+
+        // Destinataire
+        $mail->addAddress($email, "$prenom $nom");
+
+        // Contenu
+        $mail->isHTML(false); // email en texte brut
+        $mail->Subject = $sujet;
+        $mail->Body    = $message;
+
+        // Envoi
+        $mail->send();
+
+        // En parallèle, log local
+        $logEntry = "[" . date('Y-m-d H:i:s') . "] Email envoyé à $email ($prenom $nom)\n";
+        $logEntry .= "Sujet: $sujet\n$message\n---\n\n";
+        if (!file_exists('logs')) mkdir('logs', 0755, true);
+        file_put_contents('logs/emails.log', $logEntry, FILE_APPEND | LOCK_EX);
+
+        return true;
+
+    } catch (Exception $e) {
+        error_log("Erreur PHPMailer : " . $mail->ErrorInfo);
+        return false;
     }
-    
-    file_put_contents('logs/emails.log', $logEntry, FILE_APPEND | LOCK_EX);
-    
-    return true; // Simule un envoi réussi
 }
+
 
 // Traitement des actions
 $message = '';
@@ -89,7 +144,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $success = 0;
             foreach ($etudiants as $etudiant) {
                 if (diffuserResultats($pdo, $etudiant['IdEtudiant'])) {
-                    envoyerEmailSimple($etudiant['mail'], $etudiant['nom'], $etudiant['prenom']);
+                    // Passer l'IdEtudiant pour générer un token sécurisé
+                    envoyerEmailSimple($etudiant['mail'], $etudiant['nom'], $etudiant['prenom'], $etudiant['IdEtudiant']);
                     $success++;
                 }
             }

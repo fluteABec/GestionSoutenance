@@ -9,10 +9,8 @@
 <body>
     <?php include '../navbar.php'; ?>
 
-    <header>
-        <h1>Gestion des Évaluations - IUT</h1>
-    </header>
-    <div class="container">
+    <div class="admin-block">
+        <h1 style="margin-bottom:24px;">Gestion des Évaluations - IUT</h1>
         <?php
 session_start();
 require __DIR__ . '/vendor/autoload.php';
@@ -410,10 +408,10 @@ function recuperer_mails_enseignat_tuteur($pdo, $idEtudiant) {
         <button type='submit' name='remonter_tout'>Remonter tout les élèves</button>
         </form>";
 
-        echo "<h2>Étudiants BUT2 prêts à la remontée :</h2>";
+    echo "<h2 class='section-title'>Étudiants BUT2 prêts à la remontée :</h2>";
         $etudiantsBUT2 = getEtudiantsBUT2($pdo);
         if ($etudiantsBUT2) {
-            echo "<table><tr>
+            echo "<table class='styled-table'><tr>
                 <th>Prénom</th><th>Nom</th><th>ID</th>
                 <th>Stage</th><th>Portfolio</th><th>Action</th></tr>";
             foreach ($etudiantsBUT2 as $etudiant) {
@@ -431,10 +429,10 @@ function recuperer_mails_enseignat_tuteur($pdo, $idEtudiant) {
             echo "<p class='no-data'>Aucun étudiant BUT2 prêt.</p>";
         }
 
-        echo "<h2>Étudiants BUT3 prêts à la remontée :</h2>";
+    echo "<h2 class='section-title'>Étudiants BUT3 prêts à la remontée :</h2>";
         $etudiantsBUT3 = getEtudiantsBUT3($pdo);
         if ($etudiantsBUT3) {
-            echo "<table><tr>
+            echo "<table class='styled-table'><tr>
                 <th>Prénom</th><th>Nom</th><th>ID</th>
                 <th>Stage</th><th>Portfolio</th><th>Anglais</th><th>Action</th></tr>";
             foreach ($etudiantsBUT3 as $etudiant) {
@@ -453,10 +451,10 @@ function recuperer_mails_enseignat_tuteur($pdo, $idEtudiant) {
             echo "<p class='no-data'>Aucun étudiant BUT3 prêt.</p>";
         }
 
-        echo "<h2>Étudiants en retard (soutenance passée, statut SAISIE) :</h2>";
+    echo "<h2 class='section-title'>Étudiants en retard (soutenance passée, statut SAISIE) :</h2>";
         $etudiantsNonBloques = getEtudiantsNonBloques($pdo);
         if ($etudiantsNonBloques) {
-            echo "<table><tr>
+            echo "<table class='styled-table'><tr>
                 <th>Prénom</th><th>Nom</th><th>ID</th>
                 <th>Stage</th><th>Portfolio</th><th>Anglais</th><th>Date Soutenance</th><th>Action</th></tr>";
             foreach ($etudiantsNonBloques as $etudiant) {
@@ -476,10 +474,10 @@ function recuperer_mails_enseignat_tuteur($pdo, $idEtudiant) {
             echo "<p class='no-data'>Aucun étudiant en retard.</p>";
         }
 
-        echo "<h2>Étudiants BUT2 déjà remontés :</h2>";
+    echo "<h2 class='section-title'>Étudiants BUT2 déjà remontés :</h2>";
         $etudiantsRemonteeBUT2 = getEtudiantRemonter2A($pdo);
         if ($etudiantsRemonteeBUT2) {
-            echo "<table><tr>
+            echo "<table class='styled-table'><tr>
                 <th>Prénom</th><th>Nom</th><th>ID</th>
                 <th>Stage</th><th>Portfolio</th><th>Action</th></tr>";
             foreach ($etudiantsRemonteeBUT2 as $etudiant) {
@@ -501,10 +499,10 @@ function recuperer_mails_enseignat_tuteur($pdo, $idEtudiant) {
             echo "<p class='no-data'>Aucun étudiant BUT2 remonté.</p>";
         }
 
-        echo "<h2>Étudiants BUT3 déjà remontés :</h2>";
+    echo "<h2 class='section-title'>Étudiants BUT3 déjà remontés :</h2>";
         $etudiantsRemonteeBUT3 = getEtudiantRemonter3A($pdo);
         if ($etudiantsRemonteeBUT3) {
-            echo "<table><tr>
+            echo "<table class='styled-table'><tr>
                 <th>Prénom</th><th>Nom</th><th>ID</th>
                 <th>Stage</th><th>Portfolio</th><th>Anglais</th><th>Action</th></tr>";
             foreach ($etudiantsRemonteeBUT3 as $etudiant) {
