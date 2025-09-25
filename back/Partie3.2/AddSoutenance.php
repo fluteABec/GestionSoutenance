@@ -1,111 +1,133 @@
 <?php
-$host = 'localhost';
-$db   = 'evaluationstages';
-$user = 'root';
-$pass = '';
-$charset = 'utf8mb4';
 
-$idEtudiant = $_GET['idEtudiant'];
-$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
-$options = [
-    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-];
+require_once "/opt/lampp/htdocs/projet_sql/db.php";
 
-try {
-    $pdo = new PDO($dsn, $user, $pass, $options);
-} catch (PDOException $e) {
-    echo "Erreur de connexion : " . $e->getMessage();
-    exit;
-}
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 
 // Liste des enseignants
 $sql = "SELECT IdEnseignant, nom, prenom FROM Enseignants ORDER BY nom, prenom";
 $stmt = $pdo->query($sql);
 $listeEnseignant = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+$sql = "SELECT e.IdEtudiant, e.nom, e.prenom
+        FROM EtudiantsBUT2ou3 e
+        JOIN AnneeStage a ON e.IdEtudiant = a.IdEtudiant
+        WHERE a.but3sinon2 = TRUE";
+$etudiantsBUT3 = $pdo->query($sql)->fetchAll();
+
+$idEtudiant = $_GET["idEtudiant"] ?? NULL;
+$type = $_GET["type"] ?? NULL;
+
+if (!in_array($type, ['stage', 'anglais'])) {
+    die("Erreur : type de soutenance invalide.");
+}
+
+
+// Vérifier si c'est un étudiant BUT3
+$estBut3 = false;
+foreach ($etudiantsBUT3 as $e) {
+    if ($e["IdEtudiant"] == $idEtudiant) {
+        $estBut3 = true;
+        break;
+    }
+}
+
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nature = $_POST['NatureSoutenance'];
+    $nature = $_GET['type'];
     $date   = $_POST['DateSoutenance'];
     $salle  = $_POST['Salle'];
     $anneeDebut = 2025;
     $statut = 'SAISIE';
 
-    if ($nature === 'portfolio&stage') {
+    if ($nature === 'stage') {
         $idTuteur = $_POST['Tuteur'];
         $secondEns = $_POST['SecondEnseignant'];
 
-        // Vérifier conflits
-        $sqlConflits = "
-            SELECT 'Salle' AS type, IdSalle AS ressource
-            FROM evalstage
-            WHERE IdSalle = :salle
-            AND :date BETWEEN date_h AND DATE_ADD(date_h, INTERVAL 1 HOUR)
-            UNION
-            SELECT 'Salle', IdSalle FROM evalanglais
-            WHERE IdSalle = :salle
-            AND :date BETWEEN dateS AND DATE_ADD(dateS, INTERVAL 1 HOUR)
 
-            UNION
-            SELECT 'Etudiant', IdEtudiant FROM evalstage
-            WHERE IdEtudiant = :idEtudiant
-            AND :date BETWEEN date_h AND DATE_ADD(date_h, INTERVAL 1 HOUR)
-            UNION
-            SELECT 'Etudiant', IdEtudiant FROM evalanglais
-            WHERE IdEtudiant = :idEtudiant
-            AND :date BETWEEN dateS AND DATE_ADD(dateS, INTERVAL 1 HOUR)
+        if ($idTuteur == $secondEns) {
+            echo "<h2 style='color:red'>Le tuteur et le second enseignant doivent être différents.<h2>";
+        }
+        else
+        {
+            // Vérifier conflits
+            $sqlConflits = "
+                SELECT 'Salle' AS type, IdSalle AS ressource
+                FROM EvalStage
+                WHERE IdSalle = :salle
+                AND :date BETWEEN date_h AND DATE_ADD(date_h, INTERVAL 1 HOUR)
+                UNION 
+                SELECT 'Salle', IdSalle FROM EvalAnglais
+                WHERE IdSalle = :salle
+                AND :date BETWEEN dateS AND DATE_ADD(dateS, INTERVAL 1 HOUR)
 
-            UNION
-            SELECT 'Tuteur', IdEnseignantTuteur FROM evalstage
-            WHERE IdEnseignantTuteur = :tuteur
-            AND :date BETWEEN date_h AND DATE_ADD(date_h, INTERVAL 1 HOUR)
-            UNION
-            SELECT 'Second', IdSecondEnseignant FROM evalstage
-            WHERE IdSecondEnseignant = :second
-            AND :date BETWEEN date_h AND DATE_ADD(date_h, INTERVAL 1 HOUR)
-        ";
-        $stmt = $pdo->prepare($sqlConflits);
-        $stmt->execute([
-            'date' => $date,
-            'salle' => $salle,
-            'idEtudiant' => $idEtudiant,
-            'tuteur' => $idTuteur,
-            'second' => $secondEns
-        ]);
-        $conflits = $stmt->fetchAll();
+                UNION
+                SELECT 'Etudiant', IdEtudiant FROM EvalStage
+                WHERE IdEtudiant = :idEtudiant
+                AND :date BETWEEN date_h AND DATE_ADD(date_h, INTERVAL 1 HOUR)
+                UNION
+                SELECT 'Etudiant', IdEtudiant FROM EvalAnglais
+                WHERE IdEtudiant = :idEtudiant
+                AND :date BETWEEN dateS AND DATE_ADD(dateS, INTERVAL 1 HOUR)
 
-        if ($conflits) {
-            echo "<p style='color:red'>⚠️ Conflit détecté :<br>";
-            foreach ($conflits as $c) {
-                echo htmlspecialchars($c['type']) . " (" . htmlspecialchars($c['ressource']) . ") déjà occupé.<br>";
-            }
-            echo "</p>";
-        } else {
-            // INSERT stage
-            $sql = "INSERT INTO evalstage 
-                (date_h, IdEtudiant, IdEnseignantTuteur, IdSecondEnseignant, IdSalle, anneeDebut, IdModeleEval, Statut, note, commentaireJury, presenceMaitreStageApp, confidentiel)
-                VALUES (:date, :idEtudiant, :tuteur, :second, :salle, :annee, 1, :statut, NULL, NULL, 0, 0)";
-            $stmt = $pdo->prepare($sql);
+                UNION
+                SELECT 'Tuteur', IdEnseignantTuteur FROM EvalStage
+                WHERE IdEnseignantTuteur = :tuteur
+                AND :date BETWEEN date_h AND DATE_ADD(date_h, INTERVAL 1 HOUR)
+                UNION
+                SELECT 'Second', IdSecondEnseignant FROM EvalStage
+                WHERE IdSecondEnseignant = :second
+                AND :date BETWEEN date_h AND DATE_ADD(date_h, INTERVAL 1 HOUR)
+            ";
+
+            $stmt = $pdo->prepare($sqlConflits);
             $stmt->execute([
                 'date' => $date,
+                'salle' => $salle,
                 'idEtudiant' => $idEtudiant,
                 'tuteur' => $idTuteur,
-                'second' => $secondEns,
-                'salle' => $salle,
-                'annee' => $anneeDebut,
-                'statut' => $statut
+                'second' => $secondEns
             ]);
-            header("Location: ../mainAdministration.php?added=1");
-            exit;
+            $conflits = $stmt->fetchAll();
+
+            if ($conflits) {
+                echo "<p style='color:red'>⚠️ Conflit détecté :<br>";
+                foreach ($conflits as $c) {
+                    echo htmlspecialchars($c['type']) . " (" . htmlspecialchars($c['ressource']) . ") déjà occupé.<br>";
+                }
+                echo "</p>";
+            } else {
+                // INSERT stage
+                $sql = "INSERT INTO EvalStage 
+                    (date_h, IdEtudiant, IdEnseignantTuteur, IdSecondEnseignant, IdSalle, anneeDebut, IdModeleEval, Statut, note, commentaireJury, presenceMaitreStageApp, confidentiel)
+                    VALUES (:date, :idEtudiant, :tuteur, :second, :salle, :annee, 1, :statut, NULL, NULL, 0, 0)";
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute([
+                    'date' => $date,
+                    'idEtudiant' => $idEtudiant,
+                    'tuteur' => $idTuteur,
+                    'second' => $secondEns,
+                    'salle' => $salle,
+                    'annee' => $anneeDebut,
+                    'statut' => $statut
+                ]);
+                header("Location: ../mainAdministration.php?added=1");
+                exit;
+            }
         }
+        
     }
 
     if ($nature === 'anglais') {
         $ens = $_POST['SecondEnseignant'];
 
-        $sql = "INSERT INTO evalanglais 
-            (dateS, IdEtudiant, IdEnseignant, IdSalle, anneeDebut, note, Statut)
-            VALUES (:date, :idEtudiant, :ens, :salle, :annee, NULL, :statut)";
+        
+        $sql = "INSERT INTO EvalAnglais 
+            (dateS, IdEtudiant, IdEnseignant, IdSalle, anneeDebut, note, Statut, IdModeleEval)
+            VALUES (:date, :idEtudiant, :ens, :salle, :annee, NULL, :statut, 1)";
+
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
             'date' => $date,
@@ -113,16 +135,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'ens' => $ens,
             'salle' => $salle,
             'annee' => $anneeDebut,
-            'statut' => $statut
+            'statut' => $statut,
         ]);
         header("Location: ../mainAdministration.php?added=1");
         exit;
     }
 }
 
-    ?>
 
-        <!DOCTYPE html>
+?>
+
+    <!DOCTYPE html>
     <html lang="fr">
     <head>
         <meta charset="UTF-8">
@@ -132,50 +155,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
 <body>
 <?php include '../navbar.php'; ?>
-<div class="admin-block">
-    <h2 class="section-title">Ajout d'une Soutenance</h2>
-    <form method="post" style="width:100%;max-width:500px;margin:0 auto;">
-        <label for="NatureSoutenance">Nature :</label>
-        <select name="NatureSoutenance" id="NatureSoutenance">
-            <option value="portfolio&stage">Portfolio & Stage</option>
-            <option value="anglais">Anglais</option>
-        </select>
 
-        <label for="DateSoutenance">Date et heure :</label>
-        <input type="datetime-local" name="DateSoutenance" id="DateSoutenance">
+<h2>Ajout d'une Soutenance</h2>
+<form method="post">
+    <?php if (!$estBut3 || $estBut3 && $type === 'stage'): ?> 
+        <label value="portfolio&stage">Nature : Portfolio & Stage</h3> 
+    <?php endif; ?> 
+        
+    <?php if ($estBut3 && $type === 'anglais'): ?> 
+        <label value="anglais">Nature : Anglais</h3> 
+    <?php endif; ?> 
 
-        <label for="salleSelect">Salle :</label>
-        <select name="Salle" id="salleSelect">
-            <option value="">Choisir...</option>
-        </select>
+   <label>Date et heure :</label>
+<input type="datetime-local" name="DateSoutenance" id="DateSoutenance"><br>
 
-        <div id="tuteurGroup">
-            <label id="tuteurLabel" for="tuteurSelect">Tuteur (Stage/Portfolio) :</label>
-            <select name="Tuteur" id="tuteurSelect">
-                <?php foreach ($listeEnseignant as $e): ?>
-                    <option value="<?= $e['IdEnseignant'] ?>">
-                        <?= htmlspecialchars($e['nom']." ".$e['prenom']) ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </div>
+<label>Salle :</label>
+<select name="Salle" id="salleSelect">
+    <option value="">Choisir...</option>
+</select><br>
 
-        <div id="secondEnsGroup">
-            <label for="secondEnsSelect">Second enseignant :</label>
-            <select name="SecondEnseignant" id="secondEnsSelect">
-                <?php foreach ($listeEnseignant as $e): ?>
-                    <option value="<?= $e['IdEnseignant'] ?>">
-                        <?= htmlspecialchars($e['nom']." ".$e['prenom']) ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </div>
+<div id="tuteurGroup">
+    <label id="tuteurLabel">Tuteur (Stage/Portfolio) :</label>
+    <select name="Tuteur" id="tuteurSelect">
+        <?php foreach ($listeEnseignant as $e): ?>
+            <option value="<?= $e['IdEnseignant'] ?>">
+                <?= htmlspecialchars($e['nom']." ".$e['prenom']) ?>
+            </option>
+        <?php endforeach; ?>
+    </select><br>
 
-        <div class="form-actions" style="margin-top:24px;">
-            <button type="submit" class="btn btn-primary">Enregistrer</button>
-            <a href="../mainAdministration.php" class="btn">Annuler</a>
-        </div>
-    </form>
 </div>
 
 <p><a href="../mainAdministration.php">← Retour</a></p>
@@ -185,7 +193,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
 
-    <script>
+<script>
+const type = "<?= htmlspecialchars($type) ?>"; // récupéré depuis $_GET en PHP
+
 function chargerSalles() {
     const dateSoutenance = document.getElementById('DateSoutenance').value;
     const selectSalle = document.getElementById('salleSelect');
@@ -216,13 +226,12 @@ function chargerSalles() {
         });
 }
 
-// ⚡ Adapter les champs si anglais sélectionné
+// Adapter les champs si anglais sélectionné
 function adapterChampsNature() {
-    const nature = document.querySelector('select[name="NatureSoutenance"]').value;
     const tuteurLabel = document.getElementById("tuteurLabel");
     const secondGroup = document.getElementById("secondEnsGroup");
 
-    if (nature === "anglais") {
+    if (type === "anglais") {
         tuteurLabel.textContent = "Enseignant :";
         secondGroup.style.display = "none"; // on cache le champ second enseignant
     } else {
@@ -233,7 +242,6 @@ function adapterChampsNature() {
 
 // événements
 document.getElementById('DateSoutenance').addEventListener('change', chargerSalles);
-document.querySelector('select[name="NatureSoutenance"]').addEventListener('change', adapterChampsNature);
 
 // appel initial
 adapterChampsNature();

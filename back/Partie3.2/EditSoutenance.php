@@ -1,22 +1,10 @@
 <?php
-$host = 'localhost';
-$db   = 'evaluationstages';
-$user = 'root';
-$pass = '';
-$charset = 'utf8mb4';
 
-$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
-$options = [
-    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-];
+require_once "/opt/lampp/htdocs/projet_sql/db.php";
 
-try {
-    $pdo = new PDO($dsn, $user, $pass, $options);
-} catch (PDOException $e) {
-    echo "Erreur de connexion : " . $e->getMessage();
-    exit;
-}
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 
 $id   = $_GET['id'] ?? null;
 $type = $_GET['type'] ?? null;
@@ -27,9 +15,9 @@ if (!$id || !$type) {
 
 // Charger la soutenance
 if ($type === 'stage') {
-    $sql = "SELECT * FROM evalstage WHERE IdEvalStage = :id LIMIT 1";
+    $sql = "SELECT * FROM EvalStage WHERE IdEvalStage = :id LIMIT 1";
 } elseif ($type === 'anglais') {
-    $sql = "SELECT * FROM evalanglais WHERE IdEvalAnglais = :id LIMIT 1";
+    $sql = "SELECT * FROM EvalAnglais WHERE IdEvalAnglais = :id LIMIT 1";
 } else {
     die("⚠️ Type de soutenance inconnu.");
 }
@@ -60,7 +48,7 @@ $stmt->execute(['idEtudiant' => $idEtudiant]);
 $listeEnseignant = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Récupérer toutes les salles disponibles (sans filtrer sur la date)
-$sql = "SELECT IdSalle, description FROM salles ORDER BY IdSalle";
+$sql = "SELECT IdSalle, description FROM Salles ORDER BY IdSalle";
 $stmt = $pdo->query($sql);
 $listeSalles = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -71,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $second = $_POST['SecondEnseignant'] ?? null;
 
     if ($type === 'stage') {
-        $sql = "UPDATE evalstage 
+        $sql = "UPDATE EvalStage 
                 SET date_h = :date, IdSalle = :salle, IdSecondEnseignant = :second 
                 WHERE IdEvalStage = :id";
         $stmt = $pdo->prepare($sql);
@@ -82,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'id' => $id
         ]);
     } elseif ($type === 'anglais') {
-        $sql = "UPDATE evalanglais 
+        $sql = "UPDATE EvalAnglais 
                 SET dateS = :date, IdSalle = :salle, IdEnseignant = :second 
                 WHERE IdEvalAnglais = :id";
         $stmt = $pdo->prepare($sql);
