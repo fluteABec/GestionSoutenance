@@ -238,16 +238,6 @@ if (isset($_GET['success'])) {
     <tbody>
     <?php foreach ($etudiantsBUT3 as $etu): ?>
         <?php
-        /*
-        $sql = "
-            SELECT 'stage' AS type, IdEvalStage AS id, date_h AS date, IdSalle, IdEnseignantTuteur, IdSecondEnseignant
-            FROM EvalStage WHERE IdEtudiant = :id
-            UNION
-            SELECT 'anglais' AS type, IdEvalAnglais AS id, dateS AS date, IdSalle, IdEnseignant AS IdEnseignantTuteur, NULL
-            FROM EvalAnglais WHERE IdEtudiant = :id
-            LIMIT 1
-        ";
-        */
         $sql = "
             SELECT 'anglais' AS type, IdEvalAnglais AS id, dateS AS date, IdSalle, IdEnseignant AS IdEnseignantTuteur, NULL
             FROM EvalAnglais WHERE IdEtudiant = :id

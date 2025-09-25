@@ -36,13 +36,13 @@ foreach ($etudiantsBUT3 as $e) {
 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nature = $_POST['NatureSoutenance'];
+    $nature = $_GET['type'];
     $date   = $_POST['DateSoutenance'];
     $salle  = $_POST['Salle'];
     $anneeDebut = 2025;
     $statut = 'SAISIE';
 
-    if ($nature === 'portfolio&stage') {
+    if ($nature === 'stage') {
         $idTuteur = $_POST['Tuteur'];
         $secondEns = $_POST['SecondEnseignant'];
 
@@ -149,11 +149,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <h2>Ajout d'une Soutenance</h2>
 <form method="post">
     <?php if (!$estBut3 || $estBut3 && $type === 'stage'): ?> 
-        <h3 value="portfolio&stage">Nature : Portfolio & Stage</h3> 
+        <label value="portfolio&stage">Nature : Portfolio & Stage</h3> 
     <?php endif; ?> 
         
     <?php if ($estBut3 && $type === 'anglais'): ?> 
-        <h3 value="anglais">Nature : Anglais</h3> 
+        <label value="anglais">Nature : Anglais</h3> 
     <?php endif; ?> 
 
    <label>Date et heure :</label>
@@ -197,7 +197,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
 
-    <script>
+<script>
+const type = "<?= htmlspecialchars($type) ?>"; // récupéré depuis $_GET en PHP
+
 function chargerSalles() {
     const dateSoutenance = document.getElementById('DateSoutenance').value;
     const selectSalle = document.getElementById('salleSelect');
@@ -228,13 +230,12 @@ function chargerSalles() {
         });
 }
 
-// ⚡ Adapter les champs si anglais sélectionné
+// Adapter les champs si anglais sélectionné
 function adapterChampsNature() {
-    const nature = document.querySelector('select[name="NatureSoutenance"]').value;
     const tuteurLabel = document.getElementById("tuteurLabel");
     const secondGroup = document.getElementById("secondEnsGroup");
 
-    if (nature === "anglais") {
+    if (type === "anglais") {
         tuteurLabel.textContent = "Enseignant :";
         secondGroup.style.display = "none"; // on cache le champ second enseignant
     } else {
@@ -245,7 +246,6 @@ function adapterChampsNature() {
 
 // événements
 document.getElementById('DateSoutenance').addEventListener('change', chargerSalles);
-document.querySelector('select[name="NatureSoutenance"]').addEventListener('change', adapterChampsNature);
 
 // appel initial
 adapterChampsNature();
