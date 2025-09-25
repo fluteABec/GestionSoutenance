@@ -71,7 +71,19 @@ function envoyerEmailSimple($email, $nom, $prenom, $etudiantId = null) {
     $signature = hash_hmac('sha256', $payload, APP_SECRET);
     $token = base64_encode($payload) . '.' . $signature;
 
-    $lien = rtrim(APP_URL, '/') . '/consultation_simple.php?token=' . urlencode($token);
+    // Construire une URL absolue robuste : privilégier l'hôte courant si disponible
+    if (!empty($_SERVER['HTTP_HOST'])) {
+        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $base = $scheme . '://' . $_SERVER['HTTP_HOST'];
+        $scriptDir = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
+        if ($scriptDir === '.' || $scriptDir === '/' || $scriptDir === '\\') {
+            $scriptDir = '';
+        }
+        $lien = $base . $scriptDir . '/consultation_simple.php?token=' . urlencode($token);
+    } else {
+        // Fallback sur APP_URL si le script est exécuté en contexte sans _SERVER
+        $lien = rtrim(APP_URL, '/') . '/consultation_simple.php?token=' . urlencode($token);
+    }
 
     $message = "Bonjour $prenom $nom,\n\n";
     $message .= "Vos résultats d'évaluation sont disponibles.\n";

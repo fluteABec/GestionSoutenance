@@ -4,56 +4,67 @@
 
 require_once 'config.php';
 
-// Sécurisation : attendre un token signé plutôt qu'un id en clair
-if (!isset($_GET['token'])) {
-    die('Token manquant');
+// Fonction d'erreur agréable
+function render_error($title, $msg) {
+    http_response_code(403);
+    echo '<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>' . htmlspecialchars($title) . '</title>';
+    echo '<style>body{font-family:Arial,Helvetica,sans-serif;background:#f5f7fb;color:#333;padding:30px} .card{max-width:820px;margin:30px auto;background:#fff;border-radius:8px;padding:24px;box-shadow:0 6px 18px rgba(0,0,0,0.06)} h1{margin:0 0 8px} p{margin:0}</style></head><body>';
+    echo '<div class="card"><h1>' . htmlspecialchars($title) . '</h1><p>' . nl2br(htmlspecialchars($msg)) . '</p></div></body></html>';
+    exit;
 }
 
-$token = $_GET['token'];
-$parts = explode('.', $token);
-if (count($parts) !== 2) {
-    die('Token invalide');
+// Accept both token (preferred) and legacy ?id=email fallback
+$identifier = null;
+if (isset($_GET['token'])) {
+    $token = $_GET['token'];
+    $parts = explode('.', $token);
+    if (count($parts) !== 2) {
+        render_error('Token invalide', 'Le token fourni est invalide.');
+    }
+
+    $payloadB64 = $parts[0];
+    $signature = $parts[1];
+
+    $payloadJson = base64_decode($payloadB64, true);
+    if ($payloadJson === false) {
+        render_error('Payload invalide', 'Le token est corrompu.');
+    }
+
+    $expectedSig = hash_hmac('sha256', $payloadJson, APP_SECRET);
+    if (!hash_equals($expectedSig, $signature)) {
+        render_error('Signature invalide', 'La signature du token ne correspond pas.');
+    }
+
+    $payload = json_decode($payloadJson, true);
+    if (!$payload || !isset($payload['id']) || !isset($payload['exp'])) {
+        render_error('Payload manquant', 'Le token ne contient pas les informations attendues.');
+    }
+
+    if (time() > (int)$payload['exp']) {
+        render_error('Lien expiré', 'Ce lien a expiré. Demandez un nouveau lien à votre administration.');
+    }
+
+    $identifier = $payload['id'];
+} elseif (isset($_GET['id'])) {
+    // Legacy fallback — moins sûr, mais pratique pour les liens déjà envoyés
+    $identifier = $_GET['id'];
+} else {
+    render_error('Accès refusé', 'Aucun identifiant ni token fourni.');
 }
 
-$payloadB64 = $parts[0];
-$signature = $parts[1];
-
-$payloadJson = base64_decode($payloadB64, true);
-if ($payloadJson === false) {
-    die('Payload invalide');
-}
-
-$expectedSig = hash_hmac('sha256', $payloadJson, APP_SECRET);
-if (!hash_equals($expectedSig, $signature)) {
-    die('Signature invalide');
-}
-
-$payload = json_decode($payloadJson, true);
-if (!$payload || !isset($payload['id']) || !isset($payload['exp'])) {
-    die('Payload manquant');
-}
-
-if (time() > (int)$payload['exp']) {
-    die('Le lien a expiré');
-}
-
-// Déterminer l'identifiant (email ou IdEtudiant)
-$identifier = $payload['id'];
-
+// Déterminer le type d'identifiant et récupérer l'étudiant
 if (is_numeric($identifier)) {
-    // chercher par IdEtudiant
     $stmt = $pdo->prepare("SELECT IdEtudiant, nom, prenom, mail FROM EtudiantsBUT2ou3 WHERE IdEtudiant = ?");
     $stmt->execute([(int)$identifier]);
     $etudiant = $stmt->fetch();
-    if (!$etudiant) die('Étudiant introuvable');
+    if (!$etudiant) render_error('Étudiant introuvable', 'Aucun étudiant trouvé pour cet identifiant.');
     $email = $etudiant['mail'];
 } else {
-    // chercher par email
     $email = $identifier;
     $stmt = $pdo->prepare("SELECT IdEtudiant, nom, prenom, mail FROM EtudiantsBUT2ou3 WHERE mail = ?");
     $stmt->execute([$email]);
     $etudiant = $stmt->fetch();
-    if (!$etudiant) die('Étudiant introuvable');
+    if (!$etudiant) render_error('Étudiant introuvable', 'Aucun étudiant trouvé pour cette adresse mail.');
 }
 
 // Récupération des informations de l'étudiant
@@ -160,13 +171,30 @@ if ($etudiant['but3sinon2']) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Résultats d'évaluation - <?= htmlspecialchars($etudiant['prenom'] . ' ' . $etudiant['nom']) ?></title>
-    
+    <style>
+        body{font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background:#f4f6fb; color:#222; padding:24px}
+        .card{max-width:980px;margin:18px auto;background:#fff;border-radius:10px;padding:24px;box-shadow:0 10px 30px rgba(20,30,50,0.06)}
+        h1{margin:0 0 6px;font-size:20px}
+        .muted{color:#6b7280}
+        .student-info{display:flex;gap:18px;flex-wrap:wrap}
+        .info-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+        .niveau-badge{display:inline-block;padding:6px 10px;border-radius:999px;background:#eef2ff;color:#3730a3;font-weight:600}
+        .evaluation-card{margin-top:18px;padding:14px;border-radius:8px;background:#fbfbff}
+        .note-display{display:flex;align-items:baseline;gap:12px}
+        .note-number{font-size:28px;font-weight:700}
+        .note-max{color:#6b7280}
+        table{width:100%;border-collapse:collapse;margin-top:8px}
+        table th, table td{border:1px solid #e6e9ef;padding:6px;text-align:left}
+        .summary-grid{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
+        .summary-item{background:#fff;padding:10px;border-radius:8px;box-shadow:0 4px 10px rgba(20,30,50,0.04)}
+        .footer{margin-top:18px;color:#6b7280;font-size:13px}
+    </style>
 </head>
 <body>
-    <div class="container">
+    <div class="card">
         <div class="header">
             <h1>📊 Résultats d'évaluation</h1>
-            <p>Année universitaire <?= date('Y') ?>-<?= date('Y') + 1 ?></p>
+            <p class="muted">Année universitaire <?= date('Y') ?>-<?= date('Y') + 1 ?></p>
         </div>
         
         <div class="student-info">
