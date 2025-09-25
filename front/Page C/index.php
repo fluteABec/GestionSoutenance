@@ -18,6 +18,8 @@
         $idEnseignant = 0; 
     }
 
+    $nature_Soutenance = $_GET['nature'];
+
     
 
     // Création des requetes (qui vont chacune retournée un resultat)
@@ -245,7 +247,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Grilles - Enseignant n°<?=$idEnseignant?></title>
+        <title>Grilles <?= $nature_Soutenance?> - <?=$idEnseignant?></title>
         <link rel="stylesheet" href="../../../stylee.css">
         <meta charset="UTF-8">
     </head>
