@@ -41,87 +41,81 @@ if (isset($_GET['success'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
+
 <?php include 'navbarAdmin.php'; ?>
 
-<div class="navbar">
-    <div class="brand"><span class="logo"></span><span>Administration</span></div>
-    <a class="nav-item" href="Partie3.1/3_1_natan.php">Tâches enseignants</a>
-    <a class="nav-item" href="Partie3.3/index.php">Évaluations IUT</a>
-    <a class="nav-item" href="Partie3.4/index.php">Diffusion résultats</a>
-    <a class="nav-item" href="Partie3.5/Partie3.5.2/Grille.php">Gestion Grille</a>
+<div class="admin-block">
+    <?php if ($message): ?>
+        <div class="mb-3" style="font-weight:600; color:var(--teal);">
+            <?= $message ?>
+        </div>
+    <?php endif; ?>
 
-</div>
+    <table id="tableEtudiants">
+        <thead>
+            <tr>
+                <th>Étudiant</th>
+                <th>Tuteur</th>
+                <th>Soutenance</th>
+                <th>Date</th>
+                <th>Salle</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        <?php foreach ($etudiants as $etu): ?>
+            <?php
+            // Soutenance existante ?
+            $sql = "
+                SELECT 'stage' AS type, IdEvalStage AS id, date_h AS date, IdSalle, IdEnseignantTuteur
+                FROM evalstage WHERE IdEtudiant = :id
+                UNION
+                SELECT 'anglais' AS type, IdEvalAnglais AS id, dateS AS date, IdSalle, NULL
+                FROM evalanglais WHERE IdEtudiant = :id
+                LIMIT 1
+            ";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute(['id' => $etu['IdEtudiant']]);
+            $soutenance = $stmt->fetch();
 
-<!-- Barre de recherche -->
-<input type="text" id="searchInput" placeholder="🔍 Rechercher un étudiant...">
-
-
-<table id="tableEtudiants">
-    <thead>
-        <tr>
-            <th>Étudiant</th>
-            <th>Tuteur</th>
-            <th>Soutenance</th>
-            <th>Date</th>
-            <th>Salle</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-    <?php foreach ($etudiants as $etu): ?>
-        <?php
-        // Soutenance existante ?
-        $sql = "
-            SELECT 'stage' AS type, IdEvalStage AS id, date_h AS date, IdSalle, IdEnseignantTuteur
-            FROM evalstage WHERE IdEtudiant = :id
-            UNION
-            SELECT 'anglais' AS type, IdEvalAnglais AS id, dateS AS date, IdSalle, NULL
-            FROM evalanglais WHERE IdEtudiant = :id
-            LIMIT 1
-        ";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute(['id' => $etu['IdEtudiant']]);
-        $soutenance = $stmt->fetch();
-
-        // Chercher le tuteur si stage
-        $tuteurNom = "-";
-        if ($soutenance && $soutenance['type'] === 'stage' && $soutenance['IdEnseignantTuteur']) {
-            $stmt = $pdo->prepare("SELECT nom, prenom FROM enseignants WHERE IdEnseignant = :id");
-            $stmt->execute(['id' => $soutenance['IdEnseignantTuteur']]);
-            $tuteur = $stmt->fetch();
-            if ($tuteur) {
-                $tuteurNom = htmlspecialchars($tuteur['nom'] . " " . $tuteur['prenom']);
+            // Chercher le tuteur si stage
+            $tuteurNom = "-";
+            if ($soutenance && $soutenance['type'] === 'stage' && $soutenance['IdEnseignantTuteur']) {
+                $stmt = $pdo->prepare("SELECT nom, prenom FROM enseignants WHERE IdEnseignant = :id");
+                $stmt->execute(['id' => $soutenance['IdEnseignantTuteur']]);
+                $tuteur = $stmt->fetch();
+                if ($tuteur) {
+                    $tuteurNom = htmlspecialchars($tuteur['nom'] . " " . $tuteur['prenom']);
+                }
             }
-        }
-        ?>
-        <tr>
-            <td><?= htmlspecialchars($etu['nom'] . " " . $etu['prenom']) ?></td>
-            <td><?= $tuteurNom ?></td>
-            <?php if ($soutenance): ?>
-                <td><?= $soutenance['type'] === 'stage' ? "Portfolio & Stage" : "Anglais" ?></td>
-                <td><?= htmlspecialchars($soutenance['date']) ?></td>
-                <td><?= htmlspecialchars($soutenance['IdSalle']) ?></td>
-                <td class="actions">
-                    <a href="Partie3.2/EditSoutenance.php?id=<?= $soutenance['id'] ?>&type=<?= $soutenance['type'] ?>">
-                        <button>✏️ Modifier</button>
-                    </a>
-                    <a href="Partie3.2/DeleteSoutenance.php?id=<?= $soutenance['id'] ?>&type=<?= $soutenance['type'] ?>" onclick="return confirm('Supprimer cette soutenance ?')">
-                        <button>❌ Supprimer</button>
-                    </a>
-                </td>
-            <?php else: ?>
-                <td colspan="3">Aucune soutenance</td>
-                <td>
-                    <a href="Partie3.2/AddSoutenance.php?idEtudiant=<?= $etu['IdEtudiant'] ?>">
-                        <button>➕ Ajouter</button>
-                    </a>
-                </td>
-            <?php endif; ?>
-        </tr>
-    <?php endforeach; ?>
-    </tbody>
-</table>
-
+            ?>
+            <tr>
+                <td><?= htmlspecialchars($etu['nom'] . " " . $etu['prenom']) ?></td>
+                <td><?= $tuteurNom ?></td>
+                <?php if ($soutenance): ?>
+                    <td><?= $soutenance['type'] === 'stage' ? "Portfolio & Stage" : "Anglais" ?></td>
+                    <td><?= htmlspecialchars($soutenance['date']) ?></td>
+                    <td><?= htmlspecialchars($soutenance['IdSalle']) ?></td>
+                    <td class="actions">
+                        <a href="Partie3.2/EditSoutenance.php?id=<?= $soutenance['id'] ?>&type=<?= $soutenance['type'] ?>">
+                            <button>✏️ Modifier</button>
+                        </a>
+                        <a href="Partie3.2/DeleteSoutenance.php?id=<?= $soutenance['id'] ?>&type=<?= $soutenance['type'] ?>" onclick="return confirm('Supprimer cette soutenance ?')">
+                            <button>❌ Supprimer</button>
+                        </a>
+                    </td>
+                <?php else: ?>
+                    <td colspan="3">Aucune soutenance</td>
+                    <td>
+                        <a href="Partie3.2/AddSoutenance.php?idEtudiant=<?= $etu['IdEtudiant'] ?>">
+                            <button>➕ Ajouter</button>
+                        </a>
+                    </td>
+                <?php endif; ?>
+            </tr>
+        <?php endforeach; ?>
+        </tbody>
+    </table>
 </div>
 
 <script>
