@@ -55,10 +55,23 @@ function diffuserResultats($pdo, $etudiantId) {
 
 // Fonction pour envoyer un email simple
 // Fonction pour envoyer un email réel avec PHPMailer
-function envoyerEmailSimple($email, $nom, $prenom) {
+function envoyerEmailSimple($email, $nom, $prenom, $etudiantId = null) {
     // Sujet + contenu
     $sujet = "Vos résultats d'évaluation - " . date('Y');
-    $lien = "http://localhost/envoie%20de%20mail/consultation_simple.php?id=" . urlencode($email);
+    // Génération d'un token signé (id étudiant + expiration)
+    $expireSeconds = 60 * 60 * 24 * 7; // 7 jours
+    $expiresAt = time() + $expireSeconds;
+
+    // Si on n'a pas l'Id étudiant, tombe back sur email encodé (moins sûr)
+    $payload = json_encode([
+        'id' => $etudiantId ?? $email,
+        'exp' => $expiresAt
+    ]);
+
+    $signature = hash_hmac('sha256', $payload, APP_SECRET);
+    $token = base64_encode($payload) . '.' . $signature;
+
+    $lien = rtrim(APP_URL, '/') . '/consultation_simple.php?token=' . urlencode($token);
 
     $message = "Bonjour $prenom $nom,\n\n";
     $message .= "Vos résultats d'évaluation sont disponibles.\n";
@@ -118,7 +131,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $success = 0;
             foreach ($etudiants as $etudiant) {
                 if (diffuserResultats($pdo, $etudiant['IdEtudiant'])) {
-                    envoyerEmailSimple($etudiant['mail'], $etudiant['nom'], $etudiant['prenom']);
+                    // Passer l'IdEtudiant pour générer un token sécurisé
+                    envoyerEmailSimple($etudiant['mail'], $etudiant['nom'], $etudiant['prenom'], $etudiant['IdEtudiant']);
                     $success++;
                 }
             }

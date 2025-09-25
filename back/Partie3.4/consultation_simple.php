@@ -4,11 +4,56 @@
 
 require_once 'config.php';
 
-// Récupération de l'email depuis l'URL
-$email = $_GET['id'] ?? '';
+// Sécurisation : attendre un token signé plutôt qu'un id en clair
+if (!isset($_GET['token'])) {
+    die('Token manquant');
+}
 
-if (!$email) {
-    die('Email manquant');
+$token = $_GET['token'];
+$parts = explode('.', $token);
+if (count($parts) !== 2) {
+    die('Token invalide');
+}
+
+$payloadB64 = $parts[0];
+$signature = $parts[1];
+
+$payloadJson = base64_decode($payloadB64, true);
+if ($payloadJson === false) {
+    die('Payload invalide');
+}
+
+$expectedSig = hash_hmac('sha256', $payloadJson, APP_SECRET);
+if (!hash_equals($expectedSig, $signature)) {
+    die('Signature invalide');
+}
+
+$payload = json_decode($payloadJson, true);
+if (!$payload || !isset($payload['id']) || !isset($payload['exp'])) {
+    die('Payload manquant');
+}
+
+if (time() > (int)$payload['exp']) {
+    die('Le lien a expiré');
+}
+
+// Déterminer l'identifiant (email ou IdEtudiant)
+$identifier = $payload['id'];
+
+if (is_numeric($identifier)) {
+    // chercher par IdEtudiant
+    $stmt = $pdo->prepare("SELECT IdEtudiant, nom, prenom, mail FROM EtudiantsBUT2ou3 WHERE IdEtudiant = ?");
+    $stmt->execute([(int)$identifier]);
+    $etudiant = $stmt->fetch();
+    if (!$etudiant) die('Étudiant introuvable');
+    $email = $etudiant['mail'];
+} else {
+    // chercher par email
+    $email = $identifier;
+    $stmt = $pdo->prepare("SELECT IdEtudiant, nom, prenom, mail FROM EtudiantsBUT2ou3 WHERE mail = ?");
+    $stmt->execute([$email]);
+    $etudiant = $stmt->fetch();
+    if (!$etudiant) die('Étudiant introuvable');
 }
 
 // Récupération des informations de l'étudiant
