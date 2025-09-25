@@ -183,10 +183,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </option>
         <?php endforeach; ?>
     </select><br>
-
 </div>
 
+<div id="secondEnsGroup">
+    <label>Second enseignant :</label>
+    <select name="SecondEnseignant" id="secondEnsSelect">
+        <?php foreach ($listeEnseignant as $e): ?>
+            <option value="<?= $e['IdEnseignant'] ?>">
+                <?= htmlspecialchars($e['nom']." ".$e['prenom']) ?>
+            </option>
+        <?php endforeach; ?>
+    </select><br>
+</div>
+
+<button type="submit">Enregistrer</button>
+
 <p><a href="../mainAdministration.php">← Retour</a></p>
+
 </body>
 </html>
 
