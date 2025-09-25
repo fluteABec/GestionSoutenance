@@ -98,7 +98,7 @@ FROM EvalStage es
 JOIN EtudiantsBUT2ou3 e ON e.IdEtudiant = es.IdEtudiant
 LEFT JOIN EvalSoutenance esu 
   ON esu.IdEtudiant = es.IdEtudiant AND esu.anneeDebut = es.anneeDebut
-LEFT JOIN EvalPortfolio ep 
+LEFT JOIN EvalPortFolio ep 
   ON ep.IdEtudiant = es.IdEtudiant AND ep.anneeDebut = es.anneeDebut
 WHERE es.date_h IS NOT NULL AND es.date_h < NOW();
 
@@ -121,5 +121,49 @@ SELECT
 FROM AnneeStage an
 JOIN Entreprises ent ON ent.IdEntreprise = an.IdEntreprise
 GROUP BY an.anneeDebut, ent.villeE;
+
+
+CREATE OR REPLACE VIEW v_moyenne_promotion_portfolio AS
+SELECT 
+  ep.anneeDebut,
+  AVG(ep.note) AS moyennePortfolio,
+  COUNT(ep.IdEvalPortfolio) AS nbPortfolio
+FROM EvalPortFolio ep
+WHERE ep.note IS NOT NULL
+GROUP BY ep.anneeDebut;
+
+
+CREATE OR REPLACE VIEW v_moyenne_promotion_rapport AS
+SELECT 
+  er.anneeDebut,
+  AVG(er.note) AS moyenneRapport,
+  COUNT(er.IdEvalRapport) AS nbRapports
+FROM EvalRapport er
+WHERE er.note IS NOT NULL
+GROUP BY er.anneeDebut;
+
+
+CREATE OR REPLACE VIEW v_moyenne_promotion_soutenance AS
+SELECT 
+  esu.anneeDebut,
+  AVG(esu.note) AS moyenneSoutenance,
+  COUNT(esu.IdEvalSoutenance) AS nbSoutenances
+FROM EvalSoutenance esu
+WHERE esu.note IS NOT NULL
+GROUP BY esu.anneeDebut;
+
+
+CREATE OR REPLACE VIEW v_moyennes_par_enseignant_anglais AS
+SELECT 
+  en.IdEnseignant,
+  en.nom,
+  en.prenom,
+  ea.anneeDebut,
+  AVG(ea.note) AS moyenneAnglais,
+  COUNT(ea.IdEvalAnglais) AS nbAnglais
+FROM EvalAnglais ea
+JOIN Enseignants en ON en.IdEnseignant = ea.IdEnseignant
+WHERE ea.note IS NOT NULL
+GROUP BY en.IdEnseignant, en.nom, en.prenom, ea.anneeDebut;
 
 
