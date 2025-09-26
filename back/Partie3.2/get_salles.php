@@ -1,6 +1,6 @@
 <?php
 
-require_once "/opt/lampp/htdocs/projet_sql/db.php";
+require_once "../../db.php";
 
 $date = $_GET['date'] ?? null;
 

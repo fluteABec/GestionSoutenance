@@ -1,6 +1,6 @@
 <?php
 // Partie3.2/SaveEnseignant.php
-require_once "/opt/lampp/htdocs/projet_sql/db.php";
+require_once "../../db.php";
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);

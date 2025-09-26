@@ -1,6 +1,6 @@
 <?php
 
-require_once "/opt/lampp/htdocs/projet_sql/db.php";
+require_once "../../db.php";
 
 if (isset($_GET['id']) && isset($_GET['type'])) {
     $id = (int) $_GET['id'];
