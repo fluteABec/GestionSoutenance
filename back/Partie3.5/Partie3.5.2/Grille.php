@@ -27,11 +27,10 @@ $result = $conn->query($sql);
 
 if ($result->num_rows > 0) {
     echo "<table border='1' cellpadding='5'>";
-    echo "<tr><th>ID</th><th>Nature Grille</th><th>Note Maximale</th><th>Nom Module de Grille</th><th>Année Début</th><th>Actions</th><th>Sections</th></tr>";
+    echo "<tr><th>Nature Grille</th><th>Note Maximale</th><th>Nom Module de Grille</th><th>Année Début</th><th>Actions</th><th>Affichage</th></tr>";
     
     while($row = $result->fetch_assoc()) {
         echo "<tr>";
-        echo "<td>" . $row["IdModeleEval"] . "</td>";
         echo "<td>" . $row["natureGrille"] . "</td>";
         echo "<td>" . $row["noteMaxGrille"] . "</td>";
         echo "<td>" . $row["nomModuleGrilleEvaluation"] . "</td>";
@@ -43,16 +42,20 @@ if ($result->num_rows > 0) {
         echo "</td>";
 
         echo "<td>";
-        echo "<a href='Section.php?id_grille=" . $row["IdModeleEval"] . "'>📂 Voir sections</a>";
+        echo "<a href='Affichage.php?id_grille=" . $row["IdModeleEval"] . "'>📂 Afficher Grille</a>";
         echo "</td>";
 
         echo "</tr>";
     }
     
     echo "</table>";
+?> 
+    <h3>
+        <?php echo btnAjouter("Grille/ajouterGrille.php", "Créer une nouvelle grille vierge"); ?>
+    </h3>
 
-    echo btnAjouter("Grille/ajouterGrille.php", "Ajouter Grille");
 
+<?php
 } else {
     echo "Aucune donnée trouvée.";
 }

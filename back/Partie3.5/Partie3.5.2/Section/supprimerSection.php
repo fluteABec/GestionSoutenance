@@ -49,7 +49,7 @@ $conn->query("DELETE FROM sectionseval WHERE IdSection = $id_section AND IdModel
 $conn->query("DELETE FROM sectioncritereeval WHERE IdSection = $id_section");
 
 // Retour aux sections de la grille
-header("Location: ../Section.php?id_grille=$id_grille");
+header("Location: ../Affichage.php?id_grille=$id_grille");
 exit;
 
 $conn->close();

@@ -75,10 +75,9 @@ $nature = $row['natureGrille'];
 $note   = $row['noteMaxGrille'];
 $nom    = $row['nomModuleGrilleEvaluation'];
 $annee  = $row['anneeDebut'];
-
-// Récupérer les années pour le <select>
-$years = $conn->query("SELECT anneeDebut FROM anneesuniversitaires ORDER BY anneeDebut DESC");
 ?>
+
+
 
 <!doctype html>
 <html lang="fr">
@@ -87,14 +86,21 @@ $years = $conn->query("SELECT anneeDebut FROM anneesuniversitaires ORDER BY anne
 <title>Modifier la grille</title>
 </head>
 <body>
-    <h2>✏️ Modifier la grille #<?php echo $id_grille; ?></h2>
+    <h2>✏️ Modifier la grille "<?php echo $nom; ?>"</h2>
 
     <form method="POST">
         <!-- garder l'id en hidden pour le POST -->
         <input type="hidden" name="id_grille" value="<?php echo $id_grille; ?>">
 
-        <label>Nature :</label>
-        <input type="text" name="natureGrille" value="<?php echo htmlspecialchars($nature); ?>" required>
+        <label for="natureGrille">Nature Grille :</label>
+    <select name="natureGrille" id="natureGrille" required>
+        <option value="soutenance" <?php if(isset($nature) && $nature=="soutenance") echo "selected"; ?>>SOUTENANCE</option>
+        <option value="stage" <?php if(isset($nature) && $nature=="stage") echo "selected"; ?>>STAGE</option>
+        <option value="portfolio" <?php if(isset($nature) && $nature=="portfolio") echo "selected"; ?>>PORTFOLIO</option>
+        <option value="anglais" <?php if(isset($nature) && $nature=="anglais") echo "selected"; ?>>ANGLAIS</option>
+        <option value="rapport" <?php if(isset($nature) && $nature=="rapport") echo "selected"; ?>>RAPPORT</option>
+    </select>
+
 
         <label>Note Max :</label>
         <input type="number" name="noteMaxGrille" value="<?php echo htmlspecialchars($note); ?>" required>
@@ -103,17 +109,7 @@ $years = $conn->query("SELECT anneeDebut FROM anneesuniversitaires ORDER BY anne
         <input type="text" name="nomModuleGrilleEvaluation" value="<?php echo htmlspecialchars($nom); ?>" required>
 
         <label>Année de début :</label>
-        <select name="anneeDebut" required>
-            <?php
-            if ($years) {
-                while ($y = $years->fetch_assoc()) {
-                    $val = $y['anneeDebut'];
-                    $sel = ($val == $annee) ? 'selected' : '';
-                    echo "<option value=\"" . htmlspecialchars($val) . "\" $sel>" . htmlspecialchars($val) . "</option>";
-                }
-            }
-            ?>
-        </select>
+        <input type="number" name="anneeDebut" value="<?php echo htmlspecialchars($annee); ?>" required>
 
         <button type="submit">✅ Enregistrer</button>
     </form>

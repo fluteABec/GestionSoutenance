@@ -37,7 +37,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         if ($conn->query($sql2)) {
             echo "✅ Section ajoutée avec succès.";
-            header("Location: ../Section.php?id_grille=$id_grille");
+            header("Location: ../Affichage.php?id_grille=$id_grille");
             exit;
         } else {
             echo "Erreur (insertion sectionseval) : " . $conn->error;
@@ -55,7 +55,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <input type="text" name="titre" required>
     <label>Description :</label>
     <input type="text" name="description" required>
-    <button type="submit">Ajouter</button>
+    <button type="submit">✅ Ajouter</button>
 </form>
 
 <?php 
+$id_grille = intval($_GET['id_grille']);
+echo "<br><br><a href='../Affichage.php?id_grille=$id_grille'>📂 Retour à l'affichage de grille</a>"; 
+echo "<br><a href='../Grille.php'>📂 Retour aux Grilles</a>";
