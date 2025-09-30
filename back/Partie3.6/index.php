@@ -19,6 +19,16 @@ $alertesS = query_view($pdo, 'SELECT * FROM v_alertes_soutenances_non_validees' 
 $alertesP = query_view($pdo, 'SELECT * FROM v_alertes_portfolio_soutenance_non_validees' . $whereAnnee . ' ORDER BY date_h DESC', $paramsAnnee);
 $repartDept = query_view($pdo, 'SELECT * FROM v_repartition_departements' . $whereAnnee . ' ORDER BY anneeDebut DESC, departement', $paramsAnnee);
 $repartVilles = query_view($pdo, 'SELECT * FROM v_repartition_villes' . $whereAnnee . ' ORDER BY anneeDebut DESC, villeE', $paramsAnnee);
+$promosPort = query_view($pdo, 'SELECT * FROM v_moyenne_promotion_portfolio' . $whereAnnee . ' ORDER BY anneeDebut DESC', $paramsAnnee);
+$promosRap = query_view($pdo, 'SELECT * FROM v_moyenne_promotion_rapport' . $whereAnnee . ' ORDER BY anneeDebut DESC', $paramsAnnee);
+$promosSout = query_view($pdo, 'SELECT * FROM v_moyenne_promotion_soutenance' . $whereAnnee . ' ORDER BY anneeDebut DESC', $paramsAnnee);
+$paramsEnsA = $paramsAnnee;
+$sqlEnsA = 'SELECT * FROM v_moyennes_par_enseignant_anglais' . $whereAnnee;
+if ($enseignant !== '') { $sqlEnsA .= ($whereAnnee === '' ? ' WHERE ' : ' AND ') . '(nom LIKE :ens OR prenom LIKE :ens)'; $paramsEnsA[':ens'] = '%' . $enseignant . '%'; }
+$sqlEnsA .= ' ORDER BY anneeDebut DESC, nom, prenom';
+$ensAng = query_view($pdo, $sqlEnsA, $paramsEnsA);
+$frontUsers = query_view($pdo, 'SELECT IdEnseignant, nom, prenom, mail FROM Enseignants ORDER BY nom, prenom');
+$backUsers = query_view($pdo, 'SELECT Identifiant, nom, prenom, mail FROM UtilisateursBackOffice ORDER BY nom, prenom');
 function h($s) { return htmlspecialchars((string)$s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
 ?><!doctype html>
 <html lang="fr">
@@ -200,6 +210,125 @@ function h($s) { return htmlspecialchars((string)$s, ENT_QUOTES | ENT_SUBSTITUTE
               <td><?php echo h($r['anneeDebut']); ?></td>
               <td><?php echo h($r['villeE']); ?></td>
               <td><?php echo h($r['nb']); ?></td>
+            </tr>
+          <?php endforeach; ?>
+          </tbody>
+        </table>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="panel">
+      <h2>Moyenne promotion Portfolio (v_moyenne_promotion_portfolio)</h2>
+        <table>
+          <thead>
+            <tr><th>Année</th><th>Moyenne</th><th>Nb</th></tr>
+          </thead>
+          <tbody>
+          <?php foreach ($promosPort as $r): ?>
+            <tr>
+              <td><?php echo h($r['anneeDebut']); ?></td>
+              <td><?php echo h($r['moyennePortfolio']); ?></td>
+              <td><?php echo h($r['nbPortfolio']); ?></td>
+            </tr>
+          <?php endforeach; ?>
+          </tbody>
+        </table>
+    </div>
+
+    <div class="panel">
+      <h2>Moyenne promotion Rapport (v_moyenne_promotion_rapport)</h2>
+        <table>
+          <thead>
+            <tr><th>Année</th><th>Moyenne</th><th>Nb</th></tr>
+          </thead>
+          <tbody>
+          <?php foreach ($promosRap as $r): ?>
+            <tr>
+              <td><?php echo h($r['anneeDebut']); ?></td>
+              <td><?php echo h($r['moyenneRapport']); ?></td>
+              <td><?php echo h($r['nbRapports']); ?></td>
+            </tr>
+          <?php endforeach; ?>
+          </tbody>
+        </table>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="panel">
+      <h2>Moyenne promotion Soutenance (v_moyenne_promotion_soutenance)</h2>
+        <table>
+          <thead>
+            <tr><th>Année</th><th>Moyenne</th><th>Nb</th></tr>
+          </thead>
+          <tbody>
+          <?php foreach ($promosSout as $r): ?>
+            <tr>
+              <td><?php echo h($r['anneeDebut']); ?></td>
+              <td><?php echo h($r['moyenneSoutenance']); ?></td>
+              <td><?php echo h($r['nbSoutenances']); ?></td>
+            </tr>
+          <?php endforeach; ?>
+          </tbody>
+        </table>
+    </div>
+
+    <div class="panel">
+      <h2>Moyennes par enseignant Anglais (v_moyennes_par_enseignant_anglais)</h2>
+        <table>
+          <thead>
+            <tr><th>Id</th><th>Nom</th><th>Prénom</th><th>Année</th><th>Moyenne</th><th>Nb</th></tr>
+          </thead>
+          <tbody>
+          <?php foreach ($ensAng as $r): ?>
+            <tr>
+              <td><?php echo h($r['IdEnseignant']); ?></td>
+              <td><?php echo h($r['nom']); ?></td>
+              <td><?php echo h($r['prenom']); ?></td>
+              <td><?php echo h($r['anneeDebut']); ?></td>
+              <td><?php echo h($r['moyenneAnglais']); ?></td>
+              <td><?php echo h($r['nbAnglais']); ?></td>
+            </tr>
+          <?php endforeach; ?>
+          </tbody>
+        </table>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="panel">
+      <h2>Utilisateurs Front Office (Enseignants)</h2>
+        <table>
+          <thead>
+            <tr><th>Id</th><th>Nom</th><th>Prénom</th><th>Mail</th></tr>
+          </thead>
+          <tbody>
+          <?php foreach ($frontUsers as $r): ?>
+            <tr>
+              <td><?php echo h($r['IdEnseignant']); ?></td>
+              <td><?php echo h($r['nom']); ?></td>
+              <td><?php echo h($r['prenom']); ?></td>
+              <td><?php echo h($r['mail']); ?></td>
+            </tr>
+          <?php endforeach; ?>
+          </tbody>
+        </table>
+    </div>
+
+    <div class="panel">
+      <h2>Utilisateurs Back Office (UtilisateursBackOffice)</h2>
+        <table>
+          <thead>
+            <tr><th>Id</th><th>Nom</th><th>Prénom</th><th>Mail</th></tr>
+          </thead>
+          <tbody>
+          <?php foreach ($backUsers as $r): ?>
+            <tr>
+              <td><?php echo h($r['Identifiant']); ?></td>
+              <td><?php echo h($r['nom']); ?></td>
+              <td><?php echo h($r['prenom']); ?></td>
+              <td><?php echo h($r['mail']); ?></td>
             </tr>
           <?php endforeach; ?>
           </tbody>

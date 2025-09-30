@@ -9,19 +9,20 @@
     <link rel="stylesheet" href="stylee.css">
 </head>
 
-<body>
+<body class="login-page">
     <div class="login-container">
         <div class="login-header">
             <img src="logo.jpg" alt="Logo UCA" class="logo">
-            <h1>Login Front/Back Office</h1>
         </div>
 
-        <!-- form de connexion-->
+        <!-- formulaire de connexion-->
         <form action="action.php" method="post" class="login-form">
+            <!--Champs e-mail-->
             <div class="form-group">
                 <label for="identifiant">E-Mail</label>
                 <input type="text" id="identifiant" name="identifiant" placeholder="Identifiant" required>
             </div>
+            <!--Champs mot de passse-->
             <div class="form-group">
                 <label for="motdepasse">Mot de passe</label>
                 <input type="password" id="motdepasse" name="motdepasse" placeholder="Mot de passe" required>
@@ -30,12 +31,10 @@
         </form>
     </div>
 
-        <!-- Script pour afficher le pop-up en cas d'erreur -->
+    <!-- Script pour afficher le pop-up en cas d'erreur -->
     <script>
-        // Vérifie si le paramètre d'erreur est présent dans l'URL
         const urlParams = new URLSearchParams(window.location.search);
         const error = urlParams.get('error');
-
         if (error === '1') {
             alert('Identifiant ou mot de passe incorrect.');
         }

@@ -9,7 +9,8 @@
     // Variables
     session_start();
     $idEnseignant;
-
+    $infoEtud; 
+    
     if (isset($_SESSION["professeur_id"])) {
         $idEnseignant = $_SESSION["professeur_id"];
     } else {
@@ -17,7 +18,7 @@
         $idEnseignant = 0; 
     }
 
-    $infoEtud; 
+    
 
     // Création des requetes (qui vont chacune retournée un resultat)
     function getIdEtud($mysqli)
@@ -193,7 +194,6 @@
         }
 
         return $rows;
-
     }
 
     function getStageGrid($mysqli, $idEtud)
@@ -221,9 +221,7 @@
         while ($row = $result->fetch_assoc()) {
             $rows[] = $row;
         }
-
         return $rows;
-
     }
     
     // Fonction générique pour actions
@@ -242,15 +240,13 @@
         return in_array($statut, ["BLOQUEE","REMONTÉE","DIFFUSÉE"]) ? "readonly" : "";
     }
 
-    
-    
 ?>
 
 <!DOCTYPE html>
 <html>
     <head>
         <title>Grilles - Enseignant n°<?=$idEnseignant?></title>
-        <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="../../../stylee.css">
         <meta charset="UTF-8">
     </head>
     <body>
