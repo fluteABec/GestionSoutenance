@@ -33,7 +33,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     if ($conn->query($sql)) {
         echo "✅ Section modifiée avec succès.";
-        header("Location: ../Section.php?id_grille=$id_grille");
+        header("Location: ../Affichage.php?id_grille=$id_grille");
         exit;
     } else {
         echo "Erreur SQL : " . $conn->error;
@@ -64,4 +64,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <button type="submit">✅ Enregistrer</button>
 </form>
 
-<?php 
+<?php
+$id_grille = intval($_GET['id_grille']);
+echo "<br><br><a href='../Affichage.php?id_grille=$id_grille'>📂 Retour aux sections</a>"; 
+echo "<br><a href='../Grille.php'>📂 Retour aux Grilles</a>"; 

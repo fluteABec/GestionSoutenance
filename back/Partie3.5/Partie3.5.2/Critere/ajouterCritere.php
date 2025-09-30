@@ -41,7 +41,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         if ($conn->query($sql2)) {
             echo "✅ Critère ajouté avec succès.";
-            header("Location: ../Critere.php?id_section=$id_section&id_grille=$id_grille");        } else {
+            header("Location: ../Affichage.php?id_grille=$id_grille");        } else {
             echo "Erreur (insertion sectioncontenircriteres) : " . $conn->error;
         }
     } else {
@@ -58,9 +58,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <label>Description Courte :</label>
     <input type="text" name="descCourte" required>
 
-    <button type="submit">Ajouter</button>
+    <button type="submit">✅ Ajouter</button>
 </form>
 
-<?php echo "<br><br><a href='../Critere.php?id_section=" . ($_GET['id_section'] ?? '') . "'>📂 Retour aux critères</a>"; 
+<?php echo "<br><a href='../Affichage.php?id_grille=$id_grille'>📂 Retour à l'affichage de grille</a>";
 echo "<br><a href='../Grille.php'>📂 Retour aux Grilles</a>";
 ?>

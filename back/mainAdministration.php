@@ -1,36 +1,51 @@
 <?php
-$host = 'localhost';
-$db   = 'evaluationstages';
-$user = 'root';
-$pass = '';
-$charset = 'utf8mb4';
 
-$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
-$options = [
-    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-];
+require_once "../db.php";
 
-try {
-    $pdo = new PDO($dsn, $user, $pass, $options);
-} catch (PDOException $e) {
-    echo "Erreur de connexion : " . $e->getMessage();
-    exit;
-}
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
-// Récupérer la liste des étudiants
-$sql = "SELECT IdEtudiant, nom, prenom FROM etudiantsbut2ou3 ORDER BY nom, prenom";
-$etudiants = $pdo->query($sql)->fetchAll();
+
+// Récupérer la liste des étudiants (BUT2 et BUT3 separé)
+$sql = "SELECT e.IdEtudiant, e.nom, e.prenom
+        FROM EtudiantsBUT2ou3 e
+        JOIN AnneeStage a ON e.IdEtudiant = a.IdEtudiant
+        WHERE a.but3sinon2 = FALSE AND a.anneeDebut = YEAR(CURDATE())";
+$etudiantsBUT2 = $pdo->query($sql)->fetchAll();
+
+$sql = "SELECT e.IdEtudiant, e.nom, e.prenom
+        FROM EtudiantsBUT2ou3 e
+        JOIN AnneeStage a ON e.IdEtudiant = a.IdEtudiant
+        WHERE a.but3sinon2 = TRUE AND a.anneeDebut = YEAR(CURDATE())";
+$etudiantsBUT3 = $pdo->query($sql)->fetchAll();
 
 // Messages
 $message = "";
 if (isset($_GET['success'])) {
-    $message = "✅ Soutenance mise à jour avec succès.";
-} elseif (isset($_GET['deleted'])) {
-    $message = "🗑️ Soutenance supprimée avec succès.";
-} elseif (isset($_GET['added'])) {
-    $message = "✅ Soutenance ajoutée avec succès.";
+    $message = "✅ Action réussie.";
+} elseif (isset($_GET['err'])) {
+    switch ($_GET['err']) {
+        case 'same':
+            $message = "⚠️ Le tuteur et le second enseignant doivent être différents.";
+            break;
+        case 'invalid':
+            $message = "⚠️ Requête invalide.";
+            break;
+        case 'badteacher':
+            $message = "⚠️ Enseignant introuvable.";
+            break;
+        case 'nosalle':
+            $message = "⚠️ Aucune salle disponible dans la table Salles (créez-en au moins une).";
+            break;
+        case 'dberror':
+        default:
+            $message = "⚠️ Erreur serveur (base de données).";
+            break;
+    }
 }
+if ($message) echo "<p style='color: #c33; font-weight: bold;'>".htmlspecialchars($message)."</p>";
+
+
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -42,87 +57,349 @@ if (isset($_GET['success'])) {
 </head>
 <body>
 
-<?php include 'navbarAdmin.php'; ?>
+<div class="navbar">
+    <div class="brand"><span class="logo"></span><span>Administration</span></div>
+    <a class="nav-item" href="Partie3.1/3_1_natan.php">Tâches enseignants</a>
+    <a class="nav-item" href="Partie3.3/index.php">Évaluations IUT</a>
+    <a class="nav-item" href="Partie3.4/index.php">Diffusion résultats</a>
+</div>
 
-<div class="admin-block">
-    <?php if ($message): ?>
-        <div class="mb-3" style="font-weight:600; color:var(--teal);">
-            <?= $message ?>
-        </div>
-    <?php endif; ?>
+<!-- Barre de recherche -->
+<input type="text" id="searchInput" placeholder="🔍 Rechercher un étudiant...">
 
-    <table id="tableEtudiants">
-        <thead>
-            <tr>
-                <th>Étudiant</th>
-                <th>Tuteur</th>
-                <th>Soutenance</th>
-                <th>Date</th>
-                <th>Salle</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        <?php foreach ($etudiants as $etu): ?>
-            <?php
-            // Soutenance existante ?
-            $sql = "
-                SELECT 'stage' AS type, IdEvalStage AS id, date_h AS date, IdSalle, IdEnseignantTuteur
-                FROM evalstage WHERE IdEtudiant = :id
-                UNION
-                SELECT 'anglais' AS type, IdEvalAnglais AS id, dateS AS date, IdSalle, NULL
-                FROM evalanglais WHERE IdEtudiant = :id
-                LIMIT 1
-            ";
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute(['id' => $etu['IdEtudiant']]);
-            $soutenance = $stmt->fetch();
+<!-- Tableau BUT2 -->
+<h2>Étudiants deuxième année (BUT2)</h2>
+<table class="tableEtudiants">
+    <thead>
+        <tr>
+            <th>Étudiant</th>
+            <th>Tuteur</th>
+            <th>Enseignant Secondaire</th>
+            <th>Soutenance</th>
+            <th>Date</th>
+            <th>Salle</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+    <?php foreach ($etudiantsBUT2 as $etu): ?>
+        <?php
+        
+        $sql = "
+            SELECT 'stage' AS type, IdEvalStage AS id, date_h AS date, IdSalle, IdEnseignantTuteur, IdSecondEnseignant
+            FROM EvalStage WHERE IdEtudiant = :id
+            UNION
+            SELECT 'anglais' AS type, IdEvalAnglais AS id, dateS AS date, IdSalle, IdEnseignant, NULL
+            FROM EvalAnglais WHERE IdEtudiant = :id
+            LIMIT 1
+        ";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute(['id' => $etu['IdEtudiant']]);
+        $soutenance = $stmt->fetch();
 
-            // Chercher le tuteur si stage
-            $tuteurNom = "-";
-            if ($soutenance && $soutenance['type'] === 'stage' && $soutenance['IdEnseignantTuteur']) {
-                $stmt = $pdo->prepare("SELECT nom, prenom FROM enseignants WHERE IdEnseignant = :id");
+        $tuteurNom = "-";
+        $secondEnseignant ="-";
+
+        // Enseignant Tuteur/Second (Stage & Portfolio)
+        if ($soutenance && $soutenance['type'] === 'stage') {
+            if ($soutenance['IdEnseignantTuteur'])
+            {
+                $stmt = $pdo->prepare("SELECT nom, prenom FROM Enseignants WHERE IdEnseignant = :id");
+                $stmt->execute(['id' => $soutenance['IdEnseignantTuteur']]);
+                $tuteur = $stmt->fetch();
+                if ($tuteur) {
+                    $tuteurNom = htmlspecialchars($tuteur['nom'] . " " . $tuteur['prenom']);
+                }
+
+            }
+
+            if ($soutenance["IdSecondEnseignant"])
+            {
+                $stmt = $pdo->prepare("SELECT nom, prenom FROM Enseignants WHERE IdEnseignant = :id");
+                $stmt->execute(['id' => $soutenance['IdSecondEnseignant']]);
+                $second = $stmt->fetch();
+                if ($second) {
+                    $secondEnseignant = htmlspecialchars($second['nom'] . " " . $second['prenom']);
+                }
+            }
+        }
+
+        ?>
+        <tr>
+            <td><?= htmlspecialchars($etu['nom'] . " " . $etu['prenom']) ?></td>
+
+            <td>
+                <?php if ($soutenance): ?>
+                    <form action="Partie3.2/SaveEnseignant.php?type=stage" method="post">
+                        <input type="hidden" name="idEtudiant" value="<?= $etu['IdEtudiant'] ?>">
+                        <select name="tuteur" onchange="this.form.submit()">
+                            <option value="">-- Choisir --</option>
+                            <?php
+                                $enseignants = $pdo->query("SELECT IdEnseignant, nom, prenom FROM Enseignants ORDER BY nom")->fetchAll();
+                                foreach ($enseignants as $ens) {
+                                    $selected = ($soutenance['IdEnseignantTuteur'] == $ens['IdEnseignant']) ? "selected" : "";
+                                    echo "<option value='{$ens['IdEnseignant']}' $selected>" . htmlspecialchars($ens['nom']." ".$ens['prenom']) . "</option>";
+                                }
+                            ?>
+                        </select>
+                    </form>
+                <?php else: ?>
+                    -
+                <?php endif; ?>
+            </td>
+
+            <td>
+                <?php if ($soutenance): ?>
+                    <form action="Partie3.2/SaveEnseignant.php?type=stage" method="post">
+                        <input type="hidden" name="idEtudiant" value="<?= $etu['IdEtudiant'] ?>">
+                        <select name="second" onchange="this.form.submit()">
+                            <option value="">-- Choisir --</option>
+                            <?php
+                                foreach ($enseignants as $ens) {
+                                    $selected = ($soutenance['IdSecondEnseignant'] == $ens['IdEnseignant']) ? "selected" : "";
+                                    echo "<option value='{$ens['IdEnseignant']}' $selected>" . htmlspecialchars($ens['nom']." ".$ens['prenom']) . "</option>";
+                                }
+                            ?>
+                        </select>
+                    </form>
+                <?php else: ?>
+                    -
+                <?php endif; ?>
+            </td>
+
+            <?php if ($soutenance): ?>
+                <td><?= $soutenance['type'] === 'stage' ? "Portfolio & Stage" : "Anglais" ?></td>
+                <td><?= htmlspecialchars($soutenance['date']) ?></td>
+                <td><?= htmlspecialchars($soutenance['IdSalle']) ?></td>
+                <td>
+                    <a href="Partie3.2/EditSoutenance.php?id=<?= $soutenance['id'] ?>&type=<?= $soutenance['type'] ?>"><button>✏️ Modifier</button></a>
+                    <a href="Partie3.2/DeleteSoutenance.php?id=<?= $soutenance['id'] ?>&type=<?= $soutenance['type'] ?>" onclick="return confirm('Supprimer cette soutenance ?')"><button>❌ Supprimer</button></a>
+                </td>
+            <?php else: ?>
+                <td colspan="3">Aucune soutenance</td>
+                <td>
+                    <a href="Partie3.2/AddSoutenance.php?idEtudiant=<?= $etu['IdEtudiant'] ?>&type=stage">
+                        <button>➕ Ajouter</button>
+                    </a>
+                </td>
+            <?php endif; ?>
+        </tr>
+    <?php endforeach; ?>
+    </tbody>
+</table>
+
+<!-- Tableau BUT3 -->
+<h2>Étudiants troisième année (BUT3)</h2>
+<h3> Portfolio & Stage </h3> <!-- Portfolio & Stage -->
+<table class="tableEtudiants">
+    <thead>
+        <tr>
+            <th>Étudiant</th>
+            <th>Tuteur</th>
+            <th>Enseignant Secondaire</th>
+            <th>Soutenance</th>
+            <th>Date</th>
+            <th>Salle</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+    <?php foreach ($etudiantsBUT3 as $etu): ?>
+        <?php
+
+        $sql = "
+            SELECT 'stage' AS type, IdEvalStage AS id, date_h AS date, IdSalle, IdEnseignantTuteur, IdSecondEnseignant
+            FROM EvalStage WHERE IdEtudiant = :id
+            LIMIT 1
+        ";
+        
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute(['id' => $etu['IdEtudiant']]);
+        $soutenance = $stmt->fetch();
+
+        $tuteurNom = "-";
+        $secondEnseignant = "-";
+
+        // Enseignant tuteur/second
+        if ($soutenance && $soutenance['type'] === 'stage') {
+            if ($soutenance['IdEnseignantTuteur'])
+            {
+                $stmt = $pdo->prepare("SELECT nom, prenom FROM Enseignants WHERE IdEnseignant = :id");
                 $stmt->execute(['id' => $soutenance['IdEnseignantTuteur']]);
                 $tuteur = $stmt->fetch();
                 if ($tuteur) {
                     $tuteurNom = htmlspecialchars($tuteur['nom'] . " " . $tuteur['prenom']);
                 }
             }
-            ?>
-            <tr>
-                <td><?= htmlspecialchars($etu['nom'] . " " . $etu['prenom']) ?></td>
-                <td><?= $tuteurNom ?></td>
+
+            if ($soutenance["IdSecondEnseignant"])
+            {
+                $stmt = $pdo->prepare("SELECT nom, prenom FROM Enseignants WHERE IdEnseignant = :id");
+                $stmt->execute(['id' => $soutenance['IdSecondEnseignant']]);
+                $second = $stmt->fetch();
+                if ($second) {
+                    $secondEnseignant = htmlspecialchars($second['nom'] . " " . $second['prenom']);
+                }
+            }
+            
+        }
+
+        ?>
+        <tr>
+            <td><?= htmlspecialchars($etu['nom'] . " " . $etu['prenom']) ?></td>
+            
+            <td>
                 <?php if ($soutenance): ?>
-                    <td><?= $soutenance['type'] === 'stage' ? "Portfolio & Stage" : "Anglais" ?></td>
-                    <td><?= htmlspecialchars($soutenance['date']) ?></td>
-                    <td><?= htmlspecialchars($soutenance['IdSalle']) ?></td>
-                    <td class="actions">
-                        <a href="Partie3.2/EditSoutenance.php?id=<?= $soutenance['id'] ?>&type=<?= $soutenance['type'] ?>">
-                            <button>✏️ Modifier</button>
-                        </a>
-                        <a href="Partie3.2/DeleteSoutenance.php?id=<?= $soutenance['id'] ?>&type=<?= $soutenance['type'] ?>" onclick="return confirm('Supprimer cette soutenance ?')">
-                            <button>❌ Supprimer</button>
-                        </a>
-                    </td>
+                    <form action="Partie3.2/SaveEnseignant.php?type=stage" method="post">
+                        <input type="hidden" name="idEtudiant" value="<?= $etu['IdEtudiant'] ?>">
+                        <select name="tuteur" onchange="this.form.submit()">
+                            <option value="">-- Choisir --</option>
+                            <?php
+                                $enseignants = $pdo->query("SELECT IdEnseignant, nom, prenom FROM Enseignants ORDER BY nom")->fetchAll();
+                                foreach ($enseignants as $ens) {
+                                    $selected = ($soutenance['IdEnseignantTuteur'] == $ens['IdEnseignant']) ? "selected" : "";
+                                    echo "<option value='{$ens['IdEnseignant']}' $selected>" . htmlspecialchars($ens['nom']." ".$ens['prenom']) . "</option>";
+                                }
+                            ?>
+                        </select>
+                    </form>
                 <?php else: ?>
-                    <td colspan="3">Aucune soutenance</td>
-                    <td>
-                        <a href="Partie3.2/AddSoutenance.php?idEtudiant=<?= $etu['IdEtudiant'] ?>">
-                            <button>➕ Ajouter</button>
-                        </a>
-                    </td>
+                    -
                 <?php endif; ?>
-            </tr>
-        <?php endforeach; ?>
-        </tbody>
-    </table>
-</div>
+            </td>
+
+            <td>
+                <?php if ($soutenance): ?>
+                    <form action="Partie3.2/SaveEnseignant.php?type=stage" method="post">
+                        <input type="hidden" name="idEtudiant" value="<?= $etu['IdEtudiant'] ?>">
+                        <select name="second" onchange="this.form.submit()">
+                            <option value="">-- Choisir --</option>
+                            <?php
+                                foreach ($enseignants as $ens) {
+                                    $selected = ($soutenance['IdSecondEnseignant'] == $ens['IdEnseignant']) ? "selected" : "";
+                                    echo "<option value='{$ens['IdEnseignant']}' $selected>" . htmlspecialchars($ens['nom']." ".$ens['prenom']) . "</option>";
+                                }
+                            ?>
+                        </select>
+                    </form>
+                <?php else: ?>
+                    -
+                <?php endif; ?>
+            </td>
+
+            <?php if ($soutenance): ?>
+                <td><?= $soutenance['type'] === 'stage' ? "Portfolio & Stage" : "Anglais" ?></td>
+                <td><?= htmlspecialchars($soutenance['date']) ?></td>
+                <td><?= htmlspecialchars($soutenance['IdSalle']) ?></td>
+                <td>
+                    <a href="Partie3.2/EditSoutenance.php?id=<?= $soutenance['id'] ?>&type=<?= $soutenance['type'] ?>"><button>✏️ Modifier</button></a>
+                    <a href="Partie3.2/DeleteSoutenance.php?id=<?= $soutenance['id'] ?>&type=<?= $soutenance['type'] ?>" onclick="return confirm('Supprimer cette soutenance ?')"><button>❌ Supprimer</button></a>
+                </td>
+            <?php else: ?>
+                <td colspan="3">Aucune soutenance</td>
+                <td>
+                    <a href="Partie3.2/AddSoutenance.php?idEtudiant=<?= $etu['IdEtudiant'] ?>&type=stage">
+                        <button>➕ Ajouter</button>
+                    </a>
+                </td>
+            <?php endif; ?>
+        </tr>
+    <?php endforeach; ?>
+    </tbody>
+</table>
+
+
+<h3> Anglais </h3> <!-- Anglais -->
+<table class="tableEtudiants">
+    <thead>
+        <tr>
+            <th>Étudiant</th>
+            <th>Tuteur</th>
+            <th>Soutenance</th>
+            <th>Date</th>
+            <th>Salle</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+    <?php foreach ($etudiantsBUT3 as $etu): ?>
+        <?php
+        $sql = "
+            SELECT 'anglais' AS type, IdEvalAnglais AS id, dateS AS date, IdSalle, IdEnseignant AS IdEnseignantTuteur, NULL
+            FROM EvalAnglais WHERE IdEtudiant = :id
+            LIMIT 1
+        ";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute(['id' => $etu['IdEtudiant']]);
+        $soutenance = $stmt->fetch();
+
+        $tuteurNom = "-";
+        $secondEnseignant = "-";
+
+        // Enseignant Tuteur (Anglais)
+        if ($soutenance && $soutenance['type'] === 'anglais') {
+            if ($soutenance['IdEnseignantTuteur'])
+            {
+                $stmt = $pdo->prepare("SELECT nom, prenom FROM Enseignants WHERE IdEnseignant = :id");
+                $stmt->execute(['id' => $soutenance['IdEnseignantTuteur']]);
+                $tuteur = $stmt->fetch();
+                if ($tuteur) {
+                    $tuteurNom = htmlspecialchars($tuteur['nom'] . " " . $tuteur['prenom']);
+                }
+            }
+        }
+        ?>
+        <tr>
+            <td><?= htmlspecialchars($etu['nom'] . " " . $etu['prenom']) ?></td>
+
+            <td>
+                <?php if ($soutenance): ?>
+                    <form action="Partie3.2/SaveEnseignant.php?type=anglais" method="post">
+                        <input type="hidden" name="idEtudiant" value="<?= $etu['IdEtudiant'] ?>">
+                        <select name="tuteur" onchange="this.form.submit()">
+                            <option value="">-- Choisir --</option>
+                            <?php
+                                $enseignants = $pdo->query("SELECT IdEnseignant, nom, prenom FROM Enseignants ORDER BY nom")->fetchAll();
+                                foreach ($enseignants as $ens) {
+                                    $selected = ($soutenance['IdEnseignantTuteur'] == $ens['IdEnseignant']) ? "selected" : "";
+                                    echo "<option value='{$ens['IdEnseignant']}' $selected>" . htmlspecialchars($ens['nom']." ".$ens['prenom']) . "</option>";
+                                }
+                            ?>
+                        </select>
+                    </form>
+                <?php else: ?>
+                    -
+                <?php endif; ?>
+            </td>
+
+             
+            <?php if ($soutenance): ?>
+                <td><?= $soutenance['type'] === 'stage' ? "Portfolio & Stage" : "Anglais" ?></td>
+                <td><?= htmlspecialchars($soutenance['date']) ?></td>
+                <td><?= htmlspecialchars($soutenance['IdSalle']) ?></td>
+                <td>
+                    <a href="Partie3.2/EditSoutenance.php?id=<?= $soutenance['id'] ?>&type=<?= $soutenance['type'] ?>"><button>✏️ Modifier</button></a>
+                    <a href="Partie3.2/DeleteSoutenance.php?id=<?= $soutenance['id'] ?>&type=<?= $soutenance['type'] ?>" onclick="return confirm('Supprimer cette soutenance ?')"><button>❌ Supprimer</button></a>
+                </td>
+            <?php else: ?>
+                <td colspan="3">Aucune soutenance</td>
+                <td>
+                <a href="Partie3.2/AddSoutenance.php?idEtudiant=<?= $etu['IdEtudiant'] ?>&type=anglais">
+                    <button>➕ Ajouter</button>
+                </a>
+                </td>
+
+            <?php endif; ?>
+        </tr>
+    <?php endforeach; ?>
+    </tbody>
+</table>
 
 <script>
-// Recherche dynamique
+// Recherche dynamique sur les deux tableaux
 document.getElementById('searchInput').addEventListener('keyup', function() {
     const filter = this.value.toLowerCase();
-    const rows = document.querySelectorAll("#tableEtudiants tbody tr");
+    const rows = document.querySelectorAll(".tableEtudiants tbody tr");
 
     rows.forEach(row => {
         const text = row.innerText.toLowerCase();

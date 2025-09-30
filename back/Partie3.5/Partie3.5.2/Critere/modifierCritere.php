@@ -33,7 +33,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     if ($conn->query($sql)) {
         echo "✅ Critère modifié avec succès.";
-        header("Location: ../Critere.php?id_section=$id_section&id_grille=$id_grille");    } else {
+        header("Location: ../Affichage.php?id_grille=$id_grille");    } else {
         echo "Erreur SQL : " . $conn->error;
     }
 } else {
@@ -65,7 +65,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 <?php 
 // bouton retour vers les critères de la section
-echo "<br><a href='../Critere.php?id_section=$id_section'>📂 Retour aux critères</a>";
+echo "<br><a href='../Affichage.php?id_grille=$id_grille'>📂 Retour à l'affichage de grille</a>";
 echo "<br><a href='../Grille.php'>📂 Retour aux Grilles</a>";
 
 

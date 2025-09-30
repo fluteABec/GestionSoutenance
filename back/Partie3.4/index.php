@@ -54,7 +54,7 @@ $stats['total'] = $stmt->fetchColumn();
     <?php include '../navbar.php'; ?>
 
     <div class="admin-block">
-        <h1 style="margin-bottom:18px;">Partie 3.4 - Outils de diffusion des résultats</h1>
+        <h1 style="margin-bottom:18px;">Outils de diffusion des résultats</h1>
         <p style="margin-bottom:32px;color:var(--muted);font-size:1.08rem;">Test du système de diffusion des résultats aux étudiants</p>
 
         <div class="stats-grid">

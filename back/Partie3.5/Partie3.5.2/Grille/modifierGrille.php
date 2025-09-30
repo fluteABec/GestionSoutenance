@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id_grille'])) {
 if (!$id_grille) {
     echo "<h3>Erreur : grille non spécifiée.</h3>";
     echo "<p>Vérifie que le lien contient <code>?id_grille=...</code>.</p>";
-    echo "<p><a href='../Grille.php'>&larr; Retour aux grilles</a></p>";
+    echo "<p><a href='/SQL/Grille.php'>&larr; Retour aux grilles</a></p>";
     // debug court (décommente si besoin) :
     // echo "<pre>GET=" . htmlspecialchars(print_r($_GET, true)) . "\nPOST=" . htmlspecialchars(print_r($_POST, true)) . "</pre>";
     exit;
@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->bind_param("ssssi", $nature, $note, $nom, $annee, $id_grille);
     if ($stmt->execute()) {
         // succès -> retour vers la liste (ou vers la page que tu veux)
-        header("Location: ../Grille.php?updated=1");
+        header("Location: /SQL/Grille.php?updated=1");
         exit;
     } else {
         echo "Erreur SQL (execute) : " . htmlspecialchars($stmt->error);
@@ -67,7 +67,7 @@ $stmt->execute();
 $res = $stmt->get_result();
 if ($res->num_rows === 0) {
     echo "Erreur : grille introuvable.";
-    echo "<p><a href='../Grille.php'>&larr; Retour</a></p>";
+    echo "<p><a href='/SQL/Grille.php'>&larr; Retour</a></p>";
     exit;
 }
 $row = $res->fetch_assoc();
@@ -75,10 +75,9 @@ $nature = $row['natureGrille'];
 $note   = $row['noteMaxGrille'];
 $nom    = $row['nomModuleGrilleEvaluation'];
 $annee  = $row['anneeDebut'];
-
-// Récupérer les années pour le <select>
-$years = $conn->query("SELECT anneeDebut FROM anneesuniversitaires ORDER BY anneeDebut DESC");
 ?>
+
+
 
 <!doctype html>
 <html lang="fr">
@@ -87,14 +86,21 @@ $years = $conn->query("SELECT anneeDebut FROM anneesuniversitaires ORDER BY anne
 <title>Modifier la grille</title>
 </head>
 <body>
-    <h2>✏️ Modifier la grille #<?php echo $id_grille; ?></h2>
+    <h2>✏️ Modifier la grille "<?php echo $nom; ?>"</h2>
 
     <form method="POST">
         <!-- garder l'id en hidden pour le POST -->
         <input type="hidden" name="id_grille" value="<?php echo $id_grille; ?>">
 
-        <label>Nature :</label>
-        <input type="text" name="natureGrille" value="<?php echo htmlspecialchars($nature); ?>" required>
+        <label for="natureGrille">Nature Grille :</label>
+    <select name="natureGrille" id="natureGrille" required>
+        <option value="soutenance" <?php if(isset($nature) && $nature=="soutenance") echo "selected"; ?>>SOUTENANCE</option>
+        <option value="stage" <?php if(isset($nature) && $nature=="stage") echo "selected"; ?>>STAGE</option>
+        <option value="portfolio" <?php if(isset($nature) && $nature=="portfolio") echo "selected"; ?>>PORTFOLIO</option>
+        <option value="anglais" <?php if(isset($nature) && $nature=="anglais") echo "selected"; ?>>ANGLAIS</option>
+        <option value="rapport" <?php if(isset($nature) && $nature=="rapport") echo "selected"; ?>>RAPPORT</option>
+    </select>
+
 
         <label>Note Max :</label>
         <input type="number" name="noteMaxGrille" value="<?php echo htmlspecialchars($note); ?>" required>
@@ -103,17 +109,7 @@ $years = $conn->query("SELECT anneeDebut FROM anneesuniversitaires ORDER BY anne
         <input type="text" name="nomModuleGrilleEvaluation" value="<?php echo htmlspecialchars($nom); ?>" required>
 
         <label>Année de début :</label>
-        <select name="anneeDebut" required>
-            <?php
-            if ($years) {
-                while ($y = $years->fetch_assoc()) {
-                    $val = $y['anneeDebut'];
-                    $sel = ($val == $annee) ? 'selected' : '';
-                    echo "<option value=\"" . htmlspecialchars($val) . "\" $sel>" . htmlspecialchars($val) . "</option>";
-                }
-            }
-            ?>
-        </select>
+        <input type="number" name="anneeDebut" value="<?php echo htmlspecialchars($annee); ?>" required>
 
         <button type="submit">✅ Enregistrer</button>
     </form>
