@@ -37,7 +37,7 @@ if (!$conn->query($sql2)) {
 }
 
 echo "✅ Critère supprimé avec succès.";
-header("Location: ../Critere.php?id_section=$id_section&id_grille=$id_grille");
+header("Location: ../Affichage.php?id_grille=$id_grille");
 exit; 
 
 $conn->close();
