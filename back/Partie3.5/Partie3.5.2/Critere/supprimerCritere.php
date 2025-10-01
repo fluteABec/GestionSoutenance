@@ -24,6 +24,15 @@ $id_critere = intval($_GET['id_critere']);
 $id_section = intval($_GET['id_section']);
 $id_grille  = intval($_GET['id_grille']);
 
+// Vérification si la grille est déjà utilisée
+include("../Bouton.php");
+if (grilleDejaUtilisee($conn, $id_grille)) {
+    echo "<br><a href='../Affichage.php?id_grille=$id_grille'>📂 Retour à l'affichage de grille</a>";
+    echo "<br><a href='../Grille.php'>📂 Retour aux Grilles</a> <br> <br>";
+    die("⛔ Cette grille est déjà utilisée pour une évaluation et ne peut plus être modifiée.");
+
+}
+
 // Étape 1 : supprimer la liaison section <-> critère
 $sql1 = "DELETE FROM sectioncontenircriteres WHERE IdCritere = $id_critere AND IdSection = $id_section";
 if (!$conn->query($sql1)) {

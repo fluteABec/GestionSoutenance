@@ -167,7 +167,7 @@ $etudiantsCandidats = getEtudiantsCandidats($pdo);
     <link rel="stylesheet" href="../../stylee.css">
 </head>
 <body>
-    <?php include '../../navbar.php'; ?>
+    <?php include '../navbar.php'; ?>
 
     <div class="admin-block">
         <h1 class="section-title">Partie 3.4 - Outils de diffusion des résultats</h1>

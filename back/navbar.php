@@ -9,5 +9,7 @@
         <a class="nav-item<?php if(strpos($_SERVER['PHP_SELF'], 'Partie3.4')!==false) echo ' selected'; ?>" href="../Partie3.4/index.php">Diffusion résultats</a>
         <a class="nav-item<?php if(strpos($_SERVER['PHP_SELF'], 'Partie3.5')!==false) echo ' selected'; ?>" href="../Partie3.5/Partie3.5.2/Grille.php">Gestion Grille</a>
         <a class="nav-item<?php if(strpos($_SERVER['PHP_SELF'], 'mainAdministration.php')!==false) echo ' selected'; ?>" href="../mainAdministration.php">Administration</a>
+        <a class="nav-item<?php if(strpos($_SERVER['PHP_SELF'], 'mainAdministration.php')!==false) echo ' selected'; ?>" href="../back/Partie3.5.3/gestion.php">Gestion des ressources</a>
+        <nav>
     </div>
 </nav>

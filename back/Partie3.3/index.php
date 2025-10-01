@@ -96,7 +96,7 @@ function remonterNotes($pdo, $idEtudiant, $isBUT3 = false) { // remonte les note
     $mail = isset($_SESSION['identifiant']) ? $_SESSION['identifiant'] : null;
     if ($mail) {
         $sujet = "Vos évaluations ont été remonté";
-        $message = "<p>Bonjour,<br>Vos notes ont été <b>remontées</b> par l'administration.<br>Cordialement.</p>";
+        $message = "<p>Bonjour,<br>Les notes de l'élève avec l'ID $idEtudiant ont été <b>remontées</b> par l'administration.<br>Cordialement.</p>";
         envoieMail($mail, $sujet, $message);
     }
 }
@@ -143,7 +143,7 @@ function bloquerNotes($pdo, $idEtudiant, $isBUT3 = false) { // rebloque les note
     $mail = isset($_SESSION['identifiant']) ? $_SESSION['identifiant'] : null;
     if ($mail) {
         $sujet = "Vos évaluations ont été bloqué";
-        $message = "<p>Bonjour,<br>Vos notes ont été <b>bloquées</b> par l'administration.<br>Cordialement.</p>";
+        $message = "<p>Bonjour,<br>Les notes ont été de l'élève avec l'ID $idEtudiant ont été <b>bloquées</b> par l'administration.<br>Cordialement.</p>";
         envoieMail($mail, $sujet, $message);
     }
 }
@@ -200,8 +200,8 @@ function getMailEtudiant($pdo, $idEtudiant) {  // récupère le mail d'un étudi
 }
 function rappelMail($pdo, $mail) { // plus ou moins la même fonction que remonterNotes mais pour envoyer un mail de rappel
     if ($mail) {
-        $sujet = "Rappel : vos évaluations doivent être validé";
-        $message = "<p>Bonjour,<br>Votre soutenance est passée mais vos évaluations sont encore en <b>SAISIE</b>.<br>
+        $sujet = "Rappel : évaluations doivent être validé";
+        $message = "<p>Bonjour,<br>La soutenance de l'un de vos élèves est passée mais ces évaluations sont encore en <b>SAISIE</b>.<br>
         Merci de contacter votre enseignant référent.<br>Cordialement.</p>";
         envoieMail($mail, $sujet, $message);
     }
@@ -330,18 +330,34 @@ function recuperer_mails_enseignat_tuteur($pdo, $idEtudiant) {
             $idEtudiant = (int)$_GET['id'];
             $isBUT3 = isset($_GET['but3']) && $_GET['but3'] == 1;
 
-            if ($_GET['action'] === 'remonter') {
-                remonterNotes($pdo, $idEtudiant, $isBUT3);
-                echo "<div class='message'>Statuts remontés et mail envoyé à l'étudiant ID $idEtudiant</div>";
+            if ($_GET['action'] === 'remonter') 
+                {
+                $listeAutorises = recuperer_mails_admin(getPDO());
+                $mailActuel = isset($_SESSION['identifiant']) ? $_SESSION['identifiant'] : null;
+
+                if ($mailActuel && in_array($mailActuel, $listeAutorises)) {
+                    remonterNotes($pdo, $idEtudiant, $isBUT3);
+                    echo "<div class='message'>Statuts remontés et mail envoyé pour l'étudiant ID $idEtudiant</div>";
+                } else {
+                    echo "<div class='error'>Vous n'êtes pas autorisé à effectuer cette action.</div>";
+                }
             }
             if ($_GET['action'] === 'bloquer') {
                 bloquerNotes($pdo, $idEtudiant, $isBUT3);
                 echo "<div class='message'>Statuts re-bloqués et mail envoyé à l'étudiant ID $idEtudiant</div>";
             }
             if ($_GET['action'] === 'rappel') {
+
+                $listeAutorises = recuperer_mails_admin(getPDO());
+                $mailActuel = isset($_SESSION['identifiant']) ? $_SESSION['identifiant'] : null;
+                if ($mailActuel && in_array($mailActuel, $listeAutorises)) {
                 $mail_prof = recuperer_mails_enseignat_tuteur($pdo, $idEtudiant);
                 rappelMail($pdo, $mail_prof);
                 echo "<div class='message'>Mail de rappel envoyé à l'enseigant $mail_prof</div>";
+                }
+                else {
+                    echo "<div class='error'>Vous n'êtes pas autorisé à effectuer cette action.</div>";
+                }
             }
         }
 
@@ -387,8 +403,14 @@ function recuperer_mails_enseignat_tuteur($pdo, $idEtudiant) {
 
         //bouton remonter tout
         if (isset($_POST['remonter_tout'])) {
-            remonterTout($pdo);
-            echo "<div class='message'>Toutes les notes prêtes ont été remontées.</div>";
+
+            if (!isset($_SESSION['identifiant']) || !in_array($_SESSION['identifiant'], recuperer_mails_admin(getPDO()))) {
+                echo "<div class='error'>Vous n'êtes pas autorisé à effectuer cette action.</div>";
+            } else {
+                remonterTout($pdo);
+                echo "<div class='message'>Toutes les notes prêtes ont été remontées.</div>";
+            }
+            
         }
 
         // Bouton autoriser saisie
@@ -402,7 +424,6 @@ function recuperer_mails_enseignat_tuteur($pdo, $idEtudiant) {
                 echo "<div class='error'>Vous n'êtes pas autorisé à effectuer cette action.</div>";
             }
         }
-
 
         echo "<form method='post'>
         <button type='submit' name='remonter_tout'>Remonter tout les élèves</button>

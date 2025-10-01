@@ -324,3 +324,7 @@ th.sorting_desc:after {
   content: '\2193'; /* flèche bas */
 }
 
+/* Bouton déconnexion en haut à droite */
+        .deconnexion-btn:hover {
+            background-color: #cc0000;
+        }

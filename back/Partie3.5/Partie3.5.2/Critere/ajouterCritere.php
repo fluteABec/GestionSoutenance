@@ -17,6 +17,15 @@ if ($conn->connect_error) {
 $id_section = intval($_GET['id_section'] ?? $_POST['id_section'] ?? 0);
 $id_grille  = intval($_GET['id_grille'] ?? $_POST['id_grille'] ?? 0);
 
+// Vérification si la grille est déjà utilisée
+include("../Bouton.php");
+if (grilleDejaUtilisee($conn, $id_grille)) {
+    echo "<br><a href='../Affichage.php?id_grille=$id_grille'>📂 Retour à l'affichage de grille</a>";
+    echo "<br><a href='../Grille.php'>📂 Retour aux Grilles</a> <br> <br>";
+    die("⛔ Cette grille est déjà utilisée pour une évaluation et ne peut plus être modifiée.");
+
+}
+
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if (!isset($_GET['id_section'])) {
         die("Erreur : aucune section sélectionnée.");
