@@ -1,4 +1,5 @@
 <?php
+include("../Bouton.php");
 // Grille/modifierGrille.php
 $host = "localhost";
 $user = "root";
@@ -30,6 +31,13 @@ if (!$id_grille) {
     // debug court (décommente si besoin) :
     // echo "<pre>GET=" . htmlspecialchars(print_r($_GET, true)) . "\nPOST=" . htmlspecialchars(print_r($_POST, true)) . "</pre>";
     exit;
+}
+
+// Vérification si la grille est déjà utilisée
+if (grilleDejaUtilisee($conn, $id_grille)) {
+    echo "<br><a href='../Grille.php'>📂 Retour aux Grilles</a> <br> <br>";
+    die("⛔ Cette grille est déjà utilisée pour une évaluation et ne peut plus être modifiée.");
+
 }
 
 // Si formulaire soumis => faire l'UPDATE
@@ -75,9 +83,8 @@ $nature = $row['natureGrille'];
 $note   = $row['noteMaxGrille'];
 $nom    = $row['nomModuleGrilleEvaluation'];
 $annee  = $row['anneeDebut'];
+
 ?>
-
-
 
 <!doctype html>
 <html lang="fr">

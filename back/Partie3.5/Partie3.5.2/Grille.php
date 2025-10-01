@@ -38,7 +38,10 @@ if ($result->num_rows > 0) {
 
         echo "<td>";
         echo btnModifier("Grille/modifierGrille.php?id_grille=" . $row['IdModeleEval']) . "<br> <br>"; 
-        echo btnSupprimer("Grille/supprimerGrille.php?id_grille=" . $row['IdModeleEval']);
+        echo btnSupprimer("Grille/supprimerGrille.php?id_grille=" . $row['IdModeleEval']). "<br> <br>";
+        if ($row["anneeDebut"] < 2025) {
+            echo btnCopier("Grille/copierGrille.php?id_grille=" . $row['IdModeleEval']);
+        }
         echo "</td>";
 
         echo "<td>";
