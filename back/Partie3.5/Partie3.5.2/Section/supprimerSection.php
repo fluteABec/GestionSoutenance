@@ -22,6 +22,15 @@ if (!isset($_GET['id_section']) || !isset($_GET['id_grille'])) {
 $id_section = intval($_GET['id_section']);
 $id_grille  = intval($_GET['id_grille']);
 
+// Vérification si la grille est déjà utilisée
+include("../Bouton.php");
+if (grilleDejaUtilisee($conn, $id_grille)) {
+    echo "<br><a href='../Affichage.php?id_grille=$id_grille'>📂 Retour à l'affichage de grille</a>";
+    echo "<br><a href='../Grille.php'>📂 Retour aux Grilles</a> <br> <br>";
+    die("⛔ Cette grille est déjà utilisée pour une évaluation et ne peut plus être modifiée.");
+
+}
+
 // 1. Récupérer les critères liés à cette section
 $sql = "SELECT IdCritere FROM sectioncontenircriteres WHERE IdSection = $id_section";
 $result = $conn->query($sql);

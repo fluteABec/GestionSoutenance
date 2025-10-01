@@ -23,6 +23,14 @@ if ($id_grille <= 0) {
 
 $id_grille = intval($_GET['id_grille']);
 
+// Vérification si la grille est déjà utilisée
+include("../Bouton.php");
+if (grilleDejaUtilisee($conn, $id_grille)) {
+    echo "<br><a href='../Grille.php'>📂 Retour aux Grilles</a> <br> <br>";
+    die("⛔ Cette grille est déjà utilisée pour une évaluation et ne peut plus être modifiée.");
+
+}
+
 // 1. Récupérer toutes les sections de la grille
 $sql = "SELECT IdSection FROM sectionseval WHERE IdModeleEval = $id_grille";
 $result = $conn->query($sql);
