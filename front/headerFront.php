@@ -22,6 +22,8 @@ if (isset($enseignantFullName)) {
         <button type="submit" style="display:none"></button>
     </form>
     <div style="color:#fff; font-weight:600; font-size:1.1rem; margin-left:32px; white-space:nowrap;">
-        <?php echo htmlspecialchars($nomProfesseur); ?>
+         <a href="../deconnexion.php" style="background-color: #ff4444; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; text-decoration: none; margin-right: 16px;">Déconnexion</a>
+             <?php echo htmlspecialchars($nomProfesseur); ?>
     </div>
 </div>
+

@@ -4,17 +4,9 @@ if (!isset($_SESSION['role'])) {
     header("Location: ../index.html");
     exit();
 }
-
-
 // Connexion à la base de données
 require_once '../db.php';
-
-
-
 ?>
-
-
-
 
 
 <!DOCTYPE html>
@@ -28,6 +20,7 @@ require_once '../db.php';
 
 <body>
     <div class="containerHAUT">
+          <a href="deconnexion.php" class="deconnexion-btn">Déconnexion</a>
         <h1>Bienvenue, <span id="professor-name"></span></h1>
     </div>
     
