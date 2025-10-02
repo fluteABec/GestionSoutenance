@@ -212,6 +212,7 @@ img{max-width:100%;height:auto;display:block}
 .controls-section h3 {
   margin-bottom: 12px;
   color: var(--navy);
+  font-family: 'Barlow', Arial, sans-serif;
   font-size: 1.1rem;
   font-weight: 700;
 }
@@ -244,7 +245,7 @@ img{max-width:100%;height:auto;display:block}
     flex-wrap: wrap;
   }
   .dataTables_length {
-    margin-bottom: 0 !important;
+    margin-bottom: 0;
     margin-left: 12px;
   }
 .table-container {
@@ -282,7 +283,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--teal);bo
 /* Tables */
 table{width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden}
 th,td{padding:10px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:middle}
-thead th{background:#f1f5f9;color:var(--navy);font-weight:700}
+thead th{background:#f1f5f9;color:var(--navy);font-weight:700;font-family:'Barlow',Arial,sans-serif}
 tbody tr:nth-child(even){background:#fbfdfe}
 tbody tr:hover{background:#f8fafc}
 .table-actions{display:flex;gap:8px}
@@ -322,6 +323,27 @@ th.sorting_asc:after {
 }
 th.sorting_desc:after {
   content: '\2193'; /* flèche bas */
+}
+
+/* Bouton retour pour pages administratives */
+.btn-retour {
+  background: var(--surface);
+  color: var(--navy);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: 'Barlow', Arial, sans-serif;
+  font-weight: 600;
+  padding: 8px 22px;
+  font-size: 1em;
+  box-shadow: 0 2px 8px rgba(0,108,130,0.07);
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+  text-decoration: none;
+  display: inline-block;
+}
+.btn-retour:hover {
+  background: var(--navy);
+  color: #fff;
+  border-color: var(--navy);
 }
 
 /* Bouton déconnexion en haut à droite */

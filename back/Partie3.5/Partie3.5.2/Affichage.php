@@ -38,7 +38,16 @@ $sections = $conn->query($sql);
 <p>Type : <?php echo htmlspecialchars($grille['natureGrille']); ?></p>
 <p>Note Maximale : <?php echo htmlspecialchars($grille['noteMaxGrille']); ?></p>
 
-<form action="simulation.php" method="post">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="../../../stylee.css">
+</head>
+<body>
+    <form action="simulation.php" method="post">
     <input type="hidden" name="id_grille" value="<?php echo $id_grille; ?>">
 
     <table border="1" cellpadding="5" cellspacing="0" width="100%">
@@ -122,3 +131,7 @@ $sections = $conn->query($sql);
 
 <br>
 <a href="Grille.php">📂 Retour aux grilles</a>
+</body>
+</html>
+
+

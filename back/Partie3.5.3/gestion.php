@@ -105,167 +105,202 @@ $etudList=$pdo->query('SELECT IdEtudiant, nom, prenom FROM EtudiantsBUT2ou3 ORDE
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Gestion ressources</title>
+<link rel="stylesheet" href="../../stylee.css">
 </head>
 <body>
-<div>
-  <a href="index.php">← Retour</a>
-  <div><?php echo h($msg); ?></div>
-  <h2>Enseignants</h2>
-  <form method="post">
-    <input type="hidden" name="action" value="add_enseignant">
-    <input type="text" name="nom" placeholder="Nom" required>
-    <input type="text" name="prenom" placeholder="Prénom" required>
-    <input type="email" name="mail" placeholder="Mail" required>
-    <input type="text" name="mdp" placeholder="Mot de passe" required>
-    <button type="submit">Ajouter</button>
-  </form>
-  <form method="post">
-    <input type="hidden" name="action" value="update_enseignant">
-    <select name="IdEnseignant">
-      <?php foreach($ensList as $e){echo '<option value="'.h($e['IdEnseignant']).'">'.h($e['nom'].' '.$e['prenom']).'</option>'; }?>
-    </select>
-    <input type="text" name="nom" placeholder="Nom" required>
-    <input type="text" name="prenom" placeholder="Prénom" required>
-    <input type="email" name="mail" placeholder="Mail" required>
-    <input type="text" name="mdp" placeholder="Mot de passe" required>
-    <button type="submit">Modifier</button>
-  </form>
-  <form method="post">
-    <input type="hidden" name="action" value="delete_enseignant">
-    <select name="IdEnseignant">
-      <?php foreach($ensList as $e){echo '<option value="'.h($e['IdEnseignant']).'">'.h($e['nom'].' '.$e['prenom']).'</option>'; }?>
-    </select>
-    <button type="submit">Supprimer</button>
-  </form>
+      <?php include '../navbar.php'; ?>
 
-  <h2>Salles</h2>
-  <form method="post">
-    <input type="hidden" name="action" value="add_salle">
-    <input type="text" name="IdSalle" placeholder="IdSalle" required>
-    <input type="text" name="description" placeholder="Description">
-    <button type="submit">Ajouter</button>
-  </form>
-  <form method="post">
-    <input type="hidden" name="action" value="update_salle">
-    <select name="IdSalle">
-      <?php foreach($salles as $s){echo '<option value="'.h($s['IdSalle']).'">'.h($s['IdSalle']).'</option>'; }?>
-    </select>
-    <input type="text" name="description" placeholder="Description">
-    <button type="submit">Modifier</button>
-  </form>
-  <form method="post">
-    <input type="hidden" name="action" value="delete_salle">
-    <select name="IdSalle">
-      <?php foreach($salles as $s){echo '<option value="'.h($s['IdSalle']).'">'.h($s['IdSalle']).'</option>'; }?>
-    </select>
-    <button type="submit">Supprimer</button>
-  </form>
+<div class="admin-block">
+  <div class="mb-3"><?php echo h($msg); ?></div>
 
-  <h2>Entreprises</h2>
-  <form method="post">
-    <input type="hidden" name="action" value="add_entreprise">
-    <input type="text" name="nom" placeholder="Nom" required>
-    <input type="text" name="villeE" placeholder="Ville" required>
-    <input type="text" name="codePostal" placeholder="Code postal" required>
-    <button type="submit">Ajouter</button>
-  </form>
-  <form method="post">
-    <input type="hidden" name="action" value="update_entreprise">
-    <select name="IdEntreprise">
-      <?php foreach($entList as $s){echo '<option value="'.h($s['IdEntreprise']).'">'.h($s['nom']).'</option>'; }?>
-    </select>
-    <input type="text" name="nom" placeholder="Nom" required>
-    <input type="text" name="villeE" placeholder="Ville" required>
-    <input type="text" name="codePostal" placeholder="Code postal" required>
-    <button type="submit">Modifier</button>
-  </form>
-  <form method="post">
-    <input type="hidden" name="action" value="delete_entreprise">
-    <select name="IdEntreprise">
-      <?php foreach($entList as $s){echo '<option value="'.h($s['IdEntreprise']).'">'.h($s['nom']).'</option>'; }?>
-    </select>
-    <button type="submit">Supprimer</button>
-  </form>
+  <div class="section-card">
+    <h2>Enseignants</h2>
+    <div class="form-group-row">
+      <form method="post" class="card mb-2">
+        <input type="hidden" name="action" value="add_enseignant">
+        <input type="text" name="nom" placeholder="Nom" required>
+        <input type="text" name="prenom" placeholder="Prénom" required>
+        <input type="email" name="mail" placeholder="Mail" required>
+        <input type="text" name="mdp" placeholder="Mot de passe" required>
+        <button type="submit" class="btn btn-ajouter">Ajouter</button>
+      </form>
+      <form method="post" class="card mb-2">
+        <input type="hidden" name="action" value="update_enseignant">
+        <select name="IdEnseignant">
+          <?php foreach($ensList as $e){echo '<option value="'.h($e['IdEnseignant']).'">'.h($e['nom'].' '.$e['prenom']).'</option>'; }?>
+        </select>
+        <input type="text" name="nom" placeholder="Nom" required>
+        <input type="text" name="prenom" placeholder="Prénom" required>
+        <input type="email" name="mail" placeholder="Mail" required>
+        <input type="text" name="mdp" placeholder="Mot de passe" required>
+        <button type="submit" class="btn">Modifier</button>
+      </form>
+      <form method="post" class="card mb-2">
+        <input type="hidden" name="action" value="delete_enseignant">
+        <select name="IdEnseignant">
+          <?php foreach($ensList as $e){echo '<option value="'.h($e['IdEnseignant']).'">'.h($e['nom'].' '.$e['prenom']).'</option>'; }?>
+        </select>
+        <button type="submit" class="btn btn-supprimer">Supprimer</button>
+      </form>
+    </div>
+  </div>
 
-  <h2>Étudiants</h2>
-  <form method="post">
-    <input type="hidden" name="action" value="add_etudiant">
-    <input type="text" name="nom" placeholder="Nom" required>
-    <input type="text" name="prenom" placeholder="Prénom" required>
-    <input type="email" name="mail" placeholder="Mail" required>
-    <input type="text" name="empreinte" placeholder="Empreinte" required>
-    <button type="submit">Ajouter</button>
-  </form>
-  <form method="post">
-    <input type="hidden" name="action" value="update_etudiant">
-    <select name="IdEtudiant">
-      <?php foreach($etudList as $s){echo '<option value="'.h($s['IdEtudiant']).'">'.h($s['nom'].' '.$s['prenom']).'</option>'; }?>
-    </select>
-    <input type="text" name="nom" placeholder="Nom" required>
-    <input type="text" name="prenom" placeholder="Prénom" required>
-    <input type="email" name="mail" placeholder="Mail" required>
-    <input type="text" name="empreinte" placeholder="Empreinte" required>
-    <button type="submit">Modifier</button>
-  </form>
-  <form method="post">
-    <input type="hidden" name="action" value="delete_etudiant">
-    <select name="IdEtudiant">
-      <?php foreach($etudList as $s){echo '<option value="'.h($s['IdEtudiant']).'">'.h($s['nom'].' '.$s['prenom']).'</option>'; }?>
-    </select>
-    <button type="submit">Supprimer</button>
-  </form>
+  <hr class="mb-4 mt-4">
 
-  <h2>Ajouter/Mettre à jour un stage (<?php echo h($year); ?>)</h2>
-  <form method="post">
-    <input type="hidden" name="action" value="add_stage">
-    <select name="IdEtudiant">
-      <?php foreach($etudList as $s){echo '<option value="'.h($s['IdEtudiant']).'">'.h($s['nom'].' '.$s['prenom']).'</option>'; }?>
-    </select>
-    <select name="IdEntreprise">
-      <option value="">(aucune)</option>
-      <?php foreach($entList as $s){echo '<option value="'.h($s['IdEntreprise']).'">'.h($s['nom']).'</option>'; }?>
-    </select>
-    <select name="but3sinon2"><option value="0">BUT2</option><option value="1">BUT3</option></select>
-    <select name="alternanceBUT3"><option value="0">Initial</option><option value="1">Alternance</option></select>
-    <input type="text" name="nomMaitreStageApp" placeholder="Maitre de stage">
-    <input type="text" name="sujet" placeholder="Sujet" required>
-    <input type="text" name="typeMission" placeholder="Type de mission">
-    <input type="text" name="cadreMission" placeholder="Cadre de mission">
-    <label><input type="checkbox" name="creer_grilles" value="1">Créer les grilles</label>
-    <button type="submit">Valider</button>
-  </form>
+  <div class="section-card">
+    <h2>Salles</h2>
+    <div class="form-group-row">
+      <form method="post" class="card mb-2">
+        <input type="hidden" name="action" value="add_salle">
+        <input type="text" name="IdSalle" placeholder="IdSalle" required>
+        <input type="text" name="description" placeholder="Description">
+        <button type="submit" class="btn btn-ajouter">Ajouter</button>
+      </form>
+      <form method="post" class="card mb-2">
+        <input type="hidden" name="action" value="update_salle">
+        <select name="IdSalle">
+          <?php foreach($salles as $s){echo '<option value="'.h($s['IdSalle']).'">'.h($s['IdSalle']).'</option>'; }?>
+        </select>
+        <input type="text" name="description" placeholder="Description">
+        <button type="submit" class="btn">Modifier</button>
+      </form>
+      <form method="post" class="card mb-2">
+        <input type="hidden" name="action" value="delete_salle">
+        <select name="IdSalle">
+          <?php foreach($salles as $s){echo '<option value="'.h($s['IdSalle']).'">'.h($s['IdSalle']).'</option>'; }?>
+        </select>
+        <button type="submit" class="btn btn-supprimer">Supprimer</button>
+      </form>
+    </div>
+  </div>
 
-  <h2>Affectations Enseignants</h2>
-  <form method="post">
-    <input type="hidden" name="action" value="set_tuteur">
-    <select name="IdEtudiant">
-      <?php foreach($etudList as $s){echo '<option value="'.h($s['IdEtudiant']).'">'.h($s['nom'].' '.$s['prenom']).'</option>'; }?>
-    </select>
-    <select name="IdEnseignant">
-      <?php foreach($ensList as $e){echo '<option value="'.h($e['IdEnseignant']).'">'.h($e['nom'].' '.$e['prenom']).'</option>'; }?>
-    </select>
-    <button type="submit">Définir tuteur</button>
-  </form>
-  <form method="post">
-    <input type="hidden" name="action" value="set_second">
-    <select name="IdEtudiant">
-      <?php foreach($etudList as $s){echo '<option value="'.h($s['IdEtudiant']).'">'.h($s['nom'].' '.$s['prenom']).'</option>'; }?>
-    </select>
-    <select name="IdEnseignant">
-      <?php foreach($ensList as $e){echo '<option value="'.h($e['IdEnseignant']).'">'.h($e['nom'].' '.$e['prenom']).'</option>'; }?>
-    </select>
-    <button type="submit">Définir second</button>
-  </form>
-  <form method="post">
-    <input type="hidden" name="action" value="set_anglais">
-    <select name="IdEtudiant">
-      <?php foreach($etudList as $s){echo '<option value="'.h($s['IdEtudiant']).'">'.h($s['nom'].' '.$s['prenom']).'</option>'; }?>
-    </select>
-    <select name="IdEnseignant">
-      <?php foreach($ensList as $e){echo '<option value="'.h($e['IdEnseignant']).'">'.h($e['nom'].' '.$e['prenom']).'</option>'; }?>
-    </select>
-    <button type="submit">Définir anglais</button>
-  </form>
+  <hr class="mb-4 mt-4">
+
+  <div class="section-card">
+    <h2>Entreprises</h2>
+    <div class="form-group-row">
+      <form method="post" class="card mb-2">
+        <input type="hidden" name="action" value="add_entreprise">
+        <input type="text" name="nom" placeholder="Nom" required>
+        <input type="text" name="villeE" placeholder="Ville" required>
+        <input type="text" name="codePostal" placeholder="Code postal" required>
+        <button type="submit" class="btn btn-ajouter">Ajouter</button>
+      </form>
+      <form method="post" class="card mb-2">
+        <input type="hidden" name="action" value="update_entreprise">
+        <select name="IdEntreprise">
+          <?php foreach($entList as $s){echo '<option value="'.h($s['IdEntreprise']).'">'.h($s['nom']).'</option>'; }?>
+        </select>
+        <input type="text" name="nom" placeholder="Nom" required>
+        <input type="text" name="villeE" placeholder="Ville" required>
+        <input type="text" name="codePostal" placeholder="Code postal" required>
+        <button type="submit" class="btn">Modifier</button>
+      </form>
+      <form method="post" class="card mb-2">
+        <input type="hidden" name="action" value="delete_entreprise">
+        <select name="IdEntreprise">
+          <?php foreach($entList as $s){echo '<option value="'.h($s['IdEntreprise']).'">'.h($s['nom']).'</option>'; }?>
+        </select>
+        <button type="submit" class="btn btn-supprimer">Supprimer</button>
+      </form>
+    </div>
+  </div>
+
+  <hr class="mb-4 mt-4">
+
+  <div class="section-card">
+    <h2>Étudiants</h2>
+    <div class="form-group-row">
+      <form method="post" class="card mb-2">
+        <input type="hidden" name="action" value="add_etudiant">
+        <input type="text" name="nom" placeholder="Nom" required>
+        <input type="text" name="prenom" placeholder="Prénom" required>
+        <input type="email" name="mail" placeholder="Mail" required>
+        <input type="text" name="empreinte" placeholder="Empreinte" required>
+        <button type="submit" class="btn btn-ajouter">Ajouter</button>
+      </form>
+      <form method="post" class="card mb-2">
+        <input type="hidden" name="action" value="update_etudiant">
+        <select name="IdEtudiant">
+          <?php foreach($etudList as $s){echo '<option value="'.h($s['IdEtudiant']).'">'.h($s['nom'].' '.$s['prenom']).'</option>'; }?>
+        </select>
+        <input type="text" name="nom" placeholder="Nom" required>
+        <input type="text" name="prenom" placeholder="Prénom" required>
+        <input type="email" name="mail" placeholder="Mail" required>
+        <input type="text" name="empreinte" placeholder="Empreinte" required>
+        <button type="submit" class="btn">Modifier</button>
+      </form>
+      <form method="post" class="card mb-2">
+        <input type="hidden" name="action" value="delete_etudiant">
+        <select name="IdEtudiant">
+          <?php foreach($etudList as $s){echo '<option value="'.h($s['IdEtudiant']).'">'.h($s['nom'].' '.$s['prenom']).'</option>'; }?>
+        </select>
+        <button type="submit" class="btn btn-supprimer">Supprimer</button>
+      </form>
+    </div>
+  </div>
+
+  <hr class="mb-4 mt-4">
+
+  <div class="section-card">
+    <h2>Ajouter/Mettre à jour un stage (<?php echo h($year); ?>)</h2>
+    <form method="post" class="card mb-2">
+      <input type="hidden" name="action" value="add_stage">
+      <select name="IdEtudiant">
+        <?php foreach($etudList as $s){echo '<option value="'.h($s['IdEtudiant']).'">'.h($s['nom'].' '.$s['prenom']).'</option>'; }?>
+      </select>
+      <select name="IdEntreprise">
+        <option value="">(aucune)</option>
+        <?php foreach($entList as $s){echo '<option value="'.h($s['IdEntreprise']).'">'.h($s['nom']).'</option>'; }?>
+      </select>
+      <select name="but3sinon2"><option value="0">BUT2</option><option value="1">BUT3</option></select>
+      <select name="alternanceBUT3"><option value="0">Initial</option><option value="1">Alternance</option></select>
+      <input type="text" name="nomMaitreStageApp" placeholder="Maitre de stage">
+      <input type="text" name="sujet" placeholder="Sujet" required>
+      <input type="text" name="typeMission" placeholder="Type de mission">
+      <input type="text" name="cadreMission" placeholder="Cadre de mission">
+      <label><input type="checkbox" name="creer_grilles" value="1">Créer les grilles</label>
+      <button type="submit" class="btn btn-ajouter">Valider</button>
+    </form>
+  </div>
+
+  <hr class="mb-4 mt-4">
+
+  <div class="section-card">
+    <h2>Affectations Enseignants</h2>
+    <div class="form-group-row">
+      <form method="post" class="card mb-2">
+        <input type="hidden" name="action" value="set_tuteur">
+        <select name="IdEtudiant">
+          <?php foreach($etudList as $s){echo '<option value="'.h($s['IdEtudiant']).'">'.h($s['nom'].' '.$s['prenom']).'</option>'; }?>
+        </select>
+        <select name="IdEnseignant">
+          <?php foreach($ensList as $e){echo '<option value="'.h($e['IdEnseignant']).'">'.h($e['nom'].' '.$e['prenom']).'</option>'; }?>
+        </select>
+        <button type="submit" class="btn">Définir tuteur</button>
+      </form>
+      <form method="post" class="card mb-2">
+        <input type="hidden" name="action" value="set_second">
+        <select name="IdEtudiant">
+          <?php foreach($etudList as $s){echo '<option value="'.h($s['IdEtudiant']).'">'.h($s['nom'].' '.$s['prenom']).'</option>'; }?>
+        </select>
+        <select name="IdEnseignant">
+          <?php foreach($ensList as $e){echo '<option value="'.h($e['IdEnseignant']).'">'.h($e['nom'].' '.$e['prenom']).'</option>'; }?>
+        </select>
+        <button type="submit" class="btn">Définir second</button>
+      </form>
+      <form method="post" class="card mb-2">
+        <input type="hidden" name="action" value="set_anglais">
+        <select name="IdEtudiant">
+          <?php foreach($etudList as $s){echo '<option value="'.h($s['IdEtudiant']).'">'.h($s['nom'].' '.$s['prenom']).'</option>'; }?>
+        </select>
+        <select name="IdEnseignant">
+          <?php foreach($ensList as $e){echo '<option value="'.h($e['IdEnseignant']).'">'.h($e['nom'].' '.$e['prenom']).'</option>'; }?>
+        </select>
+        <button type="submit" class="btn">Définir anglais</button>
+      </form>
+    </div>
+  </div>
 </div>
 </body>
 </html>
