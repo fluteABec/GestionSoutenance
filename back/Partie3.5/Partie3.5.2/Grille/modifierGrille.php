@@ -86,41 +86,45 @@ $annee  = $row['anneeDebut'];
 
 ?>
 
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="utf-8">
-<title>Modifier la grille</title>
+    <meta charset="utf-8">
+    <title>Modifier la grille</title>
+    <link rel="stylesheet" href="../../../../stylee.css">
 </head>
 <body>
-    <h2>✏️ Modifier la grille "<?php echo $nom; ?>"</h2>
-
-    <form method="POST">
-        <!-- garder l'id en hidden pour le POST -->
+    <?php include '../../../navbarGrilles.php'; ?>
+<div class="admin-block" style="max-width:600px;width:96%;margin:40px auto 0 auto;box-sizing:border-box;">
+    <h2 class="section-title">✏️ Modifier la grille "<?php echo htmlspecialchars($nom); ?>"</h2>
+    <form method="POST" class="card" style="padding:32px 24px;">
         <input type="hidden" name="id_grille" value="<?php echo $id_grille; ?>">
-
-        <label for="natureGrille">Nature Grille :</label>
-    <select name="natureGrille" id="natureGrille" required>
-        <option value="soutenance" <?php if(isset($nature) && $nature=="soutenance") echo "selected"; ?>>SOUTENANCE</option>
-        <option value="stage" <?php if(isset($nature) && $nature=="stage") echo "selected"; ?>>STAGE</option>
-        <option value="portfolio" <?php if(isset($nature) && $nature=="portfolio") echo "selected"; ?>>PORTFOLIO</option>
-        <option value="anglais" <?php if(isset($nature) && $nature=="anglais") echo "selected"; ?>>ANGLAIS</option>
-        <option value="rapport" <?php if(isset($nature) && $nature=="rapport") echo "selected"; ?>>RAPPORT</option>
-    </select>
-
-
-        <label>Note Max :</label>
-        <input type="number" name="noteMaxGrille" value="<?php echo htmlspecialchars($note); ?>" required>
-
-        <label>Nom du module :</label>
-        <input type="text" name="nomModuleGrilleEvaluation" value="<?php echo htmlspecialchars($nom); ?>" required>
-
-        <label>Année de début :</label>
-        <input type="number" name="anneeDebut" value="<?php echo htmlspecialchars($annee); ?>" required>
-
-        <button type="submit">✅ Enregistrer</button>
+        <div class="form-group" style="margin-bottom:18px;">
+            <label for="natureGrille">Nature Grille :</label>
+            <select name="natureGrille" id="natureGrille" required class="input-text">
+                <option value="soutenance" <?php if(isset($nature) && $nature=="soutenance") echo "selected"; ?>>SOUTENANCE</option>
+                <option value="stage" <?php if(isset($nature) && $nature=="stage") echo "selected"; ?>>STAGE</option>
+                <option value="portfolio" <?php if(isset($nature) && $nature=="portfolio") echo "selected"; ?>>PORTFOLIO</option>
+                <option value="anglais" <?php if(isset($nature) && $nature=="anglais") echo "selected"; ?>>ANGLAIS</option>
+                <option value="rapport" <?php if(isset($nature) && $nature=="rapport") echo "selected"; ?>>RAPPORT</option>
+            </select>
+        </div>
+        <div class="form-group" style="margin-bottom:18px;">
+            <label for="noteMaxGrille">Note Max :</label>
+            <input type="number" name="noteMaxGrille" id="noteMaxGrille" value="<?php echo htmlspecialchars($note); ?>" required class="input-text">
+        </div>
+        <div class="form-group" style="margin-bottom:18px;">
+            <label for="nomModuleGrilleEvaluation">Nom du module :</label>
+            <input type="text" name="nomModuleGrilleEvaluation" id="nomModuleGrilleEvaluation" value="<?php echo htmlspecialchars($nom); ?>" required class="input-text">
+        </div>
+        <div class="form-group" style="margin-bottom:18px;">
+            <label for="anneeDebut">Année de début :</label>
+            <input type="number" name="anneeDebut" id="anneeDebut" value="<?php echo htmlspecialchars($annee); ?>" required class="input-text">
+        </div>
+        <button type="submit" class="btn btn-primary">✅ Enregistrer</button>
     </form>
-
-    <?php echo "<br><a href='../Grille.php'>📂 Retour aux Grilles</a>";?>
+    <a href="../Grille.php" class="btn-retour mb-3">📂 Retour aux Grilles</a>
+</div>
 </body>
 </html>

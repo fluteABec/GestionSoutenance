@@ -113,36 +113,6 @@ $etudList=$pdo->query('SELECT IdEtudiant, nom, prenom FROM EtudiantsBUT2ou3 ORDE
 </head>
 <body>
   <?php include '../navbar.php'; ?>
-<div>
-  <div><?php echo h($msg); ?></div>
-  <h2>Enseignants</h2>
-  <form method="post">
-    <input type="hidden" name="action" value="add_enseignant">
-    <input type="text" name="nom" placeholder="Nom" required>
-    <input type="text" name="prenom" placeholder="Prénom" required>
-    <input type="email" name="mail" placeholder="Mail" required>
-    <input type="text" name="mdp" placeholder="Mot de passe" required>
-    <button type="submit">Ajouter</button>
-  </form>
-  <form method="post">
-    <input type="hidden" name="action" value="update_enseignant">
-    <select name="IdEnseignant">
-      <?php foreach($ensList as $e){echo '<option value="'.h($e['IdEnseignant']).'">'.h($e['nom'].' '.$e['prenom']).'</option>'; }?>
-    </select>
-    <input type="text" name="nom" placeholder="Nom" required>
-    <input type="text" name="prenom" placeholder="Prénom" required>
-    <input type="email" name="mail" placeholder="Mail" required>
-    <input type="text" name="mdp" placeholder="Mot de passe" required>
-    <button type="submit">Modifier</button>
-  </form>
-  <form method="post">
-    <input type="hidden" name="action" value="delete_enseignant">
-    <select name="IdEnseignant">
-      <?php foreach($ensList as $e){echo '<option value="'.h($e['IdEnseignant']).'">'.h($e['nom'].' '.$e['prenom']).'</option>'; }?>
-    </select>
-    <button type="submit">Supprimer</button>
-  </form>
-
 <div class="admin-block">
   <div class="mb-3"><?php echo h($msg); ?></div>
 

@@ -104,42 +104,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <a class="nav-item" href="/projet_sql/back/mainAdministration.php">Administration</a>
 </div>
 
-<h2>Modifier la soutenance (<?= htmlspecialchars($type) ?>)</h2>
 
-<form method="post">
-    <label>Heure de début :</label>
-    <input type="datetime-local" id="start" name="DateSoutenance"
-           value="<?= $type === 'stage' ? date('Y-m-d\TH:i', strtotime($soutenance['date_h'])) : date('Y-m-d\TH:i', strtotime($soutenance['dateS'])) ?>" />
-    <br>
+<div class="admin-block" style="max-width:600px;width:96%;margin:80px auto 0 auto;box-sizing:border-box;">
+    <h2 class="section-title">Modifier la soutenance (<?= htmlspecialchars($type) ?>)</h2>
+    <form method="post" class="card" style="padding:32px 24px;">
+        <div class="form-group" style="margin-bottom:18px;">
+            <label for="start">Heure de début :</label>
+            <input type="datetime-local" id="start" name="DateSoutenance"
+                   value="<?= $type === 'stage' ? date('Y-m-d\TH:i', strtotime($soutenance['date_h'])) : date('Y-m-d\TH:i', strtotime($soutenance['dateS'])) ?>" class="input-text" />
+        </div>
+        <div class="form-group" style="margin-bottom:18px;">
+            <label for="salleSelect">Salle</label>
+            <select id="salleSelect" name="Salle" class="input-text">
+                <?php foreach ($listeSalles as $salle): ?>
+                    <option value="<?= htmlspecialchars($salle['IdSalle']) ?>"
+                        <?= $salle['IdSalle'] == $soutenance['IdSalle'] ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($salle['IdSalle'] . " - " . $salle['description']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <div class="form-group" style="margin-bottom:18px;">
+            <label for="SecondEnseignant"><?= $type === 'stage' ? "Second Enseignant" : "Enseignant" ?></label>
+            <select name="SecondEnseignant" id="SecondEnseignant" class="input-text">
+                <option value="">-- Choisir --</option>
+                <?php foreach ($listeEnseignant as $enseignant): ?>
+                    <option value="<?= htmlspecialchars($enseignant['IdEnseignant']) ?>"
+                        <?= ($type === 'stage' && $enseignant['IdEnseignant'] == $soutenance['IdSecondEnseignant']) ||
+                           ($type === 'anglais' && $enseignant['IdEnseignant'] == $soutenance['IdEnseignant']) ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($enseignant['nom'] . ' ' . $enseignant['prenom']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+    </form>
+        <a href="../mainAdministration.php" class="btn-retour mb-3">← Retour</a>
 
-    <label>Salle</label>
-    <select id="salleSelect" name="Salle">
-        <?php foreach ($listeSalles as $salle): ?>
-            <option value="<?= htmlspecialchars($salle['IdSalle']) ?>"
-                <?= $salle['IdSalle'] == $soutenance['IdSalle'] ? 'selected' : '' ?>>
-                <?= htmlspecialchars($salle['IdSalle'] . " - " . $salle['description']) ?>
-            </option>
-        <?php endforeach; ?>
-    </select>
-    <br>
-
-    <label><?= $type === 'stage' ? "Second Enseignant" : "Enseignant" ?></label>
-    <select name="SecondEnseignant">
-        <option value="">-- Choisir --</option>
-        <?php foreach ($listeEnseignant as $enseignant): ?>
-            <option value="<?= htmlspecialchars($enseignant['IdEnseignant']) ?>"
-                <?= ($type === 'stage' && $enseignant['IdEnseignant'] == $soutenance['IdSecondEnseignant']) ||
-                   ($type === 'anglais' && $enseignant['IdEnseignant'] == $soutenance['IdEnseignant']) ? 'selected' : '' ?>>
-                <?= htmlspecialchars($enseignant['nom'] . ' ' . $enseignant['prenom']) ?>
-            </option>
-        <?php endforeach; ?>
-    </select>
-    <br>
-
-    <button type="submit">Enregistrer les modifications</button>
-</form>
-
-    <p><a href="../mainAdministration.php">← Retour au menu</a></p>
+</div>
 
 </body>
 </html>

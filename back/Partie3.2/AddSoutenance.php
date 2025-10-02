@@ -156,49 +156,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
 <?php include '../navbar.php'; ?>
 
-<h2>Ajout d'une Soutenance</h2>
-<form method="post">
-    <?php if (!$estBut3 || $estBut3 && $type === 'stage'): ?> 
-        <label value="portfolio&stage">Nature : Portfolio & Stage</h3> 
-    <?php endif; ?> 
-        
-    <?php if ($estBut3 && $type === 'anglais'): ?> 
-        <label value="anglais">Nature : Anglais</h3> 
-    <?php endif; ?> 
 
-   <label>Date et heure :</label>
-<input type="datetime-local" name="DateSoutenance" id="DateSoutenance"><br>
-
-<label>Salle :</label>
-<select name="Salle" id="salleSelect">
-    <option value="">Choisir...</option>
-</select><br>
-
-<div id="tuteurGroup">
-    <label id="tuteurLabel">Tuteur (Stage/Portfolio) :</label>
-    <select name="Tuteur" id="tuteurSelect">
-        <?php foreach ($listeEnseignant as $e): ?>
-            <option value="<?= $e['IdEnseignant'] ?>">
-                <?= htmlspecialchars($e['nom']." ".$e['prenom']) ?>
-            </option>
-        <?php endforeach; ?>
-    </select><br>
+<div class="admin-block" style="max-width:650px;width:96%;margin:80px auto 0 auto;box-sizing:border-box;">
+    <h2 class="section-title">Ajout d'une Soutenance</h2>
+    <form method="post" class="card" style="padding:32px 24px;">
+        <?php if (!$estBut3 || $estBut3 && $type === 'stage'): ?> 
+            <div class="form-group" style="margin-bottom:18px;">
+                <label value="portfolio&stage">Nature : Portfolio & Stage</label>
+            </div>
+        <?php endif; ?> 
+        <?php if ($estBut3 && $type === 'anglais'): ?> 
+            <div class="form-group" style="margin-bottom:18px;">
+                <label value="anglais">Nature : Anglais</label>
+            </div>
+        <?php endif; ?> 
+        <div class="form-group" style="margin-bottom:18px;">
+            <label for="DateSoutenance">Date et heure :</label>
+            <input type="datetime-local" name="DateSoutenance" id="DateSoutenance" class="input-text">
+        </div>
+        <div class="form-group" style="margin-bottom:18px;">
+            <label for="salleSelect">Salle :</label>
+            <select name="Salle" id="salleSelect" class="input-text">
+                <option value="">Choisir...</option>
+            </select>
+        </div>
+        <div id="tuteurGroup" class="form-group" style="margin-bottom:18px;">
+            <label id="tuteurLabel" for="tuteurSelect">Tuteur (Stage/Portfolio) :</label>
+            <select name="Tuteur" id="tuteurSelect" class="input-text">
+                <?php foreach ($listeEnseignant as $e): ?>
+                    <option value="<?= $e['IdEnseignant'] ?>">
+                        <?= htmlspecialchars($e['nom']." ".$e['prenom']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <div id="secondEnsGroup" class="form-group" style="margin-bottom:18px;">
+            <label for="secondEnsSelect">Second enseignant :</label>
+            <select name="SecondEnseignant" id="secondEnsSelect" class="input-text">
+                <?php foreach ($listeEnseignant as $e): ?>
+                    <option value="<?= $e['IdEnseignant'] ?>">
+                        <?= htmlspecialchars($e['nom']." ".$e['prenom']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+    </form>
+        <a href="../mainAdministration.php" class="btn-retour mb-3">← Retour</a>
 </div>
-
-<div id="secondEnsGroup">
-    <label>Second enseignant :</label>
-    <select name="SecondEnseignant" id="secondEnsSelect">
-        <?php foreach ($listeEnseignant as $e): ?>
-            <option value="<?= $e['IdEnseignant'] ?>">
-                <?= htmlspecialchars($e['nom']." ".$e['prenom']) ?>
-            </option>
-        <?php endforeach; ?>
-    </select><br>
-</div>
-
-<button type="submit">Enregistrer</button>
-
-<p><a href="../mainAdministration.php">← Retour</a></p>
 
 </body>
 </html>

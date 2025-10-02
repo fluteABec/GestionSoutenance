@@ -59,17 +59,31 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 }
 ?>
 
-<h2>Ajouter un critère</h2>
-<form method="POST">
-    <label>Description Longue :</label>
-    <input type="text" name="descLongue" required>
 
-    <label>Description Courte :</label>
-    <input type="text" name="descCourte" required>
-
-    <button type="submit">✅ Ajouter</button>
-</form>
-
-<?php echo "<br><a href='../Affichage.php?id_grille=$id_grille'>📂 Retour à l'affichage de grille</a>";
-echo "<br><a href='../Grille.php'>📂 Retour aux Grilles</a>";
-?>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <title>Ajouter un critère</title>
+    <link rel="stylesheet" href="../../../../stylee.css">
+</head>
+<body>
+    <?php include '../../../navbarGrilles.php'; ?>
+<div class="admin-block" style="max-width:500px;width:96%;margin:80px auto 0 auto;box-sizing:border-box;">
+    <h2 class="section-title">Ajouter un critère</h2>
+    <form method="POST" class="card" style="padding:32px 24px;">
+        <div class="form-group" style="margin-bottom:18px;">
+            <label for="descLongue">Description Longue :</label>
+            <input type="text" name="descLongue" id="descLongue" required class="input-text">
+        </div>
+        <div class="form-group" style="margin-bottom:18px;">
+            <label for="descCourte">Description Courte :</label>
+            <input type="text" name="descCourte" id="descCourte" required class="input-text">
+        </div>
+        <button type="submit" class="btn btn-primary">✅ Ajouter</button>
+    </form>
+        <a href="../Affichage.php?id_grille=<?php echo $id_grille; ?>" class="btn-retour mb-3">📂 Retour à l'affichage de grille</a>
+    <a href="../Grille.php" class="btn-retour mb-3">📂 Retour aux Grilles</a>
+</div>
+</body>
+</html>
