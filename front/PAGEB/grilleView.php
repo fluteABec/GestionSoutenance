@@ -1,42 +1,62 @@
 <?php
 function afficherEtudiantAvecLiens($etudiant, $idUser, $role) {
-	session_start();
-	echo "<h2>Informations sur l'étudiant</h2>";
-	foreach ($etudiant as $etu) {
-		//$_SESSION['idEtu'] = $etu['idEtu'];
-		if($etu['date_h'] > date("Y-m-d H:i:s")) {
-			echo "<h2>A Venir</h2>";
-			echo "<table border='1'>";
-			echo "<tr><th>Nom</th><td>{$etu['nom']}</td></tr>";
-			echo "<tr><th>Prénom</th><td>{$etu['prenom']}</td></tr>";
-			echo "<tr><th>Entreprise</th><td>{$etu['entreprise']}</td></tr>";
-			echo "<tr><th>Maitre Stage</th><td>{$etu['maitreStage']}</td></tr>";
-			echo "<tr><th>Sujet</th><td>{$etu['sujet']}</td></tr>";
-			echo "<tr><th>Date soutenance</th><td>{$etu['date_h']}</td></tr>";
-			echo "<tr><th>Statut</th><td>{$etu['Statut']}</td></tr>";
+	
+	$etudient_id = $_SESSION['idEtudiant'];
 
-			echo "<tr><th>Salle</th><td>{$etu['salle']}</td></tr>";
-			echo "</table>";
+	echo "<h2>Informations sur l'étudiant : </h2>";
+	foreach ($etudiant as $etu) {
+		if($etu['date_h'] > date("Y-m-d H:i:s")) {
+			?>
+			<h2>A Venir</h2>
+			<table border='1'> 
+			<tr><th>Nom</th><td><?=$etu['nom']?></td></tr>
+			<tr><th>Prénom</th><td><?=$etu['prenom']?></td></tr>
+			<tr><th>Entreprise</th><td><?=$etu['entreprise']?></td></tr>
+			<tr><th>Maitre Stage</th><td><?=$etu['maitreStage']?></td></tr>
+			<tr><th>Sujet</th><td><?=$etu['sujet']?></td></tr>
+			<tr><th>Date soutenance</th><td><?=$etu['date_h']?></td></tr>
+			<tr><th>Statut</th><td><?=$etu['Statut']?></td></tr>
+
+			<tr><th>Salle</th><td><?=$etu['salle']?></td></tr>
+			</table>"
+
+			<?php
 		}
 		else {
-			echo "<h2>Passer</h2>";
-			echo "<table border='1'>";
-			echo "<tr><th>Nom</th><td>{$etu['nom']}</td></tr>";
-			echo "<tr><th>Prénom</th><td>{$etu['prenom']}</td></tr>";
-			echo "<tr><th>Entreprise</th><td>{$etu['entreprise']}</td></tr>";
-			echo "<tr><th>Maitre Stage</th><td>{$etu['maitreStage']}</td></tr>";
-			echo "<tr><th>Sujet</th><td>{$etu['sujet']}</td></tr>";
-			echo "<tr><th>Date soutenance</th><td>{$etu['date_h']}</td></tr>";
-			echo "<tr><th>Statut</th><td>{$etu['Statut']}</td></tr>";
+			?>
+			<h2>Passer</h2>
+			<table border='1'>
+			<tr><th>Nom</th><td><?=$etu['nom']?></td></tr>
+			<tr><th>Prénom</th><td><?=$etu['prenom']?></td></tr>
+			<tr><th>Entreprise</th><td><?=$etu['entreprise']?></td></tr>
+			<tr><th>Maitre Stage</th><td><?=$etu['maitreStage']?></td></tr>
+			<tr><th>Sujet</th><td><?=$etu['sujet']?></td></tr>
+			<tr><th>Date soutenance</th><td><?=$etu['date_h']?></td></tr>
+			<tr><th>Statut</th><td><?=$etu['Statut']?></td></tr>
 
-			echo "<tr><th>Salle</th><td>{$etu['salle']}</td></tr>";
-			echo "</table>";
+			<tr><th>Salle</th><td><?=$etu['salle']?></td></tr>
+			</table>
+
+			<?php
 		}
- 
+		
 
-    echo "<h3>Actions disponibles pour $role</h3>";
-    echo "<ul>";
-    echo "<li><a href='../Page C/index.php?<?php echo htmlspecialchars(SID); ?>action=idEtu=idEtu={$etu['idEtu']}'>Saisir/Consulter les grilles</a></li>"; 
-	echo "</ul>";
+
+?>
+    <h3>Actions disponibles pour <?=$role?></h3>
+    <ul>
+    <li><a href='../Page C/index.php?nature=portfolio'>Saisir/Consulter les grilles de Portfolio</a></li>
+	<li><a href='../Page C/index.php?nature=anglais'>Saisir/Consulter les grilles d'Anglais</a></li>
+	<li><a href='../Page C/index.php?nature=soutenance'>Saisir/Consulter les grilles de Soutenance</a></li>
+	<li><a href='../Page C/index.php?nature=rapport'>Saisir/Consulter les grilles de Rapport</a></li>
+	<li><a href='../Page C/index.php?nature=stage'>Saisir/Consulter les grilles de Stage</a></li>
+	
+	</ul>
+
+	<?php
+
 	}
 }
+
+
+

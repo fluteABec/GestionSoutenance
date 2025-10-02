@@ -1,5 +1,6 @@
 <?php
 function getInfosEtudiant($idEtudiant) {
+    $_SESSION['idEtu'] = $idEtudiant;
     global $pdo;
     $sql = "SELECT e.IdEtudiant as idEtu, e.nom, e.prenom, a.sujet, ent.nom AS entreprise, a.nomMaitreStageApp As maitreStage, es.date_h, es.Statut As Statut,s.description AS salle
 
@@ -15,6 +16,7 @@ function getInfosEtudiant($idEtudiant) {
 }
 
 function getRoleUtilisateur($idUser, $idEtudiant) {
+    $_SESSION['idEtu'] = $idEtudiant;
     global $pdo;
     // Cas 1 : professeur tuteur
     $sql = "SELECT 1 FROM EvalStage WHERE IdEnseignantTuteur = ? AND IdEtudiant = ?";
