@@ -2,7 +2,7 @@
 // Fichier permettant de se connecter à la base
 mysqli_report(MYSQLI_REPORT_OFF);
 
-$mysqli = @new mysqli("localhost", "root", "", "EvaluationStages");
+$mysqli = @new mysqli("localhost", "root", "", "evaluationstages");
 
 if ( $mysqli->connect_errno ) {
     echo "Impossible de se connecter à MySQL: errNum=" . $mysqli->connect_errno .

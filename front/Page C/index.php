@@ -8,48 +8,57 @@
 
     // Variables
     session_start();
-    $idEnseignant;
-    $infoEtud; 
-    
-    if (isset($_SESSION["professeur_id"])) {
-        $idEnseignant = $_SESSION["professeur_id"];
+    $infoEtud = null;
+    // Prefer GET over session: when a link from Page A provides IdEtudiant, use it (avoids stale session values)
+    $IdEtudiant = 0;
+    if (isset($_GET['IdEtudiant']) && $_GET['IdEtudiant'] !== '') {
+        $IdEtudiant = (int)$_GET['IdEtudiant'];
+        // keep it in session so subsequent actions keep context
+        $_SESSION['idEtudiant'] = $IdEtudiant;
+    } elseif (isset($_GET['id']) && $_GET['id'] !== '') {
+        $IdEtudiant = (int)$_GET['id'];
+        $_SESSION['idEtudiant'] = $IdEtudiant;
     } else {
-        // Cas ou il n'y a pas de idEnseignant dans l'URL
-        $idEnseignant = 0; 
+        $IdEtudiant = isset($_SESSION['idEtudiant']) ? (int)$_SESSION['idEtudiant'] : 0;
+    }
+
+    $idEnseignant = isset($_SESSION['professeur_id']) ? (int)$_SESSION['professeur_id'] : 0;
+    $nature_Soutenance = $_GET['nature'] ?? '';
+
+    if (empty($IdEtudiant)) {
+        die('IdEtudiant manquant. Connectez-vous ou passez ?IdEtudiant=...');
     }
 
     
 
     // Création des requetes (qui vont chacune retournée un resultat)
-    function getIdEtud($mysqli)
-    {
-        $requete = "SELECT EtudiantsBUT2ou3.IdEtudiant FROM EtudiantsBUT2ou3 ORDER BY EtudiantsBUT2ou3.IdEtudiant;";
-        $result = $mysqli->query($requete);
+    function getInfoEtud($mysqli, $IdEtudiant)
+{
+    $stmt = $mysqli->prepare("SELECT nom, prenom FROM etudiantsbut2ou3 WHERE IdEtudiant = ?");
+    $stmt->bind_param("i", $IdEtudiant);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-        // Erreur de la requete
-        if (!$result)
-        {
-            echo "<br> La requete à échoué. <br>";
-            return;
-        }
-
-        // Tableau associatif
-        $rows = [];
-        while ($row = $result->fetch_assoc()) {
-            $rows[] = $row;
-        }
-
-        return $rows;
+    if (!$result) {
+        echo "<br> La requête a échoué. <br>";
+        return;
     }
+
+    // Un seul étudiant attendu
+    return $result->fetch_assoc();
+}
+
+
+    
 
     // Permet de récupérer chaque enseignantTuteur avec leur Etudiant ainsi que l'AnnéeUniversité
     function getEnseiWithTheirEtud($mysqli, $idEnseignant)
     {
-        $stmt = $mysqli->prepare("SELECT EvalStage.IdEvalStage, Enseignants.IdEnseignant, EtudiantsBUT2ou3.IdEtudiant, AnneesUniversitaires.anneeDebut FROM EvalStage
-        JOIN Enseignants ON EvalStage.IdEnseignantTuteur = Enseignants.IdEnseignant
-        JOIN EtudiantsBUT2ou3 ON  EvalStage.IdEtudiant = EtudiantsBUT2ou3.IdEtudiant
-        JOIN AnneesUniversitaires ON EvalStage.anneeDebut = AnneesUniversitaires.anneeDebut
-        WHERE Enseignants.IdEnseignant = ?;");
+        $stmt = $mysqli->prepare("SELECT evalstage.IdEvalStage, enseignants.IdEnseignant, etudiantsbut2ou3.IdEtudiant, anneesuniversitaires.anneeDebut FROM evalstage
+        JOIN enseignants ON evalstage.IdEnseignantTuteur = enseignants.IdEnseignant
+        JOIN etudiantsbut2ou3 ON  evalstage.IdEtudiant = etudiantsbut2ou3.IdEtudiant
+        JOIN anneesuniversitaires ON evalstage.anneeDebut = anneesuniversitaires.anneeDebut
+        WHERE enseignants.IdEnseignant = ?;");
         
         $stmt->bind_param("i", $idEnseignant);
         $stmt->execute();
@@ -77,13 +86,13 @@
     function getPortfolioGrid($mysqli, $idEtud)
     {
         $stmt = $mysqli->prepare("
-            SELECT DISTINCT EvalPortFolio.IdEvalPortfolio, EvalPortFolio.IdEtudiant, EtudiantsBUT2ou3.nom, EtudiantsBUT2ou3.prenom, 
-                EvalPortFolio.note, EvalPortFolio.commentaireJury, StatutsEval.Statut
-            FROM EvalPortFolio
-            JOIN EtudiantsBUT2ou3 ON EvalPortFolio.IdEtudiant = EtudiantsBUT2ou3.IdEtudiant
-            JOIN StatutsEval ON EvalPortFolio.Statut = StatutsEval.Statut
-            JOIN EvalStage ON EvalPortFolio.anneeDebut = EvalStage.anneeDebut
-            WHERE EtudiantsBUT2ou3.IdEtudiant = ? ;
+            SELECT DISTINCT evalportfolio.IdEvalPortfolio, evalportfolio.IdEtudiant, etudiantsbut2ou3.nom, etudiantsbut2ou3.prenom, 
+                evalportfolio.note, evalportfolio.commentaireJury, statutseval.Statut, evalportfolio.IdModeleEval
+            FROM evalportfolio
+            JOIN etudiantsbut2ou3 ON evalportfolio.IdEtudiant = etudiantsbut2ou3.IdEtudiant
+            JOIN statutseval ON evalportfolio.Statut = statutseval.Statut
+            JOIN evalstage ON evalportfolio.anneeDebut = evalstage.anneeDebut
+            WHERE etudiantsbut2ou3.IdEtudiant = ? ;
         ");
 
         
@@ -111,10 +120,10 @@
 
     function getEnglishGrid($mysqli, $idEtud)
     {
-        $stmt = $mysqli->prepare("SELECT EvalAnglais.IdEvalAnglais, EtudiantsBUT2ou3.IdEtudiant, EtudiantsBUT2ou3.nom, EtudiantsBUT2ou3.prenom, EvalAnglais.note, EvalAnglais.commentaireJury, EvalAnglais.dateS, StatutsEval.Statut FROM EvalAnglais
-        JOIN EtudiantsBUT2ou3 ON EvalAnglais.IdEtudiant = EtudiantsBUT2ou3.IdEtudiant
-        JOIN StatutsEval ON EvalAnglais.Statut = StatutsEval.Statut
-        WHERE EtudiantsBUT2ou3.IdEtudiant = ?");
+        $stmt = $mysqli->prepare("SELECT evalanglais.IdEvalAnglais, etudiantsbut2ou3.IdEtudiant, etudiantsbut2ou3.nom, etudiantsbut2ou3.prenom, evalanglais.note, evalanglais.commentaireJury, evalanglais.dateS, statutseval.Statut, evalanglais.IdModeleEval FROM evalanglais
+        JOIN etudiantsbut2ou3 ON evalanglais.IdEtudiant = etudiantsbut2ou3.IdEtudiant
+        JOIN statutseval ON evalanglais.Statut = statutseval.Statut
+        WHERE etudiantsbut2ou3.IdEtudiant = ?");
 
         $stmt->bind_param("i", $idEtud);
         $stmt->execute();
@@ -140,10 +149,10 @@
 
     function getSoutenanceGrid($mysqli, $idEtud)
     {
-        $stmt = $mysqli->prepare("SELECT EvalSoutenance.IdEvalSoutenance, EtudiantsBUT2ou3.IdEtudiant, EtudiantsBUT2ou3.nom, EtudiantsBUT2ou3.prenom, EvalSoutenance.note, EvalSoutenance.commentaireJury, StatutsEval.Statut FROM EvalSoutenance
-        JOIN EtudiantsBUT2ou3 ON EvalSoutenance.IdEtudiant = EtudiantsBUT2ou3.IdEtudiant
-        JOIN StatutsEval ON EvalSoutenance.Statut = StatutsEval.Statut
-        WHERE EtudiantsBUT2ou3.IdEtudiant = ?");
+        $stmt = $mysqli->prepare("SELECT evalsoutenance.IdEvalSoutenance, etudiantsbut2ou3.IdEtudiant, etudiantsbut2ou3.nom, etudiantsbut2ou3.prenom, evalsoutenance.note, evalsoutenance.commentaireJury, statutseval.Statut, evalsoutenance.IdModeleEval FROM evalsoutenance
+        JOIN etudiantsbut2ou3 ON evalsoutenance.IdEtudiant = etudiantsbut2ou3.IdEtudiant
+        JOIN statutseval ON evalsoutenance.Statut = statutseval.Statut
+        WHERE etudiantsbut2ou3.IdEtudiant = ?");
         
         $stmt->bind_param("i", $idEtud);
         $stmt->execute();
@@ -170,10 +179,10 @@
 
     function getRapportGrid($mysqli, $idEtud)
     {
-        $stmt = $mysqli->prepare("SELECT EvalRapport.IdEvalRapport, EtudiantsBUT2ou3.IdEtudiant, EtudiantsBUT2ou3.nom, EtudiantsBUT2ou3.prenom, EvalRapport.note, EvalRapport.commentaireJury, StatutsEval.Statut FROM EvalRapport
-        JOIN EtudiantsBUT2ou3 ON EvalRapport.IdEtudiant = EtudiantsBUT2ou3.IdEtudiant
-        JOIN StatutsEval ON  EvalRapport.Statut = StatutsEval.Statut
-        WHERE EtudiantsBUT2ou3.IdEtudiant = ?;");
+        $stmt = $mysqli->prepare("SELECT evalrapport.IdEvalRapport, etudiantsbut2ou3.IdEtudiant, etudiantsbut2ou3.nom, etudiantsbut2ou3.prenom, evalrapport.note, evalrapport.commentaireJury, statutseval.Statut, evalrapport.IdModeleEval FROM evalrapport
+        JOIN etudiantsbut2ou3 ON evalrapport.IdEtudiant = etudiantsbut2ou3.IdEtudiant
+        JOIN statutseval ON  evalrapport.Statut = statutseval.Statut
+        WHERE etudiantsbut2ou3.IdEtudiant = ?;");
         
         $stmt->bind_param("i", $idEtud);
         $stmt->execute();
@@ -198,11 +207,11 @@
 
     function getStageGrid($mysqli, $idEtud)
     {
-        $stmt = $mysqli->prepare("SELECT EvalStage.IdEvalStage, EtudiantsBUT2ou3.IdEtudiant, EtudiantsBUT2ou3.nom, EtudiantsBUT2ou3.prenom, EvalStage.note, EvalStage.commentaireJury, EvalStage.date_h, Salles.description, StatutsEval.Statut FROM EvalStage
-        JOIN EtudiantsBUT2ou3 ON EvalStage.IdEtudiant = EtudiantsBUT2ou3.IdEtudiant
-        JOIN Salles ON EvalStage.IdSalle = Salles.IdSalle
-        JOIN StatutsEval ON EvalStage.Statut = StatutsEval.Statut
-        WHERE EtudiantsBUT2ou3.IdEtudiant = ?;");
+        $stmt = $mysqli->prepare("SELECT evalstage.IdEvalStage, etudiantsbut2ou3.IdEtudiant, etudiantsbut2ou3.nom, etudiantsbut2ou3.prenom, evalstage.note, evalstage.commentaireJury, evalstage.date_h, salles.description, statutseval.Statut, evalstage.IdModeleEval FROM evalstage
+        JOIN etudiantsbut2ou3 ON evalstage.IdEtudiant = etudiantsbut2ou3.IdEtudiant
+        JOIN salles ON evalstage.IdSalle = salles.IdSalle
+        JOIN statutseval ON evalstage.Statut = statutseval.Statut
+        WHERE etudiantsbut2ou3.IdEtudiant = ?;");
         
         $stmt->bind_param("i", $idEtud);
         $stmt->execute();
@@ -228,7 +237,7 @@
     function renderActions($statut) {
         if ($statut === "BLOQUEE") {
             return "<button type='submit' name='action' value='debloquer'>Débloquer</button>";
-        } elseif ($statut === "REMONTÉE" || $statut === "DIFFUSÉE") {
+        } elseif (in_array($statut, ["REMONTEE", "DIFFUSEE"])) {
             return "⛔ Non modifiable";
         } else {
             return "<button type='submit' name='action' value='enregistrer'>Enregistrer</button>
@@ -237,167 +246,299 @@
     }
 
     function readonlyIfLocked($statut) {
-        return in_array($statut, ["BLOQUEE","REMONTÉE","DIFFUSÉE"]) ? "readonly" : "";
+        return in_array($statut, ["BLOQUEE","REMONTEE","DIFFUSEE"]) ? "readonly" : "";
     }
+
+    
+    function afficherGrilleAvecNotes($mysqli, $idGrille, $idEtudiant, $idEval, $typeEval) {
+    // Nom de la table pivot selon le type (conforme au dump)
+    $pivotTables = [
+        "portfolio"   => ["table" => "lescriteresnotesportfolio", "colEval" => "IdEvalPortfolio" , "noteCol" => 'noteCritere'],
+        "rapport"     => ["table" => "lescriteresnotesrapport",   "colEval" => "IdEvalRapport" , "noteCol" => 'noteCritere'],
+        "soutenance"  => ["table" => "lescriteresnotessoutenance","colEval" => "IdEvalSoutenance", "noteCol" => 'noteCritere'],
+        "stage"       => ["table" => "lescriteresnotesstage",     "colEval" => "IdEvalStage", "noteCol" => 'noteCritere'],
+        "anglais"     => ["table" => "lescriteresnotesanglais",   "colEval" => "IdEvalAnglais", "noteCol" => 'noteCritere']
+    ];
+
+    if (!isset($pivotTables[$typeEval])) {
+        echo "<p>Type de grille inconnu.</p>";
+        return;
+    }
+    $tablePivot = $pivotTables[$typeEval]['table'];
+    $colEval = $pivotTables[$typeEval]['colEval'];
+    $noteCol = $pivotTables[$typeEval]['noteCol'];
+
+    // Déterminer le statut courant de l'évaluation principale (si elle existe)
+    $mainTables = [
+        "portfolio" => ["table" => "evalportfolio", "col" => "IdEvalPortfolio"],
+        "rapport"   => ["table" => "evalrapport",   "col" => "IdEvalRapport"],
+        "soutenance"=> ["table" => "evalsoutenance","col" => "IdEvalSoutenance"],
+        "stage"     => ["table" => "evalstage",     "col" => "IdEvalStage"],
+        "anglais"   => ["table" => "evalanglais",   "col" => "IdEvalAnglais"]
+    ];
+
+    $statut = "SAISIE";
+    $existingCommentaire = "";
+    $existingNoteMain = null;
+    if (!empty($idEval) && isset($mainTables[$typeEval])) {
+        $mTable = $mainTables[$typeEval]['table'];
+        $mCol = $mainTables[$typeEval]['col'];
+        // Also fetch commentaireJury and note so the form can show/edit them
+        $stm = $mysqli->prepare("SELECT Statut, commentaireJury, note FROM $mTable WHERE $mCol = ? LIMIT 1");
+        if ($stm) {
+            $stm->bind_param('i', $idEval);
+            $stm->execute();
+            $r = $stm->get_result()->fetch_assoc();
+            if ($r) {
+                if (isset($r['Statut'])) $statut = $r['Statut'];
+                if (isset($r['commentaireJury'])) $existingCommentaire = $r['commentaireJury'];
+                if (isset($r['note'])) $existingNoteMain = $r['note'];
+            }
+        }
+    }
+
+    // Charger la grille
+    $sql = "SELECT * FROM modelesgrilleeval WHERE IdModeleEval = ?";
+    $stmt = $mysqli->prepare($sql);
+    $stmt->bind_param("i", $idGrille);
+    $stmt->execute();
+    $grille = $stmt->get_result()->fetch_assoc();
+
+    if (!$grille) {
+        echo "<p>⚠️ Modèle de grille introuvable pour IdModeleEval = " . htmlspecialchars($idGrille) . "</p>";
+        return;
+    }
+
+    echo "<h2>Grille : ".htmlspecialchars($grille['nomModuleGrilleEvaluation'])."</h2>";
+
+    // Sections
+    $sql = "SELECT s.IdSection, sc.titre, sc.description
+            FROM sectionseval s
+            JOIN sectioncritereeval sc ON s.IdSection = sc.IdSection
+            WHERE s.IdModeleEval = ?";
+    $stmt = $mysqli->prepare($sql);
+    $stmt->bind_param("i", $idGrille);
+    $stmt->execute();
+    $sections = $stmt->get_result();
+
+    echo "<form method='POST' action='update.php'>";
+    echo "<input type='hidden' name='type' value='$typeEval'>";
+    echo "<input type='hidden' name='id' value='$idEval'>";
+    echo "<input type='hidden' name='idEtudiant' value='$idEtudiant'>";
+    echo "<table border='1' cellpadding='5' cellspacing='0' width='100%'>";
+    echo "<tr><th>Section</th><th>Description</th><th>Critère</th><th>Note</th><th>Max</th></tr>";
+
+    while ($sec = $sections->fetch_assoc()) {
+        $id_section = $sec['IdSection'];
+        echo "<tr>";
+        echo "<td>".htmlspecialchars($sec['titre'])."</td>";
+        echo "<td>".htmlspecialchars($sec['description'])."</td>";
+        echo "<td colspan='3'>";
+
+        // Critères de la section
+        $sql_crit = "SELECT c.IdCritere, c.descCourte, c.descLongue, sc.ValeurMaxCritereEVal as valeurMaxCritereEval
+                     FROM critereseval c
+                     JOIN sectioncontenircriteres sc ON c.IdCritere = sc.IdCritere
+                     WHERE sc.IdSection = ?";
+        $stmt2 = $mysqli->prepare($sql_crit);
+        $stmt2->bind_param("i", $id_section);
+        $stmt2->execute();
+        $crit_res = $stmt2->get_result();
+
+        echo "<table border='1' width='100%'>";
+        echo "<tr><th>Desc Courte</th><th>Desc Longue</th><th>Note</th><th>Max</th></tr>";
+        while ($crit = $crit_res->fetch_assoc()) {
+            $idCrit = $crit['IdCritere'];
+
+            // Note déjà attribuée ?
+            $sql_note = "SELECT $noteCol as note FROM $tablePivot WHERE $colEval=? AND IdCritere=?";
+            $stmt3 = $mysqli->prepare($sql_note);
+            $stmt3->bind_param("ii", $idEval, $idCrit);
+            $stmt3->execute();
+            $resNote = $stmt3->get_result()->fetch_assoc();
+            $noteExistante = $resNote ? $resNote['note'] : "";
+
+            echo "<tr>";
+            echo "<td>".htmlspecialchars($crit['descCourte'])."</td>";
+            echo "<td>".htmlspecialchars($crit['descLongue'])."</td>";
+            $ro = readonlyIfLocked($statut);
+            echo "<td><input type='number' step='0.01' name='notes[$idCrit]' value='".htmlspecialchars($noteExistante)."' min='0' max='".$crit['valeurMaxCritereEval']."' $ro></td>";
+            echo "<td>".$crit['valeurMaxCritereEval']."</td>";
+            echo "</tr>";
+        }
+        echo "</table>";
+        echo "</td>";
+        echo "</tr>";
+    }
+    echo "</table>";
+    // Afficher le champ commentaire (éditable si non bloqué)
+    echo "<div style='margin-top:10px;'>";
+    echo "<label for='commentaireJury'>Commentaire du jury</label><br>";
+    $commentEsc = htmlspecialchars($existingCommentaire ?? '', ENT_QUOTES);
+    $roArea = readonlyIfLocked($statut) ? 'readonly' : '';
+    echo "<textarea name='commentaireJury' rows='4' cols='80' $roArea>" . $commentEsc . "</textarea>";
+    echo "</div>";
+    // Afficher les actions adaptées au statut courant (Enregistrer/Valider ou Débloquer/Non modifiable)
+    echo renderActions($statut);
+    echo "</form>";
+}
+
+
+
+   $infoEtud = getInfoEtud($mysqli, $IdEtudiant);
+
+    $nom_etudient = $infoEtud["nom"];
+    $prenom_etudient = $infoEtud["prenom"];
+
+
+switch (strtolower($nature_Soutenance)) {
+    case "portfolio":
+        $rows = getPortfolioGrid($mysqli, $IdEtudiant);
+        $title = "PORTFOLIO";
+        $type = "portfolio";
+        break;
+    case "anglais":
+        $rows = getEnglishGrid($mysqli, $IdEtudiant);
+        $title = "ANGLAIS";
+        $type = "anglais";
+        break;
+    case "soutenance":
+        $rows = getSoutenanceGrid($mysqli, $IdEtudiant);
+        $title = "SOUTENANCE";
+        $type = "soutenance";
+        break;
+    case "rapport":
+        $rows = getRapportGrid($mysqli, $IdEtudiant);
+        $title = "RAPPORT";
+        $type = "rapport";
+        break;
+    case "stage":
+        $rows = getStageGrid($mysqli, $IdEtudiant);
+        $title = "STAGE";
+        $type = "stage";
+        break;
+    default:
+        $rows = [];
+        $title = "Aucune grille";
+        $type = "";
+}
+
 
 ?>
 
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Grilles - Enseignant n°<?=$idEnseignant?></title>
+        <title>Grilles <?= $nature_Soutenance?> - <?=$idEnseignant?></title>
         <link rel="stylesheet" href="../../../stylee.css">
         <meta charset="UTF-8">
     </head>
     <body>
-    <h1>Gestion des grilles - Enseignant n°<?=$idEnseignant?> </h1>
+    <h2>Grilles de <?=$nature_Soutenance?> de l'étudiant <?= $nom_etudient?> <?= $prenom_etudient?> </h2>
     
-    <?php foreach ($infoEtud as $idEtud): ?>
+    
     <div class="student-block">
-        <h2>Grilles de l'étudiant <?= $idEtud["IdEtudiant"] ?></h2>
 
-                <!-- Portfolio -->
-                <div class="card"><h3>PORTFOLIO</h3>
-                    <table>
-                        <tr>
-                            <th>IdPortfolio</th><th>IdEtudiant</th><th>Nom</th>
-                            <th>Prénom</th><th>Note</th><th>Commentaire jury</th>
-                            <th>Statut</th><th>Actions</th>
-                        </tr>
-                        <?php foreach (getPortfolioGrid($mysqli, $idEtud["IdEtudiant"]) as $etu): ?>
-                        <tr>
-                            <form method="POST" action="update.php">
-                                <input type="hidden" name="type" value="portfolio">
-                                <input type="hidden" name="id" value="<?=$etu['IdEvalPortfolio']?>">
-                                <input type="hidden" name="idEtudiant" value="<?=$etu['IdEtudiant']?>">
-                                <td><?=$etu['IdEvalPortfolio']?></td>
-                                <td><?=$etu['IdEtudiant']?></td>
-                                <td><?=$etu['nom']?></td>
-                                <td><?=$etu['prenom']?></td>
-                                <td><input type="number" name="note" value="<?=$etu['note']?>" min="0" max="20" <?=readonlyIfLocked($etu['Statut'])?>></td>
-                                <td><input type="text" name="commentaireJury" value="<?=$etu['commentaireJury']?>" <?=readonlyIfLocked($etu['Statut'])?>></td>
-                                <td><?=$etu['Statut']?></td>
-                                <td><?=renderActions($etu['Statut'])?></td>
-                            </form>
-                        </tr>
-                        <?php endforeach; ?>
-                    </table>
-                </div>
+    <!-- Portfolio -->
+   <div class="card">
+    <h3><?= $title ?></h3>
+    <?php if (empty($rows)): ?>
+        <p>Aucune évaluation trouvée pour cet étudiant et cette nature (<?= htmlspecialchars($title) ?>).</p>
+        <?php
+            // log empty result for debugging
+            if (!file_exists('logs')) mkdir('logs', 0755, true);
+            file_put_contents('logs/actions.log', date('c') . " - No rows for type: $type - IdEtudiant: $IdEtudiant\n", FILE_APPEND | LOCK_EX);
+        ?>
+    <?php endif; ?>
+    <?php foreach ($rows as $etu): ?>
+        <?php
+            // On appelle la fonction qui affiche la grille avec ses critères
+            // ⚠️ Ici tu dois passer l'IdModeleEval correspondant
+            // -> Pour simplifier on peut le lire directement dans EvalXXX
+            $idEval = null;
+            switch ($type) {
+                case "portfolio": $idEval = $etu['IdEvalPortfolio']; break;
+                case "anglais": $idEval = $etu['IdEvalAnglais']; break;
+                case "soutenance": $idEval = $etu['IdEvalSoutenance']; break;
+                case "rapport": $idEval = $etu['IdEvalRapport']; break;
+                case "stage": $idEval = $etu['IdEvalStage']; break;
+            }
 
-                <!-- Anglais -->
-                <div class="card"><h3>ANGLAIS</h3>
-                    <table>
-                        <tr>
-                            <th>IdAnglais</th><th>IdEtudiant</th><th>Nom</th><th>Prénom</th>
-                            <th>Note</th><th>Commentaire jury</th><th>Date</th>
-                            <th>Statut</th><th>Actions</th>
-                        </tr>
-                        <?php foreach (getEnglishGrid($mysqli, $idEtud["IdEtudiant"]) as $etu): ?>
-                        <tr>
-                            <form method="POST" action="update.php">
-                                <input type="hidden" name="type" value="anglais">
-                                <input type="hidden" name="id" value="<?=$etu['IdEvalAnglais']?>">
-                                <input type="hidden" name="idEtudiant" value="<?=$etu['IdEtudiant']?>">
-                                <td><?=$etu['IdEvalAnglais']?></td>
-                                <td><?=$etu['IdEtudiant']?></td>
-                                <td><?=$etu['nom']?></td>
-                                <td><?=$etu['prenom']?></td>
-                                <td><input type="number" name="note" value="<?=$etu['note']?>" min="0" max="20" <?=readonlyIfLocked($etu['Statut'])?>></td>
-                                <td><input type="text" name="commentaireJury" value="<?=$etu['commentaireJury']?>" <?=readonlyIfLocked($etu['Statut'])?>></td>
-                                <td><?=$etu['dateS']?></td>
-                                <td><?=$etu['Statut']?></td>
-                                <td><?=renderActions($etu['Statut'])?></td>
-                            </form>
-                        </tr>
-                        <?php endforeach; ?>
-                    </table>
-                </div>
+            // Prefer IdModeleEval provided by the eval record (IdModeleEval), fallback to lookup by nature
+            $idGrille = null;
+            if (!empty($etu['IdModeleEval'])) {
+                $idGrille = (int)$etu['IdModeleEval'];
+            }
 
-                <!-- Soutenance -->
-                <div class="card"><h3>SOUTENANCE</h3>
-                    <table>
-                        <tr>
-                            <th>IdSoutenance</th><th>IdEtudiant</th><th>Nom</th><th>Prénom</th>
-                            <th>Note</th><th>Commentaire jury</th><th>Statut</th><th>Actions</th>
-                        </tr>
-                        <?php foreach (getSoutenanceGrid($mysqli, $idEtud["IdEtudiant"]) as $etu): ?>
-                        <tr>
-                            <form method="POST" action="update.php">
-                                <input type="hidden" name="type" value="soutenance">
-                                <input type="hidden" name="id" value="<?=$etu['IdEvalSoutenance']?>">
-                                <input type="hidden" name="idEtudiant" value="<?=$etu['IdEtudiant']?>">
-                                <td><?=$etu['IdEvalSoutenance']?></td>
-                                <td><?=$etu['IdEtudiant']?></td>
-                                <td><?=$etu['nom']?></td>
-                                <td><?=$etu['prenom']?></td>
-                                <td><input type="number" name="note" value="<?=$etu['note']?>" min="0" max="20" <?=readonlyIfLocked($etu['Statut'])?>></td>
-                                <td><input type="text" name="commentaireJury" value="<?=$etu['commentaireJury']?>" <?=readonlyIfLocked($etu['Statut'])?>></td>
-                                <td><?=$etu['Statut']?></td>
-                                <td><?=renderActions($etu['Statut'])?></td>
-                            </form>
-                        </tr>
-                        <?php endforeach; ?>
-                    </table>
-                </div>
+            if (!$idGrille) {
+                // Use TRIM to ignore accidental spaces in the stored enum values (e.g. ' STAGE' in the dump)
+                $stmt = $mysqli->prepare("SELECT IdModeleEval FROM modelesgrilleeval WHERE TRIM(LOWER(natureGrille)) = LOWER(?) LIMIT 1");
+                $stmt->bind_param("s", $type);
+                $stmt->execute();
+                $res = $stmt->get_result();
+                if ($res && $row = $res->fetch_assoc()) {
+                    $idGrille = $row['IdModeleEval'];
+                }
+            }
 
-                <!-- Rapport -->
-                <div class="card"><h3>RAPPORT</h3>
-                    <table>
-                        <tr>
-                            <th>IdRapport</th><th>IdEtudiant</th><th>Nom</th><th>Prénom</th>
-                            <th>Note</th><th>Commentaire jury</th><th>Statut</th><th>Actions</th>
-                        </tr>
-                        <?php foreach (getRapportGrid($mysqli, $idEtud["IdEtudiant"]) as $etu): ?>
-                        <tr>
-                            <form method="POST" action="update.php">
-                                <input type="hidden" name="type" value="rapport">
-                                <input type="hidden" name="id" value="<?=$etu['IdEvalRapport']?>">
-                                <input type="hidden" name="idEtudiant" value="<?=$etu['IdEtudiant']?>">
-                                <td><?=$etu['IdEvalRapport']?></td>
-                                <td><?=$etu['IdEtudiant']?></td>
-                                <td><?=$etu['nom']?></td>
-                                <td><?=$etu['prenom']?></td>
-                                <td><input type="number" name="note" value="<?=$etu['note']?>" min="0" max="20" <?=readonlyIfLocked($etu['Statut'])?>></td>
-                                <td><input type="text" name="commentaireJury" value="<?=$etu['commentaireJury']?>" <?=readonlyIfLocked($etu['Statut'])?>></td>
-                                <td><?=$etu['Statut']?></td>
-                                <td><?=renderActions($etu['Statut'])?></td>
-                            </form>
-                        </tr>
-                        <?php endforeach; ?>
-                    </table>
-                </div>
+            // Second fallback: look for models containing the word (robuste contre espaces inattendus)
+            if (!$idGrille) {
+                $like = '%' . $type . '%';
+                $stmt2 = $mysqli->prepare("SELECT IdModeleEval FROM modelesgrilleeval WHERE LOWER(natureGrille) LIKE LOWER(?) LIMIT 1");
+                $stmt2->bind_param('s', $like);
+                $stmt2->execute();
+                $res2 = $stmt2->get_result();
+                if ($res2 && $r2 = $res2->fetch_assoc()) {
+                    $idGrille = $r2['IdModeleEval'];
+                }
+            }
 
-                <!-- Stage -->
-                <div class="card"><h3>STAGE</h3>
-                    <table>
-                        <tr>
-                            <th>IdStage</th><th>IdEtudiant</th><th>Nom</th><th>Prénom</th>
-                            <th>Note</th><th>Commentaire jury</th><th>Date</th><th>Description</th>
-                            <th>Statut</th><th>Actions</th>
-                        </tr>
-                        <?php foreach (getStageGrid($mysqli, $idEtud["IdEtudiant"]) as $etu): ?>
-                        <tr>
-                            <form method="POST" action="update.php">
-                                <input type="hidden" name="type" value="stage">
-                                <input type="hidden" name="id" value="<?=$etu['IdEvalStage']?>">
-                                <input type="hidden" name="idEtudiant" value="<?=$etu['IdEtudiant']?>">
-                                <td><?=$etu['IdEvalStage']?></td>
-                                <td><?=$etu['IdEtudiant']?></td>
-                                <td><?=$etu['nom']?></td>
-                                <td><?=$etu['prenom']?></td>
-                                <td><input type="number" name="note" value="<?=$etu['note']?>" min="0" max="20" <?=readonlyIfLocked($etu['Statut'])?>></td>
-                                <td><input type="text" name="commentaireJury" value="<?=$etu['commentaireJury']?>" <?=readonlyIfLocked($etu['Statut'])?>></td>
-                                <td><?=$etu['date_h']?></td>
-                                <td><?=$etu['description']?></td>
-                                <td><?=$etu['Statut']?></td>
-                                <td><?=renderActions($etu['Statut'])?></td>
-                            </form>
-                        </tr>
-                        <?php endforeach; ?>
-                    </table>
-                </div>
+            // If still no model, log to local file for diagnosis
+            if (!$idGrille) {
+                if (!file_exists('logs')) mkdir('logs', 0755, true);
+                file_put_contents('logs/actions.log', date('c') . " - Model not found for type: $type - IdEtudiant: {$etu['IdEtudiant']}\n", FILE_APPEND | LOCK_EX);
+            }
 
-            </div>
-        <?php endforeach; ?>
+            if ($idGrille) {
+                afficherGrilleAvecNotes($mysqli, $idGrille, $etu['IdEtudiant'], $idEval, $type);
+            } else {
+                // Second stronger fallback: pick the most recent model that contains the word (order by year desc)
+                $like = '%' . $type . '%';
+                $stmt3 = $mysqli->prepare("SELECT IdModeleEval FROM modelesgrilleeval WHERE LOWER(natureGrille) LIKE LOWER(?) ORDER BY anneeDebut DESC, IdModeleEval DESC LIMIT 1");
+                if ($stmt3) {
+                    $stmt3->bind_param('s', $like);
+                    $stmt3->execute();
+                    $r3 = $stmt3->get_result()->fetch_assoc();
+                    if ($r3 && !empty($r3['IdModeleEval'])) {
+                        $idGrille = $r3['IdModeleEval'];
+                        afficherGrilleAvecNotes($mysqli, $idGrille, $etu['IdEtudiant'], $idEval, $type);
+                    } else {
+                        echo "<p>⚠️ Aucun modèle de grille trouvé pour la nature : " . htmlspecialchars($type) . "</p>";
+                        // Log available model natures to help debugging
+                        if (!file_exists('logs')) mkdir('logs', 0755, true);
+                        $resN = $mysqli->query("SELECT DISTINCT natureGrille FROM modelesgrilleeval");
+                        $vals = [];
+                        if ($resN) {
+                            while ($rowN = $resN->fetch_assoc()) $vals[] = $rowN['natureGrille'];
+                        }
+                        file_put_contents('logs/actions.log', date('c') . " - Model not found for type: $type - IdEtudiant: {$etu['IdEtudiant']} - available: " . implode('|', $vals) . "\n", FILE_APPEND | LOCK_EX);
+                    }
+                } else {
+                    echo "<p>⚠️ Erreur lors de la recherche du modèle de grille.</p>";
+                }
+            }
+        ?>
+    <?php endforeach; ?>
+</div>
+
+
+</div>
+<?php if (strtolower($type) === 'anglais'): ?>
+    <p><a href="../Front_PartieA/public/index.php"> ← Retour</a></p>
+<?php else: ?>
+    <p><a href="../PAGEB/index.php?etudiant_id=<?php echo $IdEtudiant; ?>"> ← Retour</a></p>
+<?php endif; ?>
+
+
     </body>
 </html>

@@ -1,12 +1,14 @@
 <?php
 // index.php (version de test avec faux id par défaut)
-
+session_start();    
 // charge la configuration / modèle / contrôleur
 require_once 'config.php';
 require_once 'grilleController.php';
 
 $idUser;
 $idEtudiant;
+
+
 
 // Si l'application gère une session d'authentification, on pourrait préférer $_SESSION.
 // Ici on supporte GET pour tester facilement depuis l'URL.
@@ -15,11 +17,12 @@ if (isset($_SESSION['idUser']))
 	$idUser = $_SESSION['idUser'];
 else
 	$idUser = 1;
-//$idEtudiant = isset($_GET['idEtudiant']) ? (int)$_GET['idEtudiant'] : null;
-if (isset($_SESSION['idEtudiant']))
-	$idEtudiant = $_SESSION['idEtudiant'];
-else
-	$idEtudiant = 1;
+
+if (isset($_GET['etudiant_id'])){
+	$idEtudiant = $_GET['etudiant_id'];
+    $_SESSION['idEtudiant'] = $idEtudiant;
+}
+
 
 // Valeurs de test par défaut (à adapter si besoin)
 //$DEFAULT_USER_ID     = 1; // faux enseignant / secrétaire
@@ -45,8 +48,21 @@ afficherPageEtudiant($idUser, $idEtudiant);
 
 ?>
 
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Information Ettduient</title> 
+    <link rel="stylesheet" href="../stylee.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
 <p><a href="../Front_PartieA/public/index.php">← Retour</a></p>
+
+</body>
 
 <?php
 
 // Pour tester d'autres cas, ouvre : index.php?idUser=2&idEtudiant=3
+
+

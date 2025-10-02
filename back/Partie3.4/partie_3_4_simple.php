@@ -273,9 +273,7 @@ $etudiantsCandidats = getEtudiantsCandidats($pdo);
                 </tbody>
             </table>
         <?php endif; ?>
+                <p><a class="btn-retour" href="index.php">← Retour</a></p>
     </div>
-
-        <p><a href="index.php">← Retour</a></p>
-
 </body>
 </html>

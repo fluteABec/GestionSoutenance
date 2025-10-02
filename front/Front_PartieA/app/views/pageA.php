@@ -87,7 +87,13 @@ if (!isset($enseignantFullName) || !isset($enseignant)) {
   ?>
 
   <tr class="<?= e($rowClass) ?>">
-    <td><a href="../../PAGEB/index.php?<?= htmlspecialchars(SID) ?>&etudiant_id=<?= e($s['idEtudiant'] ?? '') ?>"><?= e(trim(($s['etudiant_nom'] ?? '') . ' ' . ($s['etudiant_prenom'] ?? '')) ?: '—') ?></a></td>
+    <td>
+      <?php if (isset($s['type_stage']) && strtolower($s['type_stage']) === 'anglais'): ?>
+        <a href="../../Page C/index.php?nature=anglais&IdEtudiant=<?= e($s['idEtudiant'] ?? '') ?>"><?= e(trim(($s['etudiant_nom'] ?? '') . ' ' . ($s['etudiant_prenom'] ?? '')) ?: '—') ?></a>
+      <?php else: ?>
+        <a href="../../PAGEB/index.php?<?= htmlspecialchars(SID) ?>&etudiant_id=<?= e($s['idEtudiant'] ?? '') ?>"><?= e(trim(($s['etudiant_nom'] ?? '') . ' ' . ($s['etudiant_prenom'] ?? '')) ?: '—') ?></a>
+      <?php endif; ?>
+    </td>
     <td><?= e($s['entreprise'] ?? '—') ?></td>
     <td><?= e(($s['maitre'] ?? '—') . ' (' . ((isset($s['maitre_present']) && $s['maitre_present']) ? 'Oui' : 'Non') . ')') ?></td>
     <td><?= e(!empty($s['date_heure']) ? date('d/m/Y', strtotime($s['date_heure'])) : '—') ?></td>
@@ -123,7 +129,13 @@ if (!isset($enseignantFullName) || !isset($enseignant)) {
 <?php foreach ($passees as $s) : ?>
   <?php // Ne pas manipuler la session ici : utiliser le paramètre GET dans le lien vers la page B ?>
     <tr>
-        <td><a href="../../PAGEB/index.php?<?= htmlspecialchars(SID) ?>&etudiant_id=<?= e($s['idEtudiant'] ?? '') ?>"><?= e(trim(($s['etudiant_nom'] ?? '') . ' ' . ($s['etudiant_prenom'] ?? ''))) ?></a></td>
+        <td>
+          <?php if (isset($s['type_stage']) && strtolower($s['type_stage']) === 'anglais'): ?>
+            <a href="../../Page C/index.php?nature=anglais&IdEtudiant=<?= e($s['idEtudiant'] ?? '') ?>"><?= e(trim(($s['etudiant_nom'] ?? '') . ' ' . ($s['etudiant_prenom'] ?? ''))) ?></a>
+          <?php else: ?>
+            <a href="../../PAGEB/index.php?<?= htmlspecialchars(SID) ?>&etudiant_id=<?= e($s['idEtudiant'] ?? '') ?>"><?= e(trim(($s['etudiant_nom'] ?? '') . ' ' . ($s['etudiant_prenom'] ?? ''))) ?></a>
+          <?php endif; ?>
+        </td>
         <td><?= e($s['entreprise']) ?></td>
         <td><?= e($s['Statut']) ?></td>
         <td><?= e(date('d/m/Y', strtotime($s['date_heure']))) ?></td>

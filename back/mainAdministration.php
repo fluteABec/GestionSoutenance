@@ -57,28 +57,22 @@ if ($message) echo "<p style='color: #c33; font-weight: bold;'>".htmlspecialchar
 </head>
 <body>
 
-<div class="navbar">
-    <div class="brand"><span class="logo"></span><span>Administration</span></div>
-    <a class="nav-item" href="Partie3.1/3_1_natan.php">Tâches enseignants</a>
-    <a class="nav-item" href="Partie3.3/index.php">Évaluations IUT</a>
-    <a class="nav-item" href="Partie3.4/index.php">Diffusion résultats</a>
-</div>
+<?php include 'navbarAdmin.php'; ?>
 
-<!-- Barre de recherche -->
-<input type="text" id="searchInput" placeholder="🔍 Rechercher un étudiant...">
+<div class="admin-block">
 
 <!-- Tableau BUT2 -->
 <h2>Étudiants deuxième année (BUT2)</h2>
 <table class="tableEtudiants">
     <thead>
         <tr>
-            <th>Étudiant</th>
-            <th>Tuteur</th>
-            <th>Enseignant Secondaire</th>
-            <th>Soutenance</th>
-            <th>Date</th>
-            <th>Salle</th>
-            <th>Actions</th>
+            <th >Étudiant</th>
+            <th >Tuteur</th>
+            <th >Enseignant Secondaire</th>
+            <th >Soutenance</th>
+            <th >Date</th>
+            <th >Salle</th>
+            <th >Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -186,21 +180,21 @@ if ($message) echo "<p style='color: #c33; font-weight: bold;'>".htmlspecialchar
         </tr>
     <?php endforeach; ?>
     </tbody>
-</table>
+    </table>
 
-<!-- Tableau BUT3 -->
-<h2>Étudiants troisième année (BUT3)</h2>
-<h3> Portfolio & Stage </h3> <!-- Portfolio & Stage -->
-<table class="tableEtudiants">
+    <!-- Tableau BUT3 -->
+    <h2>Étudiants troisième année (BUT3)</h2>
+    <h3> Portfolio & Stage </h3> <!-- Portfolio & Stage -->
+    <table class="tableEtudiants">
     <thead>
         <tr>
-            <th>Étudiant</th>
-            <th>Tuteur</th>
-            <th>Enseignant Secondaire</th>
-            <th>Soutenance</th>
-            <th>Date</th>
-            <th>Salle</th>
-            <th>Actions</th>
+            <th >Étudiant</th>
+            <th >Tuteur</th>
+            <th >Enseignant Secondaire</th>
+            <th >Soutenance</th>
+            <th >Date</th>
+            <th >Salle</th>
+            <th >Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -306,19 +300,18 @@ if ($message) echo "<p style='color: #c33; font-weight: bold;'>".htmlspecialchar
         </tr>
     <?php endforeach; ?>
     </tbody>
-</table>
+    </table>
 
-
-<h3> Anglais </h3> <!-- Anglais -->
-<table class="tableEtudiants">
+    <h3> Anglais </h3> <!-- Anglais -->
+    <table class="tableEtudiants">
     <thead>
         <tr>
-            <th>Étudiant</th>
-            <th>Tuteur</th>
-            <th>Soutenance</th>
-            <th>Date</th>
-            <th>Salle</th>
-            <th>Actions</th>
+            <th >Étudiant</th>
+            <th >Tuteur</th>
+            <th >Soutenance</th>
+            <th >Date</th>
+            <th >Salle</th>
+            <th >Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -393,20 +386,23 @@ if ($message) echo "<p style='color: #c33; font-weight: bold;'>".htmlspecialchar
         </tr>
     <?php endforeach; ?>
     </tbody>
-</table>
 
-<script>
-// Recherche dynamique sur les deux tableaux
-document.getElementById('searchInput').addEventListener('keyup', function() {
-    const filter = this.value.toLowerCase();
-    const rows = document.querySelectorAll(".tableEtudiants tbody tr");
+    </table>
 
-    rows.forEach(row => {
-        const text = row.innerText.toLowerCase();
-        row.style.display = text.includes(filter) ? "" : "none";
+    <script>
+    // Recherche dynamique sur les deux tableaux
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+        const filter = this.value.toLowerCase();
+        const rows = document.querySelectorAll(".tableEtudiants tbody tr");
+
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            row.style.display = text.includes(filter) ? "" : "none";
+        });
     });
-});
-</script>
+    </script>
+
+</div>
 
 </body>
 </html>
