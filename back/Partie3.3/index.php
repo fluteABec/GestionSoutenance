@@ -19,34 +19,27 @@ $donnees = $controller->traiterRequetes();
     <?php include '../navbar.php'; ?>
 
     <div class="admin-block">
-        <h1 class="page-title">Gestion des Évaluations - IUT</h1>
+        <h1>Gestion des Évaluations - IUT</h1>
 
-        <!-- Affichage des messages -->
         <?php if (!empty($donnees['messages'])): ?>
-            <div class="messages-container">
+            <div>
                 <?php foreach ($donnees['messages'] as $message): ?>
-                    <div class="message message-<?php echo htmlspecialchars($message['type']); ?>">
+                    <div class="<?php echo htmlspecialchars($message['type']); ?>">
                         <?php echo htmlspecialchars($message['text']); ?>
                     </div>
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
 
-        <!-- Bouton pour remonter tout -->
-        <div class="action-buttons">
-            <form method="post" class="inline-form">
-                <button type="submit" name="remonter_tout" class="btn btn-primary">
-                    Remonter tous les élèves
-                </button>
-            </form>
-        </div>
+        <form method="post">
+            <button type="submit" name="remonter_tout">
+                Remonter tous les élèves
+            </button>
+        </form>
 
-        <!-- Section BUT2 prêts à la remontée -->
-        <section class="students-section">
-            <h2 class="section-title">Étudiants BUT2 prêts à la remontée</h2>
-            <?php if (!empty($donnees['etudiantsBUT2'])): ?>
-                <div class="table-container">
-                    <table class="styled-table">
+        <h2>Étudiants BUT2 prêts à la remontée</h2>
+        <?php if (!empty($donnees['etudiantsBUT2'])): ?>
+            <table class="styled-table">
                         <thead>
                             <tr>
                                 <th>Prénom</th>
@@ -63,10 +56,10 @@ $donnees = $controller->traiterRequetes();
                                     <td><?php echo htmlspecialchars($etudiant['prenom']); ?></td>
                                     <td><?php echo htmlspecialchars($etudiant['nom']); ?></td>
                                     <td><?php echo htmlspecialchars($etudiant['IdEtudiant']); ?></td>
-                                    <td><span class="status-badge status-<?php echo strtolower($etudiant['statut_stage']); ?>"><?php echo htmlspecialchars($etudiant['statut_stage']); ?></span></td>
-                                    <td><span class="status-badge status-<?php echo strtolower($etudiant['statut_portfolio']); ?>"><?php echo htmlspecialchars($etudiant['statut_portfolio']); ?></span></td>
+                                    <td><?php echo htmlspecialchars($etudiant['statut_stage']); ?></td>
+                                    <td><?php echo htmlspecialchars($etudiant['statut_portfolio']); ?></td>
                                     <td>
-                                        <a href="?action=remonter&id=<?php echo $etudiant['IdEtudiant']; ?>&but3=0" class="btn btn-action">
+                                        <a href="?action=remonter&id=<?php echo $etudiant['IdEtudiant']; ?>&but3=0">
                                             Remonter
                                         </a>
                                     </td>
@@ -74,18 +67,13 @@ $donnees = $controller->traiterRequetes();
                             <?php endforeach; ?>
                         </tbody>
                     </table>
-                </div>
-            <?php else: ?>
-                <p class="no-data">Aucun étudiant BUT2 prêt.</p>
-            <?php endif; ?>
-        </section>
+        <?php else: ?>
+            <p>Aucun étudiant BUT2 prêt.</p>
+        <?php endif; ?>
 
-        <!-- Section BUT3 prêts à la remontée -->
-        <section class="students-section">
-            <h2 class="section-title">Étudiants BUT3 prêts à la remontée</h2>
-            <?php if (!empty($donnees['etudiantsBUT3'])): ?>
-                <div class="table-container">
-                    <table class="styled-table">
+        <h2>Étudiants BUT3 prêts à la remontée</h2>
+        <?php if (!empty($donnees['etudiantsBUT3'])): ?>
+            <table class="styled-table">
                         <thead>
                             <tr>
                                 <th>Prénom</th>
@@ -103,11 +91,11 @@ $donnees = $controller->traiterRequetes();
                                     <td><?php echo htmlspecialchars($etudiant['prenom']); ?></td>
                                     <td><?php echo htmlspecialchars($etudiant['nom']); ?></td>
                                     <td><?php echo htmlspecialchars($etudiant['IdEtudiant']); ?></td>
-                                    <td><span class="status-badge status-<?php echo strtolower($etudiant['statut_stage']); ?>"><?php echo htmlspecialchars($etudiant['statut_stage']); ?></span></td>
-                                    <td><span class="status-badge status-<?php echo strtolower($etudiant['statut_portfolio']); ?>"><?php echo htmlspecialchars($etudiant['statut_portfolio']); ?></span></td>
-                                    <td><span class="status-badge status-<?php echo strtolower($etudiant['statut_anglais']); ?>"><?php echo htmlspecialchars($etudiant['statut_anglais']); ?></span></td>
+                                    <td><?php echo htmlspecialchars($etudiant['statut_stage']); ?></td>
+                                    <td><?php echo htmlspecialchars($etudiant['statut_portfolio']); ?></td>
+                                    <td><?php echo htmlspecialchars($etudiant['statut_anglais']); ?></td>
                                     <td>
-                                        <a href="?action=remonter&id=<?php echo $etudiant['IdEtudiant']; ?>&but3=1" class="btn btn-action">
+                                        <a href="?action=remonter&id=<?php echo $etudiant['IdEtudiant']; ?>&but3=1">
                                             Remonter
                                         </a>
                                     </td>
@@ -115,18 +103,13 @@ $donnees = $controller->traiterRequetes();
                             <?php endforeach; ?>
                         </tbody>
                     </table>
-                </div>
-            <?php else: ?>
-                <p class="no-data">Aucun étudiant BUT3 prêt.</p>
-            <?php endif; ?>
-        </section>
+        <?php else: ?>
+            <p>Aucun étudiant BUT3 prêt.</p>
+        <?php endif; ?>
 
-        <!-- Section étudiants en retard -->
-        <section class="students-section">
-            <h2 class="section-title">Étudiants en retard (soutenance passée, statut SAISIE)</h2>
-            <?php if (!empty($donnees['etudiantsNonBloques'])): ?>
-                <div class="table-container">
-                    <table class="styled-table">
+        <h2>Étudiants en retard (soutenance passée, statut SAISIE)</h2>
+        <?php if (!empty($donnees['etudiantsNonBloques'])): ?>
+            <table class="styled-table">
                         <thead>
                             <tr>
                                 <th>Prénom</th>
@@ -145,12 +128,12 @@ $donnees = $controller->traiterRequetes();
                                     <td><?php echo htmlspecialchars($etudiant['prenom']); ?></td>
                                     <td><?php echo htmlspecialchars($etudiant['nom']); ?></td>
                                     <td><?php echo htmlspecialchars($etudiant['IdEtudiant']); ?></td>
-                                    <td><span class="status-badge status-<?php echo strtolower($etudiant['statut_stage']); ?>"><?php echo htmlspecialchars($etudiant['statut_stage']); ?></span></td>
-                                    <td><span class="status-badge status-<?php echo strtolower($etudiant['statut_portfolio']); ?>"><?php echo htmlspecialchars($etudiant['statut_portfolio']); ?></span></td>
-                                    <td><span class="status-badge status-<?php echo strtolower($etudiant['statut_anglais']); ?>"><?php echo htmlspecialchars($etudiant['statut_anglais']); ?></span></td>
+                                    <td><?php echo htmlspecialchars($etudiant['statut_stage']); ?></td>
+                                    <td><?php echo htmlspecialchars($etudiant['statut_portfolio']); ?></td>
+                                    <td><?php echo htmlspecialchars($etudiant['statut_anglais']); ?></td>
                                     <td><?php echo htmlspecialchars($etudiant['date_soutenance']); ?></td>
                                     <td>
-                                        <a href="?action=rappel&id=<?php echo $etudiant['IdEtudiant']; ?>" class="btn btn-warning">
+                                        <a href="?action=rappel&id=<?php echo $etudiant['IdEtudiant']; ?>">
                                             Envoyer mail
                                         </a>
                                     </td>
@@ -158,18 +141,13 @@ $donnees = $controller->traiterRequetes();
                             <?php endforeach; ?>
                         </tbody>
                     </table>
-                </div>
-            <?php else: ?>
-                <p class="no-data">Aucun étudiant en retard.</p>
-            <?php endif; ?>
-        </section>
+        <?php else: ?>
+            <p>Aucun étudiant en retard.</p>
+        <?php endif; ?>
 
-        <!-- Section BUT2 déjà remontés -->
-        <section class="students-section">
-            <h2 class="section-title">Étudiants BUT2 déjà remontés</h2>
-            <?php if (!empty($donnees['etudiantsRemonteeBUT2'])): ?>
-                <div class="table-container">
-                    <table class="styled-table">
+        <h2>Étudiants BUT2 déjà remontés</h2>
+        <?php if (!empty($donnees['etudiantsRemonteeBUT2'])): ?>
+            <table class="styled-table">
                         <thead>
                             <tr>
                                 <th>Prénom</th>
@@ -186,13 +164,13 @@ $donnees = $controller->traiterRequetes();
                                     <td><?php echo htmlspecialchars($etudiant['prenom']); ?></td>
                                     <td><?php echo htmlspecialchars($etudiant['nom']); ?></td>
                                     <td><?php echo htmlspecialchars($etudiant['IdEtudiant']); ?></td>
-                                    <td><span class="status-badge status-<?php echo strtolower($etudiant['statut_stage']); ?>"><?php echo htmlspecialchars($etudiant['statut_stage']); ?></span></td>
-                                    <td><span class="status-badge status-<?php echo strtolower($etudiant['statut_portfolio']); ?>"><?php echo htmlspecialchars($etudiant['statut_portfolio']); ?></span></td>
-                                    <td class="action-buttons">
-                                        <a href="?action=bloquer&id=<?php echo $etudiant['IdEtudiant']; ?>&but3=0" class="btn btn-danger">
+                                    <td><?php echo htmlspecialchars($etudiant['statut_stage']); ?></td>
+                                    <td><?php echo htmlspecialchars($etudiant['statut_portfolio']); ?></td>
+                                    <td>
+                                        <a href="?action=bloquer&id=<?php echo $etudiant['IdEtudiant']; ?>&but3=0">
                                             Bloquer
                                         </a>
-                                        <a href="?action=autoriser&id=<?php echo $etudiant['IdEtudiant']; ?>&but3=0" class="btn btn-success">
+                                        <a href="?action=autoriser&id=<?php echo $etudiant['IdEtudiant']; ?>&but3=0">
                                             Autoriser saisie
                                         </a>
                                     </td>
@@ -200,18 +178,13 @@ $donnees = $controller->traiterRequetes();
                             <?php endforeach; ?>
                         </tbody>
                     </table>
-                </div>
-            <?php else: ?>
-                <p class="no-data">Aucun étudiant BUT2 remonté.</p>
-            <?php endif; ?>
-        </section>
+        <?php else: ?>
+            <p>Aucun étudiant BUT2 remonté.</p>
+        <?php endif; ?>
 
-        <!-- Section BUT3 déjà remontés -->
-        <section class="students-section">
-            <h2 class="section-title">Étudiants BUT3 déjà remontés</h2>
-            <?php if (!empty($donnees['etudiantsRemonteeBUT3'])): ?>
-                <div class="table-container">
-                    <table class="styled-table">
+        <h2>Étudiants BUT3 déjà remontés</h2>
+        <?php if (!empty($donnees['etudiantsRemonteeBUT3'])): ?>
+            <table class="styled-table">
                         <thead>
                             <tr>
                                 <th>Prénom</th>
@@ -229,14 +202,14 @@ $donnees = $controller->traiterRequetes();
                                     <td><?php echo htmlspecialchars($etudiant['prenom']); ?></td>
                                     <td><?php echo htmlspecialchars($etudiant['nom']); ?></td>
                                     <td><?php echo htmlspecialchars($etudiant['IdEtudiant']); ?></td>
-                                    <td><span class="status-badge status-<?php echo strtolower($etudiant['statut_stage']); ?>"><?php echo htmlspecialchars($etudiant['statut_stage']); ?></span></td>
-                                    <td><span class="status-badge status-<?php echo strtolower($etudiant['statut_portfolio']); ?>"><?php echo htmlspecialchars($etudiant['statut_portfolio']); ?></span></td>
-                                    <td><span class="status-badge status-<?php echo strtolower($etudiant['statut_anglais']); ?>"><?php echo htmlspecialchars($etudiant['statut_anglais']); ?></span></td>
-                                    <td class="action-buttons">
-                                        <a href="?action=bloquer&id=<?php echo $etudiant['IdEtudiant']; ?>&but3=1" class="btn btn-danger">
+                                    <td><?php echo htmlspecialchars($etudiant['statut_stage']); ?></td>
+                                    <td><?php echo htmlspecialchars($etudiant['statut_portfolio']); ?></td>
+                                    <td><?php echo htmlspecialchars($etudiant['statut_anglais']); ?></td>
+                                    <td>
+                                        <a href="?action=bloquer&id=<?php echo $etudiant['IdEtudiant']; ?>&but3=1">
                                             Bloquer
                                         </a>
-                                        <a href="?action=autoriser&id=<?php echo $etudiant['IdEtudiant']; ?>&but3=1" class="btn btn-success">
+                                        <a href="?action=autoriser&id=<?php echo $etudiant['IdEtudiant']; ?>&but3=1">
                                             Autoriser saisie
                                         </a>
                                     </td>
@@ -244,42 +217,31 @@ $donnees = $controller->traiterRequetes();
                             <?php endforeach; ?>
                         </tbody>
                     </table>
-                </div>
-            <?php else: ?>
-                <p class="no-data">Aucun étudiant BUT3 remonté.</p>
-            <?php endif; ?>
-        </section>
+        <?php else: ?>
+            <p>Aucun étudiant BUT3 remonté.</p>
+        <?php endif; ?>
 
-        <!-- Section export -->
-        <section class="export-section">
-            <h2 class="section-title">Export des données</h2>
-            
-            <div class="export-buttons">
-                <div class="export-group">
-                    <h3>Téléchargement direct</h3>
-                    <form method="post" class="inline-form">
-                        <button type="submit" name="export_csv" value="but2" class="btn btn-secondary">
-                            Exporter BUT2 en CSV
-                        </button>
-                        <button type="submit" name="export_csv" value="but3" class="btn btn-secondary">
-                            Exporter BUT3 en CSV
-                        </button>
-                    </form>
-                </div>
+        <h2>Export des données</h2>
+        
+        <h3>Téléchargement direct</h3>
+        <form method="post">
+            <button type="submit" name="export_csv" value="but2">
+                Exporter BUT2 en CSV
+            </button>
+            <button type="submit" name="export_csv" value="but3">
+                Exporter BUT3 en CSV
+            </button>
+        </form>
 
-                <div class="export-group">
-                    <h3>Envoi par mail</h3>
-                    <form method="post" class="inline-form">
-                        <button type="submit" name="export_csv_mail" value="but2" class="btn btn-info">
-                            Exporter BUT2 et envoyer par mail
-                        </button>
-                        <button type="submit" name="export_csv_mail" value="but3" class="btn btn-info">
-                            Exporter BUT3 et envoyer par mail
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </section>
+        <h3>Envoi par mail</h3>
+        <form method="post">
+            <button type="submit" name="export_csv_mail" value="but2">
+                Exporter BUT2 et envoyer par mail
+            </button>
+            <button type="submit" name="export_csv_mail" value="but3">
+                Exporter BUT3 et envoyer par mail
+            </button>
+        </form>
     </div>
 </body>
 </html>
