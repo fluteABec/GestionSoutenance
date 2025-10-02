@@ -105,10 +105,12 @@ $etudList=$pdo->query('SELECT IdEtudiant, nom, prenom FROM EtudiantsBUT2ou3 ORDE
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Gestion ressources</title>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="../../stylee.css">
 </head>
 <body>
+  <?php include '../navbar.php'; ?>
 <div>
-  <a href="index.php">← Retour</a>
   <div><?php echo h($msg); ?></div>
   <h2>Enseignants</h2>
   <form method="post">
