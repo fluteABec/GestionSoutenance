@@ -103,11 +103,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } else {
         $mysqli->rollback();
     }
-    // Rediriger vers la page avec indication
-    if ($ok) {
-        header("Location: ../PAGEB/index.php?&etudiant_id=$idEtudiant");
+    // Rediriger vers la page appropriée selon le type
+    if ($type === 'anglais') {
+        // rediriger vers Page A (Front_PartieA public index)
+        $target = '../Front_PartieA/public/index.php';
+        header("Location: $target");
     } else {
-        header(header: "Location: ../PAGEB/index.php?&etudiant_id=$idEtudiant");
+        // comportement historique : revenir à la page B
+        $target = '../PAGEB/index.php?&etudiant_id=' . $idEtudiant;
+        header("Location: $target");
     }
     exit();
 }

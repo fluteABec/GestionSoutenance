@@ -177,7 +177,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($nature === 'anglais') {
-        $ens = $_POST['SecondEnseignant'];
+        // For 'anglais' the visible select is the Tuteur select (label changed to "Enseignant").
+        // Use the value from 'Tuteur' if present, otherwise fall back to 'SecondEnseignant'.
+        if (isset($_POST['Tuteur']) && $_POST['Tuteur'] !== '') {
+            $ens = (int)$_POST['Tuteur'];
+        } elseif (isset($_POST['SecondEnseignant']) && $_POST['SecondEnseignant'] !== '') {
+            $ens = (int)$_POST['SecondEnseignant'];
+        } else {
+            echo "<p style='color:red'>Erreur : aucun enseignant sélectionné pour la soutenance d'anglais.</p>";
+            exit;
+        }
 
         // Déterminer IdModeleEval le plus récent pour la nature 'ANGLAIS'
         $stmtModel = $pdo->prepare("SELECT IdModeleEval FROM modelesgrilleeval WHERE TRIM(LOWER(natureGrille)) LIKE LOWER('%anglais%') ORDER BY anneeDebut DESC, IdModeleEval DESC LIMIT 1");

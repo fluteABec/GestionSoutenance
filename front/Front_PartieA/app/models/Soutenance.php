@@ -82,7 +82,12 @@ class Soutenance {
             e.prenom AS etudiant_prenom,
             ent.nom AS entreprise,
             es.date_h AS date_heure,
-            es.Statut
+            es.Statut,
+            CASE
+                WHEN an.alternanceBUT3 = 1 THEN 'Alternance 3A'
+                WHEN an.but3sinon2 = 1 THEN 'Stage 3A'
+                ELSE 'Stage 2A'
+            END AS type_stage
         FROM EvalStage es
         JOIN EtudiantsBUT2ou3 e 
             ON e.IdEtudiant = es.IdEtudiant
@@ -103,7 +108,8 @@ class Soutenance {
             e.prenom AS etudiant_prenom,
             ent.nom AS entreprise,
             ea.dateS AS date_heure,
-            ea.Statut
+            ea.Statut,
+            'Anglais' AS type_stage
         FROM evalanglais ea
         JOIN etudiantsbut2ou3 e ON e.IdEtudiant = ea.IdEtudiant
         LEFT JOIN anneestage an ON an.IdEtudiant = e.IdEtudiant AND an.anneeDebut = ea.anneeDebut
