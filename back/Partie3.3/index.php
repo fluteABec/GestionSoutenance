@@ -1,3 +1,12 @@
+<?php
+// Inclusion du contrôleur
+require_once 'controllers/EvaluationController.php';
+
+// Initialisation du contrôleur et traitement des requêtes
+$controller = new EvaluationController();
+$donnees = $controller->traiterRequetes();
+?>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -10,552 +19,229 @@
     <?php include '../navbar.php'; ?>
 
     <div class="admin-block">
-        <h1 style="margin-bottom:24px;">Gestion des Évaluations - IUT</h1>
-        <?php
-session_start();
-require __DIR__ . '/vendor/autoload.php';
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
+        <h1>Gestion des Évaluations - IUT</h1>
 
-//------------------------------------------------------
-// Variables de configuration
-//------------------------------------------------------
+        <?php if (!empty($donnees['messages'])): ?>
+            <div>
+                <?php foreach ($donnees['messages'] as $message): ?>
+                    <div class="<?php echo htmlspecialchars($message['type']); ?>">
+                        <?php echo htmlspecialchars($message['text']); ?>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
 
+        <form method="post">
+            <button type="submit" name="remonter_tout">
+                Remonter tous les élèves
+            </button>
+        </form>
 
- // Connexion
- function getPDO() {
-     return new PDO('mysql:host=localhost;dbname=EvaluationStages;charset=utf8', 'root', '', [
-         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-     ]);
- }
+        <h2>Étudiants BUT2 prêts à la remontée</h2>
+        <?php if (!empty($donnees['etudiantsBUT2'])): ?>
+            <table class="styled-table">
+                        <thead>
+                            <tr>
+                                <th>Prénom</th>
+                                <th>Nom</th>
+                                <th>ID</th>
+                                <th>Stage</th>
+                                <th>Portfolio</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($donnees['etudiantsBUT2'] as $etudiant): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($etudiant['prenom']); ?></td>
+                                    <td><?php echo htmlspecialchars($etudiant['nom']); ?></td>
+                                    <td><?php echo htmlspecialchars($etudiant['IdEtudiant']); ?></td>
+                                    <td><?php echo htmlspecialchars($etudiant['statut_stage']); ?></td>
+                                    <td><?php echo htmlspecialchars($etudiant['statut_portfolio']); ?></td>
+                                    <td>
+                                        <a href="?action=remonter&id=<?php echo $etudiant['IdEtudiant']; ?>&but3=0">
+                                            Remonter
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+        <?php else: ?>
+            <p>Aucun étudiant BUT2 prêt.</p>
+        <?php endif; ?>
 
-//------------------------------------------------------
-// Fonctions SQL et fonctionnement du site
-//------------------------------------------------------
+        <h2>Étudiants BUT3 prêts à la remontée</h2>
+        <?php if (!empty($donnees['etudiantsBUT3'])): ?>
+            <table class="styled-table">
+                        <thead>
+                            <tr>
+                                <th>Prénom</th>
+                                <th>Nom</th>
+                                <th>ID</th>
+                                <th>Stage</th>
+                                <th>Portfolio</th>
+                                <th>Anglais</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($donnees['etudiantsBUT3'] as $etudiant): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($etudiant['prenom']); ?></td>
+                                    <td><?php echo htmlspecialchars($etudiant['nom']); ?></td>
+                                    <td><?php echo htmlspecialchars($etudiant['IdEtudiant']); ?></td>
+                                    <td><?php echo htmlspecialchars($etudiant['statut_stage']); ?></td>
+                                    <td><?php echo htmlspecialchars($etudiant['statut_portfolio']); ?></td>
+                                    <td><?php echo htmlspecialchars($etudiant['statut_anglais']); ?></td>
+                                    <td>
+                                        <a href="?action=remonter&id=<?php echo $etudiant['IdEtudiant']; ?>&but3=1">
+                                            Remonter
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+        <?php else: ?>
+            <p>Aucun étudiant BUT3 prêt.</p>
+        <?php endif; ?>
 
-function getEtudiantsBUT2($pdo){ // récupère les étudiants BUT2 prêts à la remontée
-    $stmd = $pdo->query("
-        SELECT e.IdEtudiant, e.nom, e.prenom,
-               s.Statut AS statut_stage,
-               p.Statut AS statut_portfolio
-        FROM EtudiantsBUT2ou3 e
-        JOIN EvalStage s ON e.IdEtudiant = s.IdEtudiant
-        JOIN EvalPortfolio p ON e.IdEtudiant = p.IdEtudiant
-        JOIN AnneeStage ast ON e.IdEtudiant = ast.IdEtudiant
-        WHERE ast.but3sinon2 = FALSE
-          AND s.Statut = 'BLOQUEE'
-          AND p.Statut = 'BLOQUEE'
-    ");
-    return $stmd->fetchAll(PDO::FETCH_ASSOC);
-}
+        <h2>Étudiants en retard (soutenance passée, statut SAISIE)</h2>
+        <?php if (!empty($donnees['etudiantsNonBloques'])): ?>
+            <table class="styled-table">
+                        <thead>
+                            <tr>
+                                <th>Prénom</th>
+                                <th>Nom</th>
+                                <th>ID</th>
+                                <th>Stage</th>
+                                <th>Portfolio</th>
+                                <th>Anglais</th>
+                                <th>Date Soutenance</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($donnees['etudiantsNonBloques'] as $etudiant): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($etudiant['prenom']); ?></td>
+                                    <td><?php echo htmlspecialchars($etudiant['nom']); ?></td>
+                                    <td><?php echo htmlspecialchars($etudiant['IdEtudiant']); ?></td>
+                                    <td><?php echo htmlspecialchars($etudiant['statut_stage']); ?></td>
+                                    <td><?php echo htmlspecialchars($etudiant['statut_portfolio']); ?></td>
+                                    <td><?php echo htmlspecialchars($etudiant['statut_anglais']); ?></td>
+                                    <td><?php echo htmlspecialchars($etudiant['date_soutenance']); ?></td>
+                                    <td>
+                                        <a href="?action=rappel&id=<?php echo $etudiant['IdEtudiant']; ?>">
+                                            Envoyer mail
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+        <?php else: ?>
+            <p>Aucun étudiant en retard.</p>
+        <?php endif; ?>
 
-function getEtudiantsBUT3($pdo){ // récupère les étudiants BUT3 prêts à la remontée
-    $stmd = $pdo->query("
-        SELECT e.IdEtudiant, e.nom, e.prenom,
-               s.Statut AS statut_stage,
-               p.Statut AS statut_portfolio,
-               a.Statut AS statut_anglais
-        FROM EtudiantsBUT2ou3 e
-        JOIN EvalStage s ON e.IdEtudiant = s.IdEtudiant
-        JOIN EvalPortfolio p ON e.IdEtudiant = p.IdEtudiant
-        JOIN EvalAnglais a ON e.IdEtudiant = a.IdEtudiant
-        JOIN AnneeStage ast ON e.IdEtudiant = ast.IdEtudiant
-        WHERE ast.but3sinon2 = TRUE
-          AND s.Statut = 'BLOQUEE'
-          AND p.Statut = 'BLOQUEE'
-          AND a.Statut = 'BLOQUEE'
-    ");
-    return $stmd->fetchAll(PDO::FETCH_ASSOC);
-}
-function getEtudiantsNonBloques($pdo){ //récupère les étudiant avec au moin 1 statut saisi
-    $stmd = $pdo->query("
-        SELECT e.IdEtudiant, e.nom, e.prenom,
-               s.Statut AS statut_stage,
-               p.Statut AS statut_portfolio,
-               COALESCE(a.Statut, 'NON CONCERNE') AS statut_anglais,
-               s.date_h AS date_soutenance
-        FROM EtudiantsBUT2ou3 e
-        JOIN EvalStage s ON e.IdEtudiant = s.IdEtudiant
-        JOIN EvalPortfolio p ON e.IdEtudiant = p.IdEtudiant
-        LEFT JOIN EvalAnglais a ON e.IdEtudiant = a.IdEtudiant
-        JOIN AnneeStage ast ON e.IdEtudiant = ast.IdEtudiant
-        WHERE s.date_h < NOW()
-          AND (s.Statut = 'SAISIE' OR p.Statut = 'SAISIE' OR (ast.but3sinon2 = TRUE AND a.Statut = 'SAISIE'))
-    ");
-    return $stmd->fetchAll(PDO::FETCH_ASSOC);
-}
-function remonterNotes($pdo, $idEtudiant, $isBUT3 = false) { // remonte les notes d'un étudiant et envoie un mail
-    $stmd = $pdo->prepare("UPDATE EvalStage SET Statut = 'REMONTEE' WHERE IdEtudiant = ? AND Statut = 'BLOQUEE'");
-    $stmd->execute([$idEtudiant]);
-    $stmd = $pdo->prepare("UPDATE EvalPortfolio SET Statut = 'REMONTEE' WHERE IdEtudiant = ? AND Statut = 'BLOQUEE'");
-    $stmd->execute([$idEtudiant]);
-    if ($isBUT3) {
-        $stmd = $pdo->prepare("UPDATE EvalAnglais SET Statut = 'REMONTEE' WHERE IdEtudiant = ? AND Statut = 'BLOQUEE'");
-        $stmd->execute([$idEtudiant]);
-    }
-    $mail = isset($_SESSION['identifiant']) ? $_SESSION['identifiant'] : null;
-    if ($mail) {
-        $sujet = "Vos évaluations ont été remonté";
-        $message = "<p>Bonjour,<br>Les notes de l'élève avec l'ID $idEtudiant ont été <b>remontées</b> par l'administration.<br>Cordialement.</p>";
-        envoieMail($mail, $sujet, $message);
-    }
-}
-function getEtudiantRemonter2A($pdo) // récupère les étudiants BUT2 déjà remontés
-{
-    $stmd = $pdo->query("SELECT e.IdEtudiant, e.nom, e.prenom,
-               s.Statut AS statut_stage,
-               p.Statut AS statut_portfolio
-        FROM EtudiantsBUT2ou3 e
-        JOIN EvalStage s ON e.IdEtudiant = s.IdEtudiant
-        JOIN EvalPortfolio p ON e.IdEtudiant = p.IdEtudiant
-        JOIN AnneeStage ast ON e.IdEtudiant = ast.IdEtudiant
-        WHERE ast.but3sinon2 = FALSE
-          AND s.Statut = 'REMONTEE'
-          AND p.Statut = 'REMONTEE';");
-    return $stmd->fetchAll(PDO::FETCH_ASSOC);
-}
-function getEtudiantRemonter3A($pdo) {
-    $stmd = $pdo->query("SELECT e.IdEtudiant, e.nom, e.prenom,
-               s.Statut AS statut_stage,
-               p.Statut AS statut_portfolio,
-               a.Statut AS statut_anglais
-        FROM EtudiantsBUT2ou3 e
-        JOIN EvalStage s ON e.IdEtudiant = s.IdEtudiant
-        JOIN EvalPortfolio p ON e.IdEtudiant = p.IdEtudiant
-        JOIN EvalAnglais a ON e.IdEtudiant = a.IdEtudiant
-        JOIN AnneeStage ast ON e.IdEtudiant = ast.IdEtudiant
-        WHERE ast.but3sinon2 = TRUE
-          AND s.Statut = 'REMONTEE'
-          AND p.Statut = 'REMONTEE'
-          AND a.Statut = 'REMONTEE';");
-    return $stmd->fetchAll(PDO::FETCH_ASSOC);
-}
+        <h2>Étudiants BUT2 déjà remontés</h2>
+        <?php if (!empty($donnees['etudiantsRemonteeBUT2'])): ?>
+            <table class="styled-table">
+                        <thead>
+                            <tr>
+                                <th>Prénom</th>
+                                <th>Nom</th>
+                                <th>ID</th>
+                                <th>Stage</th>
+                                <th>Portfolio</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($donnees['etudiantsRemonteeBUT2'] as $etudiant): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($etudiant['prenom']); ?></td>
+                                    <td><?php echo htmlspecialchars($etudiant['nom']); ?></td>
+                                    <td><?php echo htmlspecialchars($etudiant['IdEtudiant']); ?></td>
+                                    <td><?php echo htmlspecialchars($etudiant['statut_stage']); ?></td>
+                                    <td><?php echo htmlspecialchars($etudiant['statut_portfolio']); ?></td>
+                                    <td>
+                                        <a href="?action=bloquer&id=<?php echo $etudiant['IdEtudiant']; ?>&but3=0">
+                                            Bloquer
+                                        </a>
+                                        <a href="?action=autoriser&id=<?php echo $etudiant['IdEtudiant']; ?>&but3=0">
+                                            Autoriser saisie
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+        <?php else: ?>
+            <p>Aucun étudiant BUT2 remonté.</p>
+        <?php endif; ?>
 
-function bloquerNotes($pdo, $idEtudiant, $isBUT3 = false) { // rebloque les notes d'un étudiant et envoie un mail
-    $stmd = $pdo->prepare("UPDATE EvalStage SET Statut = 'BLOQUEE' WHERE IdEtudiant = ? AND Statut = 'REMONTEE'");
-    $stmd->execute([$idEtudiant]);
-    $stmd = $pdo->prepare("UPDATE EvalPortfolio SET Statut = 'BLOQUEE' WHERE IdEtudiant = ? AND Statut = 'REMONTEE'");
-    $stmd->execute([$idEtudiant]);
-    if ($isBUT3) {
-        $stmd = $pdo->prepare("UPDATE EvalAnglais SET Statut = 'BLOQUEE' WHERE IdEtudiant = ? AND Statut = 'REMONTEE'");
-        $stmd->execute([$idEtudiant]);
-    }
-    $mail = isset($_SESSION['identifiant']) ? $_SESSION['identifiant'] : null;
-    if ($mail) {
-        $sujet = "Vos évaluations ont été bloqué";
-        $message = "<p>Bonjour,<br>Les notes ont été de l'élève avec l'ID $idEtudiant ont été <b>bloquées</b> par l'administration.<br>Cordialement.</p>";
-        envoieMail($mail, $sujet, $message);
-    }
-}
+        <h2>Étudiants BUT3 déjà remontés</h2>
+        <?php if (!empty($donnees['etudiantsRemonteeBUT3'])): ?>
+            <table class="styled-table">
+                        <thead>
+                            <tr>
+                                <th>Prénom</th>
+                                <th>Nom</th>
+                                <th>ID</th>
+                                <th>Stage</th>
+                                <th>Portfolio</th>
+                                <th>Anglais</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($donnees['etudiantsRemonteeBUT3'] as $etudiant): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($etudiant['prenom']); ?></td>
+                                    <td><?php echo htmlspecialchars($etudiant['nom']); ?></td>
+                                    <td><?php echo htmlspecialchars($etudiant['IdEtudiant']); ?></td>
+                                    <td><?php echo htmlspecialchars($etudiant['statut_stage']); ?></td>
+                                    <td><?php echo htmlspecialchars($etudiant['statut_portfolio']); ?></td>
+                                    <td><?php echo htmlspecialchars($etudiant['statut_anglais']); ?></td>
+                                    <td>
+                                        <a href="?action=bloquer&id=<?php echo $etudiant['IdEtudiant']; ?>&but3=1">
+                                            Bloquer
+                                        </a>
+                                        <a href="?action=autoriser&id=<?php echo $etudiant['IdEtudiant']; ?>&but3=1">
+                                            Autoriser saisie
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+        <?php else: ?>
+            <p>Aucun étudiant BUT3 remonté.</p>
+        <?php endif; ?>
 
-function remonterTout($pdo) { // remonte les notes de tous les étudiants prêts à la remontée
-    $etudiantsBUT2 = getEtudiantsBUT2($pdo);
-    foreach ($etudiantsBUT2 as $etudiant) {
-        remonterNotes($pdo, $etudiant['IdEtudiant'], false);
-    }
-    $etudiantsBUT3 = getEtudiantsBUT3($pdo);
-    foreach ($etudiantsBUT3 as $etudiant) {
-        remonterNotes($pdo, $etudiant['IdEtudiant'], true);
-    }
-}
+        <h2>Export des données</h2>
+        
+        <h3>Téléchargement direct</h3>
+        <form method="post">
+            <button type="submit" name="export_csv" value="but2">
+                Exporter BUT2 en CSV
+            </button>
+            <button type="submit" name="export_csv" value="but3">
+                Exporter BUT3 en CSV
+            </button>
+        </form>
 
-function envoieMail($mail_destinataire, $sujet, $message, $fichier_joint = null) {
-    $mail = new PHPMailer(true);
-
-    try {
-        // Config serveur SMTP Gmail
-        $mail->isSMTP();
-        $mail->Host       = 'smtp.gmail.com';
-        $mail->SMTPAuth   = true;
-        $mail->Username   = 'u1840518965@gmail.com';
-        $mail->Password   = 'ooeo bavi hozw pndl'; // ton mot de passe d'application
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port       = 587;
-
-        $mail->setFrom('u1840518965@gmail.com', 'IUT - Administration');
-
-        $mail->addAddress($mail_destinataire);
-
-        if ($fichier_joint && file_exists($fichier_joint)) { // pour les fichier
-            $mail->addAttachment($fichier_joint);
-        }
-
-        // Contenu
-        $mail->isHTML(true);
-        $mail->Subject = $sujet;
-        $mail->Body    = $message;
-        $mail->AltBody = strip_tags($message);
-
-        $mail->send();
-        //echo "Mail envoyé avec succès à $mail_destinataire<br>";
-    } catch (Exception $e) {
-        echo "Erreur lors de l'envoi du mail : {$mail->ErrorInfo}";
-    }
-}
-
-function getMailEtudiant($pdo, $idEtudiant) {  // récupère le mail d'un étudiant via son ID pour l'envoi de mail
-    $stmd = $pdo->prepare("SELECT mail FROM EtudiantsBUT2ou3 WHERE IdEtudiant = ?");
-    $stmd->execute([$idEtudiant]);
-    return $stmd->fetchColumn();
-}
-function rappelMail($pdo, $mail) { // plus ou moins la même fonction que remonterNotes mais pour envoyer un mail de rappel
-    if ($mail) {
-        $sujet = "Rappel : évaluations doivent être validé";
-        $message = "<p>Bonjour,<br>La soutenance de l'un de vos élèves est passée mais ces évaluations sont encore en <b>SAISIE</b>.<br>
-        Merci de contacter votre enseignant référent.<br>Cordialement.</p>";
-        envoieMail($mail, $sujet, $message);
-    }
-}
-
-function get_liste_eleve_remonter3A($pdo) {
-    $stmd = $pdo->query("
-    SELECT e.IdEtudiant, e.nom, e.prenom, e.mail,  a.note AS note_anglais, p.note AS note_portfolio, s.note AS note_stage
-        FROM EtudiantsBUT2ou3 e
-        JOIN EvalStage s ON e.IdEtudiant = s.IdEtudiant
-        JOIN EvalPortfolio p ON e.IdEtudiant = p.IdEtudiant
-        JOIN EvalAnglais a ON e.IdEtudiant = a.IdEtudiant
-        JOIN AnneeStage ast ON e.IdEtudiant = ast.IdEtudiant
-        WHERE ast.but3sinon2 = TRUE
-          AND s.Statut = 'REMONTEE'
-          AND p.Statut = 'REMONTEE'
-          AND a.Statut = 'REMONTEE'
-    ");
-    return $stmd->fetchAll(PDO::FETCH_ASSOC);
-}
-
-function get_liste_eleve_remonter2A($pdo) {
-    $stmd = $pdo->query("
-    SELECT e.IdEtudiant, e.nom, e.prenom, e.mail,  p.note AS note_portfolio, s.note AS note_stage
-        FROM EtudiantsBUT2ou3 e
-        JOIN EvalStage s ON e.IdEtudiant = s.IdEtudiant
-        JOIN EvalPortfolio p ON e.IdEtudiant = p.IdEtudiant
-        JOIN AnneeStage ast ON e.IdEtudiant = ast.IdEtudiant
-        WHERE ast.but3sinon2 = FALSE
-          AND s.Statut = 'REMONTEE'
-          AND p.Statut = 'REMONTEE';
-    ");
-    return $stmd->fetchAll(PDO::FETCH_ASSOC);
-}
-
-function ecriture_des_donnees_csv($liste, $nom_fichier) {
-            $output = fopen($nom_fichier, "w");
-            if (!empty($liste)) {
-                fputcsv($output, array_keys($liste[0])); // en-têtes
-                foreach ($liste as $ligne) {
-                    fputcsv($output, $ligne);
-                }
-            }
-            fclose($output);
-}
-
-function envoiCVS_mail_BUT2($pdo) {
-    $liste = get_liste_eleve_remonter2A($pdo);
-
-    if (empty($liste)) {
-        echo "<div class='error'>Aucun étudiant BUT2 en REMONTEE → CSV non généré.</div>";
-        return;
-    }
-
-    $nom_fichier = sys_get_temp_dir() . "/export_remontee_BUT2.csv";
-    ecriture_des_donnees_csv($liste, $nom_fichier);
-
-    $identifiantAdmin = $_SESSION['identifiant'] ?? null;
-    if ($identifiantAdmin) {
-        $sujet = "Export des notes BUT2";
-        $message = "<p>Bonjour,<br>Veuillez trouver ci-joint les résultats BUT2 au format CSV.</p>";
-        envoieMail($identifiantAdmin, $sujet, $message, $nom_fichier);
-    }
-}
-
-function envoiCVS_mail_BUT3($pdo) {
-
-    $liste = get_liste_eleve_remonter3A($pdo);
-    if (empty($liste)) {
-        echo "<div class='error'>Aucun étudiant BUT2 en REMONTEE → CSV non généré.</div>";
-        return;
-    }
-
-    $nom_fichier = sys_get_temp_dir() . "/export_remontee_BUT3.csv";
-    ecriture_des_donnees_csv($liste, $nom_fichier);
-
-    $identifiantAdmin = $_SESSION['identifiant'] ?? null;
-    if ($identifiantAdmin){
-        $sujet = "Export de vos notes";
-        $message = "<p>Bonjour,<br>Veuillez trouver ci-joint les résultats au format CSV.</p>";
-        envoieMail($identifiantAdmin, $sujet, $message, $nom_fichier);
-    }
-    
-}
-
-function autoriserSaisie($pdo, $idEtudiant, $isBUT3 = false) {
-    $stmd = $pdo->prepare("UPDATE EvalStage SET Statut = 'SAISIE' WHERE IdEtudiant = ? AND Statut = 'REMONTEE'");
-    $stmd->execute([$idEtudiant]);
-    $stmd = $pdo->prepare("UPDATE EvalPortfolio SET Statut = 'SAISIE' WHERE IdEtudiant = ? AND Statut = 'REMONTEE'");
-    $stmd->execute([$idEtudiant]);
-
-    if ($isBUT3) {
-
-        $stmd = $pdo->prepare("UPDATE EvalAnglais SET Statut = 'SAISIE' WHERE IdEtudiant = ? AND Statut = 'REMONTEE'");
-        $stmd->execute([$idEtudiant]);
-    }
-
-    $stmd = $pdo->prepare("UPDATE EvalRapport SET Statut = 'SAISIE' WHERE IdEtudiant = ? AND Statut = 'REMONTEE'");
-    $stmd->execute([$idEtudiant]);
-
-    $stmd = $pdo->prepare("UPDATE EvalSoutenance SET Statut = 'SAISIE' WHERE IdEtudiant = ? AND Statut = 'REMONTEE'");
-    $stmd->execute([$idEtudiant]);
-}
-
-function recuperer_mails_admin($pdo) {
-    $stmd = $pdo->query("SELECT mail FROM `utilisateursbackoffice`");
-    return $stmd->fetchAll(PDO::FETCH_COLUMN);
-}
-
-function recuperer_mails_enseignat_tuteur($pdo, $idEtudiant) {
-    $stmd = $pdo->prepare("
-        SELECT enseignants.mail FROM evalstage
-        JOIN enseignants ON enseignants.IdEnseignant = evalstage.IdEnseignantTuteur
-        WHERE evalstage.IdEtudiant = ?");
-    $stmd->execute([$idEtudiant]);
-    return $stmd->fetchColumn(); 
-}
-
-//------------------------------------------------------
-// CODE PRINCIPALE
-//------------------------------------------------------
-
-        $pdo = getPDO();
-
-        if (isset($_GET['action']) && isset($_GET['id'])) {
-            $idEtudiant = (int)$_GET['id'];
-            $isBUT3 = isset($_GET['but3']) && $_GET['but3'] == 1;
-
-            if ($_GET['action'] === 'remonter') 
-                {
-                $listeAutorises = recuperer_mails_admin(getPDO());
-                $mailActuel = isset($_SESSION['identifiant']) ? $_SESSION['identifiant'] : null;
-
-                if ($mailActuel && in_array($mailActuel, $listeAutorises)) {
-                    remonterNotes($pdo, $idEtudiant, $isBUT3);
-                    echo "<div class='message'>Statuts remontés et mail envoyé pour l'étudiant ID $idEtudiant</div>";
-                } else {
-                    echo "<div class='error'>Vous n'êtes pas autorisé à effectuer cette action.</div>";
-                }
-            }
-            if ($_GET['action'] === 'bloquer') {
-                bloquerNotes($pdo, $idEtudiant, $isBUT3);
-                echo "<div class='message'>Statuts re-bloqués et mail envoyé à l'étudiant ID $idEtudiant</div>";
-            }
-            if ($_GET['action'] === 'rappel') {
-
-                $listeAutorises = recuperer_mails_admin(getPDO());
-                $mailActuel = isset($_SESSION['identifiant']) ? $_SESSION['identifiant'] : null;
-                if ($mailActuel && in_array($mailActuel, $listeAutorises)) {
-                $mail_prof = recuperer_mails_enseignat_tuteur($pdo, $idEtudiant);
-                rappelMail($pdo, $mail_prof);
-                echo "<div class='message'>Mail de rappel envoyé à l'enseigant $mail_prof</div>";
-                }
-                else {
-                    echo "<div class='error'>Vous n'êtes pas autorisé à effectuer cette action.</div>";
-                }
-            }
-        }
-
-        // Fonction pour écrire les données dans un fichier CSV
-        if (isset($_POST['export_csv'])) {
-            if ($_POST['export_csv'] === 'but2') {
-                $liste = get_liste_eleve_remonter2A($pdo);
-                $nom_fichier = "export_remontee_BUT2.csv";
-            } else {
-                $liste = get_liste_eleve_remonter3A($pdo);
-                $nom_fichier = "export_remontee_BUT3.csv";
-            }
-
-            // Nettoie le tampon de sortie pour éviter d'inclure du HTML dans le CSV
-            if (ob_get_level()) {
-                ob_end_clean();
-            }
-            header('Content-Type: text/csv; charset=utf-8');
-            header("Content-Disposition: attachment; filename=\"$nom_fichier\"");
-
-            // Utilise la fonction pour écrire dans php://output
-            $output = fopen("php://output", "w");
-            if (!empty($liste)) {
-                fputcsv($output, array_keys($liste[0])); // en-têtes
-                foreach ($liste as $ligne) {
-                    fputcsv($output, $ligne);
-                }
-            }
-            fclose($output);
-            exit;
-        }
-
-        // Envoi par mail des CSV
-        if (isset($_POST['export_csv_mail'])) {
-            if ($_POST['export_csv_mail'] === 'but2') {
-                envoiCVS_mail_BUT2($pdo);
-                echo "<div class='message'>Le CSV BUT2 a été envoyé par mail.</div>";
-            } else {
-                envoiCVS_mail_BUT3($pdo);
-                echo "<div class='message'>Le CSV BUT3 a été envoyé par mail.</div>";
-            }
-        }
-
-        //bouton remonter tout
-        if (isset($_POST['remonter_tout'])) {
-
-            if (!isset($_SESSION['identifiant']) || !in_array($_SESSION['identifiant'], recuperer_mails_admin(getPDO()))) {
-                echo "<div class='error'>Vous n'êtes pas autorisé à effectuer cette action.</div>";
-            } else {
-                remonterTout($pdo);
-                echo "<div class='message'>Toutes les notes prêtes ont été remontées.</div>";
-            }
-            
-        }
-
-        // Bouton autoriser saisie
-        if (isset($_GET['action']) && $_GET['action'] === 'autoriser') {
-            $listeAutorises = recuperer_mails_admin(getPDO());
-            $mailActuel = isset($_SESSION['identifiant']) ? $_SESSION['identifiant'] : null;
-            if ($mailActuel && in_array($mailActuel, $listeAutorises)) {
-            autoriserSaisie($pdo, $idEtudiant, $isBUT3);
-            echo "<div class='message'>La saisie a été ré-autorisée pour l'étudiant ID $idEtudiant</div>";
-            } else {
-                echo "<div class='error'>Vous n'êtes pas autorisé à effectuer cette action.</div>";
-            }
-        }
-
-        echo "<form method='post'>
-        <button type='submit' name='remonter_tout'>Remonter tout les élèves</button>
-        </form>";
-
-    echo "<h2 class='section-title'>Étudiants BUT2 prêts à la remontée :</h2>";
-        $etudiantsBUT2 = getEtudiantsBUT2($pdo);
-        if ($etudiantsBUT2) {
-            echo "<table class='styled-table'><tr>
-                <th>Prénom</th><th>Nom</th><th>ID</th>
-                <th>Stage</th><th>Portfolio</th><th>Action</th></tr>";
-            foreach ($etudiantsBUT2 as $etudiant) {
-                echo "<tr>
-                    <td>{$etudiant['prenom']}</td>
-                    <td>{$etudiant['nom']}</td>
-                    <td>{$etudiant['IdEtudiant']}</td>
-                    <td>{$etudiant['statut_stage']}</td>
-                    <td>{$etudiant['statut_portfolio']}</td>
-                    <td><a href='?action=remonter&id={$etudiant['IdEtudiant']}&but3=0'>Remonter</a></td>
-                </tr>";
-            }
-            echo "</table>";
-        } else {
-            echo "<p class='no-data'>Aucun étudiant BUT2 prêt.</p>";
-        }
-
-    echo "<h2 class='section-title'>Étudiants BUT3 prêts à la remontée :</h2>";
-        $etudiantsBUT3 = getEtudiantsBUT3($pdo);
-        if ($etudiantsBUT3) {
-            echo "<table class='styled-table'><tr>
-                <th>Prénom</th><th>Nom</th><th>ID</th>
-                <th>Stage</th><th>Portfolio</th><th>Anglais</th><th>Action</th></tr>";
-            foreach ($etudiantsBUT3 as $etudiant) {
-                echo "<tr>
-                    <td>{$etudiant['prenom']}</td>
-                    <td>{$etudiant['nom']}</td>
-                    <td>{$etudiant['IdEtudiant']}</td>
-                    <td>{$etudiant['statut_stage']}</td>
-                    <td>{$etudiant['statut_portfolio']}</td>
-                    <td>{$etudiant['statut_anglais']}</td>
-                    <td><a href='?action=remonter&id={$etudiant['IdEtudiant']}&but3=1'>Remonter</a></td>
-                </tr>";
-            }
-            echo "</table>";
-        } else {
-            echo "<p class='no-data'>Aucun étudiant BUT3 prêt.</p>";
-        }
-
-    echo "<h2 class='section-title'>Étudiants en retard (soutenance passée, statut SAISIE) :</h2>";
-        $etudiantsNonBloques = getEtudiantsNonBloques($pdo);
-        if ($etudiantsNonBloques) {
-            echo "<table class='styled-table'><tr>
-                <th>Prénom</th><th>Nom</th><th>ID</th>
-                <th>Stage</th><th>Portfolio</th><th>Anglais</th><th>Date Soutenance</th><th>Action</th></tr>";
-            foreach ($etudiantsNonBloques as $etudiant) {
-                echo "<tr>
-                    <td>{$etudiant['prenom']}</td>
-                    <td>{$etudiant['nom']}</td>
-                    <td>{$etudiant['IdEtudiant']}</td>
-                    <td>{$etudiant['statut_stage']}</td>
-                    <td>{$etudiant['statut_portfolio']}</td>
-                    <td>{$etudiant['statut_anglais']}</td>
-                    <td>{$etudiant['date_soutenance']}</td>
-                    <td><a href='?action=rappel&id={$etudiant['IdEtudiant']}'>Envoyer mail</a></td>
-                </tr>";
-            }
-            echo "</table>";
-        } else {
-            echo "<p class='no-data'>Aucun étudiant en retard.</p>";
-        }
-
-    echo "<h2 class='section-title'>Étudiants BUT2 déjà remontés :</h2>";
-        $etudiantsRemonteeBUT2 = getEtudiantRemonter2A($pdo);
-        if ($etudiantsRemonteeBUT2) {
-            echo "<table class='styled-table'><tr>
-                <th>Prénom</th><th>Nom</th><th>ID</th>
-                <th>Stage</th><th>Portfolio</th><th>Action</th></tr>";
-            foreach ($etudiantsRemonteeBUT2 as $etudiant) {
-                echo "<tr>
-                    <td>{$etudiant['prenom']}</td>
-                    <td>{$etudiant['nom']}</td>
-                    <td>{$etudiant['IdEtudiant']}</td>
-                    <td>{$etudiant['statut_stage']}</td>
-                    <td>{$etudiant['statut_portfolio']}</td>
-                    <td>
-                        <a href='?action=bloquer&id={$etudiant['IdEtudiant']}&but3=0'>Bloquer</a>
-                        <a href='?action=autoriser&id={$etudiant['IdEtudiant']}&but3=0'>Autoriser saisie</a>
-                    </td>
-                    
-                </tr>";
-            }
-            echo "</table>";
-        } else {
-            echo "<p class='no-data'>Aucun étudiant BUT2 remonté.</p>";
-        }
-
-    echo "<h2 class='section-title'>Étudiants BUT3 déjà remontés :</h2>";
-        $etudiantsRemonteeBUT3 = getEtudiantRemonter3A($pdo);
-        if ($etudiantsRemonteeBUT3) {
-            echo "<table class='styled-table'><tr>
-                <th>Prénom</th><th>Nom</th><th>ID</th>
-                <th>Stage</th><th>Portfolio</th><th>Anglais</th><th>Action</th></tr>";
-            foreach ($etudiantsRemonteeBUT3 as $etudiant) {
-                echo "<tr>
-                    <td>{$etudiant['prenom']}</td>
-                    <td>{$etudiant['nom']}</td>
-                    <td>{$etudiant['IdEtudiant']}</td>
-                    <td>{$etudiant['statut_stage']}</td>
-                    <td>{$etudiant['statut_portfolio']}</td>
-                    <td>{$etudiant['statut_anglais']}</td>
-                    <td>
-                        <a href='?action=bloquer&id={$etudiant['IdEtudiant']}&but3=1'>Bloquer</a>
-                        <a href='?action=autoriser&id={$etudiant['IdEtudiant']}&but3=0'>Autoriser saisie</a>
-                    </td>
-                </tr>";
-            }
-            echo "</table>";
-        } else {
-            echo "<p class='no-data'>Aucun étudiant BUT3 remonté.</p>";
-        }
-
-
-echo "<form method='post'>
-        <button type='submit' name='export_csv' value='but2'>Exporter BUT2 en CSV</button>
-        <button type='submit' name='export_csv' value='but3'>Exporter BUT3 en CSV</button>
-    </form>
-
-    <form method='post'>
-        <button type='submit' name='export_csv_mail' value='but2'>Exporter BUT2 en CSV et envoyer par mail</button>
-        <button type='submit' name='export_csv_mail' value='but3'>Exporter BUT3 en CSV et envoyer par mail</button>
-    </form>";
-?>
+        <h3>Envoi par mail</h3>
+        <form method="post">
+            <button type="submit" name="export_csv_mail" value="but2">
+                Exporter BUT2 et envoyer par mail
+            </button>
+            <button type="submit" name="export_csv_mail" value="but3">
+                Exporter BUT3 et envoyer par mail
+            </button>
+        </form>
     </div>
 </body>
 </html>
