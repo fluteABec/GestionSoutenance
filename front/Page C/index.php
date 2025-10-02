@@ -268,6 +268,28 @@
     $colEval = $pivotTables[$typeEval]['colEval'];
     $noteCol = $pivotTables[$typeEval]['noteCol'];
 
+    // Déterminer le statut courant de l'évaluation principale (si elle existe)
+    $mainTables = [
+        "portfolio" => ["table" => "evalportfolio", "col" => "IdEvalPortfolio"],
+        "rapport"   => ["table" => "evalrapport",   "col" => "IdEvalRapport"],
+        "soutenance"=> ["table" => "evalsoutenance","col" => "IdEvalSoutenance"],
+        "stage"     => ["table" => "evalstage",     "col" => "IdEvalStage"],
+        "anglais"   => ["table" => "evalanglais",   "col" => "IdEvalAnglais"]
+    ];
+
+    $statut = "SAISIE";
+    if (!empty($idEval) && isset($mainTables[$typeEval])) {
+        $mTable = $mainTables[$typeEval]['table'];
+        $mCol = $mainTables[$typeEval]['col'];
+        $stm = $mysqli->prepare("SELECT Statut FROM $mTable WHERE $mCol = ? LIMIT 1");
+        if ($stm) {
+            $stm->bind_param('i', $idEval);
+            $stm->execute();
+            $r = $stm->get_result()->fetch_assoc();
+            if ($r && isset($r['Statut'])) $statut = $r['Statut'];
+        }
+    }
+
     // Charger la grille
     $sql = "SELECT * FROM modelesgrilleeval WHERE IdModeleEval = ?";
     $stmt = $mysqli->prepare($sql);
@@ -332,7 +354,8 @@
             echo "<tr>";
             echo "<td>".htmlspecialchars($crit['descCourte'])."</td>";
             echo "<td>".htmlspecialchars($crit['descLongue'])."</td>";
-            echo "<td><input type='number' step='0.01' name='notes[$idCrit]' value='".htmlspecialchars($noteExistante)."' min='0' max='".$crit['valeurMaxCritereEval']."'></td>";
+            $ro = readonlyIfLocked($statut);
+            echo "<td><input type='number' step='0.01' name='notes[$idCrit]' value='".htmlspecialchars($noteExistante)."' min='0' max='".$crit['valeurMaxCritereEval']."' $ro></td>";
             echo "<td>".$crit['valeurMaxCritereEval']."</td>";
             echo "</tr>";
         }
@@ -341,8 +364,8 @@
         echo "</tr>";
     }
     echo "</table>";
-    echo "<button type='submit' name='action' value='enregistrer'>Enregistrer</button>";
-    echo "<button type='submit' name='action' value='valider'>Valider</button>";
+    // Afficher les actions adaptées au statut courant (Enregistrer/Valider ou Débloquer/Non modifiable)
+    echo renderActions($statut);
     echo "</form>";
 }
 
@@ -465,6 +488,8 @@ switch (strtolower($nature_Soutenance)) {
 
 
 </div>
+<p><a href="../PAGEB/index.php?etudiant_id=<?php echo $IdEtudiant; ?>"> ← Retour</a></p>
+
 
     </body>
 </html>

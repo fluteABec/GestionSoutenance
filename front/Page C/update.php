@@ -37,7 +37,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Déterminer le statut selon l'action
     $statut = "SAISIE";
-    if ($action === "valider") $statut = "VALIDEE";
+    if ($action === "valider") $statut = "BLOQUEE";
     if ($action === "debloquer") $statut = "SAISIE";
 
     // Enregistrer les notes critère par critère
@@ -105,9 +105,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
     // Rediriger vers la page avec indication
     if ($ok) {
-        header("Location: index.php?nature=$type&msg=ok");
+        header("Location: ../PAGEB/index.php?&etudiant_id=$idEtudiant");
     } else {
-        header("Location: index.php?nature=$type&msg=error");
+        header("Location: ../PAGEB/index.php?&etudiant_id=$idEtudiant");
     }
     exit();
 }
