@@ -99,20 +99,76 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 echo "</p>";
             } else {
-                // INSERT stage
-                $sql = "INSERT INTO EvalStage 
+                // Déterminer IdModeleEval le plus récent pour la nature 'STAGE' (normaliser espaces/casse)
+                $stmtModel = $pdo->prepare("SELECT IdModeleEval FROM modelesgrilleeval WHERE TRIM(LOWER(natureGrille)) LIKE LOWER('%stage%') ORDER BY anneeDebut DESC, IdModeleEval DESC LIMIT 1");
+                $stmtModel->execute();
+                $modelRow = $stmtModel->fetch(PDO::FETCH_ASSOC);
+                $idModeleEval = $modelRow ? (int)$modelRow['IdModeleEval'] : 1; // fallback to 1 if none found
+
+                // INSERT stage + création atomique des autres évaluations pour BUT3
+                try {
+                    $pdo->beginTransaction();
+
+                    $sql = "INSERT INTO EvalStage 
                     (date_h, IdEtudiant, IdEnseignantTuteur, IdSecondEnseignant, IdSalle, anneeDebut, IdModeleEval, Statut, note, commentaireJury, presenceMaitreStageApp, confidentiel)
-                    VALUES (:date, :idEtudiant, :tuteur, :second, :salle, :annee, 1, :statut, NULL, NULL, 0, 0)";
-                $stmt = $pdo->prepare($sql);
-                $stmt->execute([
-                    'date' => $date,
-                    'idEtudiant' => $idEtudiant,
-                    'tuteur' => $idTuteur,
-                    'second' => $secondEns,
-                    'salle' => $salle,
-                    'annee' => $anneeDebut,
-                    'statut' => $statut
-                ]);
+                    VALUES (:date, :idEtudiant, :tuteur, :second, :salle, :annee, :idModele, :statut, NULL, NULL, 0, 0)";
+                    $stmt = $pdo->prepare($sql);
+                    $stmt->execute([
+                        'date' => $date,
+                        'idEtudiant' => $idEtudiant,
+                        'tuteur' => $idTuteur,
+                        'second' => $secondEns,
+                        'salle' => $salle,
+                        'annee' => $anneeDebut,
+                        'idModele' => $idModeleEval,
+                        'statut' => $statut
+                    ]);
+
+                    // Si étudiant BUT3 : créer aussi les évaluations portfolio, rapport et soutenance (pas anglais)
+                    if ($estBut3) {
+                        // mapping of additional eval tables
+                        $toCreate = [
+                            'portfolio' => ['table' => 'evalportfolio', 'like' => 'portfolio'],
+                            'rapport'   => ['table' => 'evalrapport',   'like' => 'rapport'],
+                            'soutenance'=> ['table' => 'evalsoutenance','like' => 'soutenance']
+                        ];
+
+                        foreach ($toCreate as $key => $info) {
+                            // find latest model for this nature
+                            $stmtM = $pdo->prepare("SELECT IdModeleEval FROM modelesgrilleeval WHERE TRIM(LOWER(natureGrille)) LIKE LOWER(:needle) ORDER BY anneeDebut DESC, IdModeleEval DESC LIMIT 1");
+                            $needle = '%' . $info['like'] . '%';
+                            $stmtM->execute(['needle' => $needle]);
+                            $mRow = $stmtM->fetch(PDO::FETCH_ASSOC);
+                            $idModel = $mRow ? (int)$mRow['IdModeleEval'] : 1;
+
+                            // Check existence to avoid duplicate unique key errors
+                            $checkSql = "SELECT 1 FROM {$info['table']} WHERE IdEtudiant = :idEt AND anneeDebut = :annee AND IdModeleEval = :idModel LIMIT 1";
+                            $chk = $pdo->prepare($checkSql);
+                            $chk->execute(['idEt' => $idEtudiant, 'annee' => $anneeDebut, 'idModel' => $idModel]);
+                            $exists = $chk->fetchColumn();
+                            if ($exists) continue;
+
+                            // Insert accordingly
+                            if ($info['table'] === 'evalportfolio') {
+                                $ins = $pdo->prepare("INSERT INTO evalportfolio (note, commentaireJury, anneeDebut, IdModeleEval, IdEtudiant, Statut) VALUES (NULL, NULL, :annee, :idModel, :idEt, :statut)");
+                                $ins->execute(['annee' => $anneeDebut, 'idModel' => $idModel, 'idEt' => $idEtudiant, 'statut' => $statut]);
+                            } elseif ($info['table'] === 'evalrapport') {
+                                $ins = $pdo->prepare("INSERT INTO evalrapport (note, commentaireJury, Statut, anneeDebut, IdModeleEval, IdEtudiant) VALUES (NULL, NULL, :statut, :annee, :idModel, :idEt)");
+                                $ins->execute(['statut' => $statut, 'annee' => $anneeDebut, 'idModel' => $idModel, 'idEt' => $idEtudiant]);
+                            } elseif ($info['table'] === 'evalsoutenance') {
+                                $ins = $pdo->prepare("INSERT INTO evalsoutenance (note, commentaireJury, anneeDebut, IdModeleEval, IdEtudiant, Statut) VALUES (NULL, NULL, :annee, :idModel, :idEt, :statut)");
+                                $ins->execute(['annee' => $anneeDebut, 'idModel' => $idModel, 'idEt' => $idEtudiant, 'statut' => $statut]);
+                            }
+                        }
+                    }
+
+                    $pdo->commit();
+                } catch (Exception $e) {
+                    $pdo->rollBack();
+                    error_log('Error creating stage and related evals: ' . $e->getMessage());
+                    echo "<p style='color:red'>Erreur lors de l'enregistrement : " . htmlspecialchars($e->getMessage()) . "</p>";
+                    exit;
+                }
                 header("Location: ../mainAdministration.php?added=1");
                 exit;
             }
@@ -123,10 +179,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($nature === 'anglais') {
         $ens = $_POST['SecondEnseignant'];
 
-        
+        // Déterminer IdModeleEval le plus récent pour la nature 'ANGLAIS'
+        $stmtModel = $pdo->prepare("SELECT IdModeleEval FROM modelesgrilleeval WHERE TRIM(LOWER(natureGrille)) LIKE LOWER('%anglais%') ORDER BY anneeDebut DESC, IdModeleEval DESC LIMIT 1");
+        $stmtModel->execute();
+        $modelRow = $stmtModel->fetch(PDO::FETCH_ASSOC);
+        $idModeleEval = $modelRow ? (int)$modelRow['IdModeleEval'] : 1;
+
         $sql = "INSERT INTO EvalAnglais 
             (dateS, IdEtudiant, IdEnseignant, IdSalle, anneeDebut, note, Statut, IdModeleEval)
-            VALUES (:date, :idEtudiant, :ens, :salle, :annee, NULL, :statut, 1)";
+            VALUES (:date, :idEtudiant, :ens, :salle, :annee, NULL, :statut, :idModele)";
 
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
@@ -136,6 +197,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'salle' => $salle,
             'annee' => $anneeDebut,
             'statut' => $statut,
+            'idModele' => $idModeleEval
         ]);
         header("Location: ../mainAdministration.php?added=1");
         exit;

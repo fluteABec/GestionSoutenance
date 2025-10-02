@@ -44,13 +44,15 @@ function afficherEtudiantAvecLiens($etudiant, $idUser, $role) {
 
 ?>
     <h3>Actions disponibles pour <?=$role?></h3>
-    <ul>
-    <li><a href='../Page C/index.php?nature=portfolio'>Saisir/Consulter les grilles de Portfolio</a></li>
-	<li><a href='../Page C/index.php?nature=anglais'>Saisir/Consulter les grilles d'Anglais</a></li>
+	<ul>
+	<li><a href='../Page C/index.php?nature=portfolio'>Saisir/Consulter les grilles de Portfolio</a></li>
+	<?php if (!empty($etu['but3sinon2']) && $etu['but3sinon2']): ?>
+		<li><a href='../Page C/index.php?nature=anglais'>Saisir/Consulter les grilles d'Anglais</a></li>
+	<?php endif; ?>
 	<li><a href='../Page C/index.php?nature=soutenance'>Saisir/Consulter les grilles de Soutenance</a></li>
 	<li><a href='../Page C/index.php?nature=rapport'>Saisir/Consulter les grilles de Rapport</a></li>
 	<li><a href='../Page C/index.php?nature=stage'>Saisir/Consulter les grilles de Stage</a></li>
-	
+    
 	</ul>
 
 	<?php

@@ -107,7 +107,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($ok) {
         header("Location: ../PAGEB/index.php?&etudiant_id=$idEtudiant");
     } else {
-        header("Location: ../PAGEB/index.php?&etudiant_id=$idEtudiant");
+        header(header: "Location: ../PAGEB/index.php?&etudiant_id=$idEtudiant");
     }
     exit();
 }
