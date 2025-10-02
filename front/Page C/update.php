@@ -46,12 +46,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         foreach ($_POST['notes'] as $idCrit => $noteCrit) {
             $noteCrit = trim($noteCrit);
             if ($noteCrit === '') continue;
+            $valFloat = (float)$noteCrit;
             // Delete existing then insert (portable upsert)
             $del = $mysqli->prepare("DELETE FROM {$pivotTables[$type]['table']} WHERE {$pivotTables[$type]['col']}=? AND IdCritere=?");
             $del->bind_param('ii', $idEval, $idCrit);
             $del->execute();
             $ins = $mysqli->prepare("INSERT INTO {$pivotTables[$type]['table']} ({$pivotTables[$type]['col']}, IdCritere, $noteCol) VALUES (?, ?, ?)");
-            $ins->bind_param('iis', $idEval, $idCrit, $noteCrit);
+            $ins->bind_param('iid', $idEval, $idCrit, $valFloat);
             $ins->execute();
         }
     }
@@ -62,7 +63,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt = $mysqli->prepare($sql);
     $stmt->bind_param("i", $idEval);
     $stmt->execute();
-    $total = $stmt->get_result()->fetch_assoc()['total'] ?? 0;
+    $totalRow = $stmt->get_result()->fetch_assoc();
+    $total = isset($totalRow['total']) ? (float)$totalRow['total'] : 0.0;
 
     // Règle spéciale pour le stage
     if ($type === "stage" && $action === "valider") {
@@ -74,10 +76,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         if ($rapport === "VALIDEE" && $soutenance === "VALIDEE") {
             $statut = "BLOQUEE";
-            $mysqli->query("UPDATE evalrapport SET Statut='BLOQUEE' WHERE IdEtudiant=$idEtudiant");
-            $mysqli->query("UPDATE evalsoutenance SET Statut='BLOQUEE' WHERE IdEtudiant=$idEtudiant");
+            // Utiliser des prepared statements pour mettre à jour les statuts
+            $upd1 = $mysqli->prepare("UPDATE evalrapport SET Statut='BLOQUEE' WHERE IdEtudiant=?");
+            $upd1->bind_param('i', $idEtudiant);
+            $upd1->execute();
+            $upd2 = $mysqli->prepare("UPDATE evalsoutenance SET Statut='BLOQUEE' WHERE IdEtudiant=?");
+            $upd2->bind_param('i', $idEtudiant);
+            $upd2->execute();
         } else {
-            die("❌ Impossible de valider le stage tant que rapport et soutenance ne sont pas validés !");
+            // Redirect back with error
+            header("Location: index.php?nature=$type&error=rapport_soutenance_non_valides");
+            exit();
         }
     }
 
@@ -86,13 +95,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt = $mysqli->prepare($sql);
     $stmt->bind_param("dssi", $total, $commentaire, $statut, $idEval);
 
-    if ($stmt->execute()) {
-        echo "✅ Mise à jour réussie ($type : $statut)";
+    // Wrap update in transaction for consistency
+    $mysqli->begin_transaction();
+    $ok = $stmt->execute();
+    if ($ok) {
+        $mysqli->commit();
     } else {
-        echo "❌ Erreur : " . $stmt->error;
+        $mysqli->rollback();
     }
-
-    // Retour
-    header("Location: index.php?nature=$type");
+    // Rediriger vers la page avec indication
+    if ($ok) {
+        header("Location: index.php?nature=$type&msg=ok");
+    } else {
+        header("Location: index.php?nature=$type&msg=error");
+    }
     exit();
 }
