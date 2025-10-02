@@ -105,10 +105,43 @@ $etudList=$pdo->query('SELECT IdEtudiant, nom, prenom FROM EtudiantsBUT2ou3 ORDE
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Gestion ressources</title>
+
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 <link rel="stylesheet" href="../../stylee.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 </head>
 <body>
-      <?php include '../navbar.php'; ?>
+  <?php include '../navbar.php'; ?>
+<div>
+  <div><?php echo h($msg); ?></div>
+  <h2>Enseignants</h2>
+  <form method="post">
+    <input type="hidden" name="action" value="add_enseignant">
+    <input type="text" name="nom" placeholder="Nom" required>
+    <input type="text" name="prenom" placeholder="Prénom" required>
+    <input type="email" name="mail" placeholder="Mail" required>
+    <input type="text" name="mdp" placeholder="Mot de passe" required>
+    <button type="submit">Ajouter</button>
+  </form>
+  <form method="post">
+    <input type="hidden" name="action" value="update_enseignant">
+    <select name="IdEnseignant">
+      <?php foreach($ensList as $e){echo '<option value="'.h($e['IdEnseignant']).'">'.h($e['nom'].' '.$e['prenom']).'</option>'; }?>
+    </select>
+    <input type="text" name="nom" placeholder="Nom" required>
+    <input type="text" name="prenom" placeholder="Prénom" required>
+    <input type="email" name="mail" placeholder="Mail" required>
+    <input type="text" name="mdp" placeholder="Mot de passe" required>
+    <button type="submit">Modifier</button>
+  </form>
+  <form method="post">
+    <input type="hidden" name="action" value="delete_enseignant">
+    <select name="IdEnseignant">
+      <?php foreach($ensList as $e){echo '<option value="'.h($e['IdEnseignant']).'">'.h($e['nom'].' '.$e['prenom']).'</option>'; }?>
+    </select>
+    <button type="submit">Supprimer</button>
+  </form>
 
 <div class="admin-block">
   <div class="mb-3"><?php echo h($msg); ?></div>
@@ -304,6 +337,7 @@ $etudList=$pdo->query('SELECT IdEtudiant, nom, prenom FROM EtudiantsBUT2ou3 ORDE
 </div>
 </body>
 </html>
+
 
 
 
