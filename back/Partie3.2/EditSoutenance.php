@@ -96,15 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="/projet_sql/stylee.css">
 </head>
 <body>
-<div class="navbar">
-    <div class="brand"><span class="logo"></span><span>Soutenances</span></div>
-    <a class="nav-item" href="/projet_sql/back/Partie3.1/3_1_natan.php">Tâches enseignants</a>
-    <a class="nav-item" href="/projet_sql/back/Partie3.3/index.php">Évaluations IUT</a>
-    <a class="nav-item" href="/projet_sql/back/Partie3.4/index.php">Diffusion résultats</a>
-    <a class="nav-item" href="/projet_sql/back/mainAdministration.php">Administration</a>
-</div>
-
-
+<?php include '../navbar.php'; ?>
 <div class="admin-block" style="max-width:600px;width:96%;margin:80px auto 0 auto;box-sizing:border-box;">
     <h2 class="section-title">Modifier la soutenance (<?= htmlspecialchars($type) ?>)</h2>
     <form method="post" class="card" style="padding:32px 24px;">

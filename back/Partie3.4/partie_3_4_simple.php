@@ -170,7 +170,7 @@ $etudiantsCandidats = getEtudiantsCandidats($pdo);
     <?php include '../navbar.php'; ?>
 
     <div class="admin-block">
-        <h1 class="section-title">Partie 3.4 - Outils de diffusion des résultats</h1>
+        <h1 class="section-title">Outils de diffusion des résultats</h1>
         <?php if ($message): ?>
             <div class="alert alert-success" style="font-weight:600;color:var(--teal);margin-bottom:16px;">
                 <?= htmlspecialchars($message) ?>

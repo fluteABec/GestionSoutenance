@@ -24,8 +24,11 @@ if (!isset($enseignantFullName) || !isset($enseignant)) {
   
 </head>
 <body>
-  <?php include __DIR__ . '/../../../headerFront.php'; ?> 
-   <div class="admin-block">
+    <?php
+      $logoutPath = '/back/deconnexion.php';
+      include __DIR__ . '/../../../headerFront.php';
+    ?>
+    <div class="admin-block">
     <div class="topbar">
       <h1>Tableau des soutenances</h1>
     </div>

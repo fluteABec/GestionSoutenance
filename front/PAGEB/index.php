@@ -37,8 +37,10 @@ $pageEtudiantContent = ob_get_clean();
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
-    <?php include '../headerFront.php'; ?>
-<div class="admin-block" style="max-width:900px;width:96%;margin:60px auto 0 auto;box-sizing:border-box;">
+<?php
+    $logoutPath = '../../back/deconnexion.php'; // adapter selon la profondeur
+    include '../headerFront.php';
+?><div class="admin-block" style="max-width:900px;width:96%;margin:60px auto 0 auto;box-sizing:border-box;">
     <?php echo $pageEtudiantContent; ?>
     <a href="../Front_PartieA/public/index.php" class="btn-retour mb-3">← Retour</a>
 </div>

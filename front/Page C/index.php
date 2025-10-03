@@ -420,7 +420,10 @@ switch (strtolower($nature_Soutenance)) {
         <meta charset="UTF-8">
     </head>
     <body>
-        <?php include('../headerFront.php'); ?>
+        <?php
+    $logoutPath = '../../back/deconnexion.php'; // adapter selon la profondeur
+    include '../headerFront.php';
+    ?>
     <div class="admin-block" style="max-width:950px;width:96%;margin:80px auto 0 auto;box-sizing:border-box;">
         <h2 class="section-title" style="margin-bottom:24px;">Grilles de <?= htmlspecialchars($nature_Soutenance) ?> de l'étudiant <?= htmlspecialchars($nom_etudient) ?> <?= htmlspecialchars($prenom_etudient) ?></h2>
         <div class="student-block" style="width:100%;">

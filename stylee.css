@@ -1,23 +1,3 @@
-/* Bouton déconnexion ovale et rouge */
-.deconnexion-btn {
-  background: #cc0000;
-  color: #fff;
-  border: none;
-  border-radius: 999px;
-  font-family: 'Barlow', Arial, sans-serif;
-  font-weight: 700;
-  padding: 6px 18px;
-  font-size: 0.98em;
-  box-shadow: 0 2px 8px rgba(204,0,0,0.07);
-  transition: background 0.18s, color 0.18s, border-color 0.18s;
-  text-decoration: none;
-  display: inline-block;
-  cursor: pointer;
-}
-.deconnexion-btn:hover {
-  background: #a80000;
-  color: #fff;
-}
 /* Base thÃ¨me universitaire (inspirÃ© de logo.jpg) */
 :root{
     --navy:#006C82; /* couleur navbar et fond */
@@ -114,12 +94,7 @@
     transition: border-color .2s, color .2s, background .2s;
   }
   
-  .logout-button {
-    background-color: rgb(253, 0, 0);
-}
-  .logout-button:hover {
-    background-color: red;
-}
+ 
 
   .nav-item:hover,
   .nav-item:focus {
@@ -288,10 +263,43 @@
     box-shadow: 0 2px 12px rgba(0,44,95,0.07);
     overflow: hidden;
   }
-  }
   
   /* Headings & links */
-  h1,h2,h3{color:#111827;margin:0 0 12px}
+  a,h1,h2,h3 {
+    font-family: 'Barlow', 'Inter', Arial, sans-serif;
+  }
+  h1 {
+    color: var(--navy);
+    font-family: 'Barlow', 'Inter', Arial, sans-serif;
+    font-size: 2.3rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+    margin: 0 0 18px 0;
+    text-align: center;
+    text-shadow: 0 2px 12px rgba(0,44,95,0.08);
+    background: linear-gradient(90deg, #006C82 0%, #178F96 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  h2 {
+    color: #111827;
+    font-family: 'Barlow', 'Inter', Arial, sans-serif;
+    font-size: 1.6rem;
+    font-weight: 800;
+    margin: 0 0 14px 0;
+    text-align: left;
+    letter-spacing: 0.5px;
+  }
+  h3 {
+    color: #111827;
+    font-family: 'Barlow', 'Inter', Arial, sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 0 0 10px 0;
+    text-align: left;
+    letter-spacing: 0.3px;
+  }
   a{color:var(--teal);text-decoration:none}
   a:hover { text-decoration: underline; }
   .nav-item:hover { text-decoration: none; }
@@ -376,3 +384,10 @@
     border-color: var(--navy);
   }
   
+   .logout-button {
+  background-color: rgb(151, 17, 17);
+  border-radius: 999px;
+}
+  .logout-button:hover {
+    background-color: red;
+}

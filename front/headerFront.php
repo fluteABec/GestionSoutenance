@@ -22,7 +22,7 @@ if (isset($enseignantFullName)) {
         <span style="color:#fff; font-weight:700; font-size:1.15rem; white-space:nowrap;"><?php echo htmlspecialchars($nomProfesseur); ?></span>
     </div>
     <div style="flex:0 0 auto;">
-        <a class="nav-item logout-button deconnexion-btn" href="../../back/deconnexion.php">Déconnexion</a>
+        <a class="nav-item logout-button deconnexion-btn" href="<?php echo isset($logoutPath) ? $logoutPath : 'back/deconnexion.php'; ?>">Déconnexion</a>
     </div>
 </div>
 
