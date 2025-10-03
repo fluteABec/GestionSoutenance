@@ -96,7 +96,7 @@ $annee  = $row['anneeDebut'];
 </head>
 <body>
     <?php include '../../../navbarGrilles.php'; ?>
-<div class="admin-block" style="max-width:600px;width:96%;margin:40px auto 0 auto;box-sizing:border-box;">
+<div class="admin-block" style="max-width:600px;width:96%;margin:80px auto 0 auto;box-sizing:border-box;">
     <h2 class="section-title">✏️ Modifier la grille "<?php echo htmlspecialchars($nom); ?>"</h2>
     <form method="POST" class="card" style="padding:32px 24px;">
         <input type="hidden" name="id_grille" value="<?php echo $id_grille; ?>">

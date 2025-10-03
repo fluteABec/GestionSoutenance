@@ -68,7 +68,7 @@ if (grilleDejaUtilisee($conn, $id_grille)) {
 </head>
 <body>
     <?php include '../../../navbarGrilles.php'; ?>
-<div class="admin-block" style="max-width:500px;width:96%;margin:40px auto 0 auto;box-sizing:border-box;">
+<div class="admin-block" style="max-width:500px;width:96%;margin:80px auto 0 auto;box-sizing:border-box;">
     <h2 class="section-title">Ajouter une section</h2>
     <form method="POST" class="card" style="padding:32px 24px;">
         <div class="form-group" style="margin-bottom:18px;">

@@ -63,25 +63,39 @@ if ($total_max_criteres > 0) {
 }
 ?>
 
-<h2>Simulation de la grille : <?php echo htmlspecialchars($grille['nomModuleGrilleEvaluation']); ?></h2>
-<p>Note maximale de la grille : <?php echo htmlspecialchars($grille['noteMaxGrille']); ?></p>
 
-<table border="1" cellpadding="5" cellspacing="0">
-    <tr>
-        <th>Critère</th>
-        <th>Votre note</th>
-        <th>Max Critère</th>
-    </tr>
-    <?php foreach ($details as $d): ?>
-        <tr>
-            <td><?php echo htmlspecialchars($d['descCourte']); ?></td>
-            <td><?php echo htmlspecialchars($d['note']); ?></td>
-            <td><?php echo htmlspecialchars($d['max']); ?></td>
-        </tr>
-    <?php endforeach; ?>
-</table>
+<link rel="stylesheet" href="../../../stylee.css">
 
-<h3>Note obtenue : <?php echo round($note_finale, 2); ?> / <?php echo htmlspecialchars($grille['noteMaxGrille']); ?></h3>
-<a href="Affichage.php?id_grille=<?php echo $id_grille; ?>">📂 Retour à l'affichage de grille</a>
-<br><a href='Grille.php'>📂 Retour aux grilles</a> 
+<?php include '../../navbarGrilles.php'; ?>
+<div class="admin-block" style="max-width:600px;margin:120px auto 0 auto;">
+    <h2 class="square-title">Simulation de la grille : <?php echo htmlspecialchars($grille['nomModuleGrilleEvaluation']); ?></h2>
+    <div class="card" style="margin-bottom:18px;">
+        <p><strong>Note maximale de la grille :</strong> <?php echo htmlspecialchars($grille['noteMaxGrille']); ?></p>
+    </div>
+    <div class="table-container">
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>Critère</th>
+                    <th>Votre note</th>
+                    <th>Max Critère</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($details as $d): ?>
+                <tr>
+                    <td><?php echo htmlspecialchars($d['descCourte']); ?></td>
+                    <td><?php echo htmlspecialchars($d['note']); ?></td>
+                    <td><?php echo htmlspecialchars($d['max']); ?></td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+    <h3 style="margin-top:24px;" class="square-title">Note obtenue : <?php echo round($note_finale, 2); ?> / <?php echo htmlspecialchars($grille['noteMaxGrille']); ?></h3>
+    <div style="display:flex;gap:16px;justify-content:center;margin-top:18px;">
+        <a href="Affichage.php?id_grille=<?php echo $id_grille; ?>" class="btn btn-retour">📂 Retour à l'affichage de grille</a>
+        <a href='Grille.php' class="btn btn-retour">📂 Retour aux grilles</a>
+    </div>
+</div>
 

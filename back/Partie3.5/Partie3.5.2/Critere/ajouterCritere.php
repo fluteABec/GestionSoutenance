@@ -56,22 +56,29 @@ if (grilleDejaUtilisee($conn, $id_grille)) {
 }
 ?>
 
-<h2>Ajouter un critère</h2>
-<form method="POST">
-    <label>Description Courte :</label>
-    <input type="text" name="descCourte" required>
 
-    <label>Description Longue :</label>
-    <input type="text" name="descLongue" required>
+<link rel="stylesheet" href="../../../../stylee.css">
 
-    <label>Note maximale :</label>
-    <input type="number" step="0.1" name="valeurMaxCritereEval" required>
+<?php include '../../../navbarGrilles.php'; ?>
+<div class="admin-block" style="max-width:500px;margin:120px auto 0 auto;">
+    <h2 class="square-title">Ajouter un critère</h2>
+    <form method="POST" class="card" style="margin-bottom:18px;">
+        <label for="descCourte">Description Courte :</label>
+        <input type="text" name="descCourte" id="descCourte" required>
 
-    <button type="submit">✅ Ajouter</button>
-</form>
+        <label for="descLongue">Description Longue :</label>
+        <input type="text" name="descLongue" id="descLongue" required>
 
-<?php
-$id_grille = intval($_GET['id_grille']);
-?>
-<br><br><a href='../Affichage.php?id_grille=<?= $id_grille?>'>📂 Retour à l'affichage de grille</a>
-<br><a href='../Grille.php'>📂 Retour aux Grilles</a> 
+        <label for="valeurMaxCritereEval">Note maximale :</label>
+        <input type="number" step="0.1" name="valeurMaxCritereEval" id="valeurMaxCritereEval" required>
+
+        <div class="form-actions" style="margin-top:18px;">
+            <button type="submit" class="btn btn-primary">✅ Ajouter</button>
+        </div>
+    </form>
+    <?php $id_grille = intval($_GET['id_grille']); ?>
+    <div style="display:flex;gap:16px;justify-content:center;margin-top:18px;">
+        <a href='../Affichage.php?id_grille=<?= $id_grille?>' class="btn btn-retour">📂 Retour à l'affichage de grille</a>
+        <a href='../Grille.php' class="btn btn-retour">📂 Retour aux Grilles</a>
+    </div>
+</div>

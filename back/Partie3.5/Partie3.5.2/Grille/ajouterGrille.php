@@ -40,6 +40,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <link rel="stylesheet" href="../../../../stylee.css">
 </head>
 <body>
+<?php include '../../../navbarGrilles.php'; ?>
     <div class="admin-block">
         <h2 class="section-title">➕ Ajouter une grille</h2>
         <form method="POST" class="card" style="max-width:480px;width:100%;margin:auto;">
