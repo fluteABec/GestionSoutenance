@@ -31,7 +31,7 @@
 
     
 
-    // Création des requetes (qui vont chacune retournée un resultat)
+    // CrÃ©ation des requetes (qui vont chacune retournÃ©e un resultat)
     function getInfoEtud($mysqli, $IdEtudiant)
 {
     $stmt = $mysqli->prepare("SELECT nom, prenom FROM etudiantsbut2ou3 WHERE IdEtudiant = ?");
@@ -40,18 +40,18 @@
     $result = $stmt->get_result();
 
     if (!$result) {
-        echo "<br> La requête a échoué. <br>";
+        echo "<br> La requÃªte a Ã©chouÃ©. <br>";
         return;
     }
 
-    // Un seul étudiant attendu
+    // Un seul Ã©tudiant attendu
     return $result->fetch_assoc();
 }
 
 
     
 
-    // Permet de récupérer chaque enseignantTuteur avec leur Etudiant ainsi que l'AnnéeUniversité
+    // Permet de rÃ©cupÃ©rer chaque enseignantTuteur avec leur Etudiant ainsi que l'AnnÃ©eUniversitÃ©
     function getEnseiWithTheirEtud($mysqli, $idEnseignant)
     {
         $stmt = $mysqli->prepare("SELECT evalstage.IdEvalStage, enseignants.IdEnseignant, etudiantsbut2ou3.IdEtudiant, anneesuniversitaires.anneeDebut FROM evalstage
@@ -67,7 +67,7 @@
         // Erreur de la requete
         if (!$result)
         {
-            echo "<br> La requete à échoué. <br>";
+            echo "<br> La requete Ã  Ã©chouÃ©. <br>";
             return;
         }
 
@@ -104,7 +104,7 @@
         // Erreur de la requete
         if (!$result)
         {
-            echo "<br> La requete à échoué. <br>";
+            echo "<br> La requete Ã  Ã©chouÃ©. <br>";
             return;
         }
 
@@ -133,7 +133,7 @@
         // Erreur de la requete
         if (!$result)
         {
-            echo "<br> La requete à échoué. <br>";
+            echo "<br> La requete Ã  Ã©chouÃ©. <br>";
             return;
         }
 
@@ -162,7 +162,7 @@
         // Erreur de la requete
         if (!$result)
         {
-            echo "<br> La requete à échoué. <br>";
+            echo "<br> La requete Ã  Ã©chouÃ©. <br>";
             return;
         }
 
@@ -192,7 +192,7 @@
         // Erreur de la requete
         if (!$result)
         {
-            echo "<br> La requete à échoué. <br>";
+            echo "<br> La requete Ã  Ã©chouÃ©. <br>";
             return;
         }
 
@@ -221,7 +221,7 @@
         // Erreur de la requete
         if (!$result)
         {
-            echo "<br> La requete à échoué. <br>";
+            echo "<br> La requete Ã  Ã©chouÃ©. <br>";
             return;
         }
 
@@ -233,12 +233,12 @@
         return $rows;
     }
     
-    // Fonction générique pour actions
+    // Fonction gÃ©nÃ©rique pour actions
     function renderActions($statut) {
         if ($statut === "BLOQUEE") {
-            return "<button type='submit' name='action' value='debloquer'>Débloquer</button>";
+            return "<button type='submit' name='action' value='debloquer'>DÃ©bloquer</button>";
         } elseif (in_array($statut, ["REMONTEE", "DIFFUSEE"])) {
-            return "⛔ Non modifiable";
+            return "â›” Non modifiable";
         } else {
             return "<button type='submit' name='action' value='enregistrer'>Enregistrer</button>
                     <button type='submit' name='action' value='valider'>Valider</button>";
@@ -268,7 +268,7 @@
     $colEval = $pivotTables[$typeEval]['colEval'];
     $noteCol = $pivotTables[$typeEval]['noteCol'];
 
-    // Déterminer le statut courant de l'évaluation principale (si elle existe)
+    // DÃ©terminer le statut courant de l'Ã©valuation principale (si elle existe)
     $mainTables = [
         "portfolio" => ["table" => "evalportfolio", "col" => "IdEvalPortfolio"],
         "rapport"   => ["table" => "evalrapport",   "col" => "IdEvalRapport"],
@@ -296,133 +296,108 @@
             }
         }
     }
+?>
+   <!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Grille d'Ã‰valuation</title>
+</head>
+<body>
 
-    // Charger la grille
-    $sql = "SELECT * FROM modelesgrilleeval WHERE IdModeleEval = ?";
-    $stmt = $mysqli->prepare($sql);
-    $stmt->bind_param("i", $idGrille);
-    $stmt->execute();
-    $grille = $stmt->get_result()->fetch_assoc();
+<?php
+// Connexion et rÃ©cupÃ©ration des infos
+$grille = $mysqli->prepare("SELECT * FROM modelesgrilleeval WHERE IdModeleEval = ?");
+$grille->bind_param("i", $idGrille);
+$grille->execute();
+$grille = $grille->get_result()->fetch_assoc();
 
-    if (!$grille) {
-        echo "<p>⚠️ Modèle de grille introuvable pour IdModeleEval = " . htmlspecialchars($idGrille) . "</p>";
-        return;
-    }
-
-    echo "<h2>Grille : ".htmlspecialchars($grille['nomModuleGrilleEvaluation'])."</h2>";
-
-    // Sections
-    $sql = "SELECT s.IdSection, sc.titre, sc.description
-            FROM sectionseval s
-            JOIN sectioncritereeval sc ON s.IdSection = sc.IdSection
-            WHERE s.IdModeleEval = ?";
-    $stmt = $mysqli->prepare($sql);
-    $stmt->bind_param("i", $idGrille);
-    $stmt->execute();
-    $sections = $stmt->get_result();
-
-    echo "<form method='POST' action='update.php'>";
-    echo "<input type='hidden' name='type' value='$typeEval'>";
-    echo "<input type='hidden' name='id' value='$idEval'>";
-    echo "<input type='hidden' name='idEtudiant' value='$idEtudiant'>";
-    echo "<table border='1' cellpadding='5' cellspacing='0' width='100%'>";
-    echo "<tr><th>Section</th><th>Description</th><th>Critère</th><th>Note</th><th>Max</th></tr>";
-
-    while ($sec = $sections->fetch_assoc()) {
-        $id_section = $sec['IdSection'];
-        echo "<tr>";
-        echo "<td>".htmlspecialchars($sec['titre'])."</td>";
-        echo "<td>".htmlspecialchars($sec['description'])."</td>";
-        echo "<td colspan='3'>";
-
-        // Critères de la section
-        $sql_crit = "SELECT c.IdCritere, c.descCourte, c.descLongue, sc.ValeurMaxCritereEVal as valeurMaxCritereEval
-                     FROM critereseval c
-                     JOIN sectioncontenircriteres sc ON c.IdCritere = sc.IdCritere
-                     WHERE sc.IdSection = ?";
-        $stmt2 = $mysqli->prepare($sql_crit);
-        $stmt2->bind_param("i", $id_section);
-        $stmt2->execute();
-        $crit_res = $stmt2->get_result();
-
-        echo "<table border='1' width='100%'>";
-        echo "<tr><th>Desc Courte</th><th>Desc Longue</th><th>Note</th><th>Max</th></tr>";
-        while ($crit = $crit_res->fetch_assoc()) {
-            $idCrit = $crit['IdCritere'];
-
-            // Note déjà attribuée ?
-            $sql_note = "SELECT $noteCol as note FROM $tablePivot WHERE $colEval=? AND IdCritere=?";
-            $stmt3 = $mysqli->prepare($sql_note);
-            $stmt3->bind_param("ii", $idEval, $idCrit);
-            $stmt3->execute();
-            $resNote = $stmt3->get_result()->fetch_assoc();
-            $noteExistante = $resNote ? $resNote['note'] : "";
-
-            echo "<tr>";
-            echo "<td>".htmlspecialchars($crit['descCourte'])."</td>";
-            echo "<td>".htmlspecialchars($crit['descLongue'])."</td>";
-            $ro = readonlyIfLocked($statut);
-            echo "<td><input type='number' step='0.01' name='notes[$idCrit]' value='".htmlspecialchars($noteExistante)."' min='0' max='".$crit['valeurMaxCritereEval']."' $ro></td>";
-            echo "<td>".$crit['valeurMaxCritereEval']."</td>";
-            echo "</tr>";
-        }
-        echo "</table>";
-        echo "</td>";
-        echo "</tr>";
-    }
-    echo "</table>";
-    // Afficher le champ commentaire (éditable si non bloqué)
-    echo "<div style='margin-top:10px;'>";
-    echo "<label for='commentaireJury'>Commentaire du jury</label><br>";
-    $commentEsc = htmlspecialchars($existingCommentaire ?? '', ENT_QUOTES);
-    $roArea = readonlyIfLocked($statut) ? 'readonly' : '';
-    echo "<textarea name='commentaireJury' rows='4' cols='80' $roArea>" . $commentEsc . "</textarea>";
-    echo "</div>";
-    // Afficher les actions adaptées au statut courant (Enregistrer/Valider ou Débloquer/Non modifiable)
-    echo renderActions($statut);
-    echo "</form>";
+if (!$grille) {
+    echo "<p>ModÃ¨le de grille introuvable pour IdModeleEval = " . htmlspecialchars($idGrille) . "</p>";
+    return;
 }
 
+echo "<h2>Grille : " . htmlspecialchars($grille['nomModuleGrilleEvaluation']) . "</h2>";
 
+$sections = $mysqli->prepare("SELECT s.IdSection, sc.titre, sc.description
+                              FROM sectionseval s
+                              JOIN sectioncritereeval sc ON s.IdSection = sc.IdSection
+                              WHERE s.IdModeleEval = ?");
+$sections->bind_param("i", $idGrille);
+$sections->execute();
+$sections = $sections->get_result();
+?>
 
-   $infoEtud = getInfoEtud($mysqli, $IdEtudiant);
+<form method="POST" action="update.php">
+    <input type="hidden" name="type" value="<?= htmlspecialchars($typeEval) ?>">
+    <input type="hidden" name="id" value="<?= htmlspecialchars($idEval) ?>">
+    <input type="hidden" name="idEtudiant" value="<?= htmlspecialchars($idEtudiant) ?>">
 
-    $nom_etudient = $infoEtud["nom"];
-    $prenom_etudient = $infoEtud["prenom"];
+    <table>
+        <tr>
+            <th>Section</th>
+            <th>Description</th>
+            <th>CritÃ¨re</th>
+            <th>Note</th>
+            <th>Max</th>
+        </tr>
 
+        <?php while ($sec = $sections->fetch_assoc()): ?>
+            <tr>
+                <td><?= htmlspecialchars($sec['titre']) ?></td>
+                <td><?= htmlspecialchars($sec['description']) ?></td>
+                <td colspan="3">
+                    <table>
+                        <tr>
+                            <th>Desc Courte</th>
+                            <th>Desc Longue</th>
+                            <th>Note</th>
+                            <th>Max</th>
+                        </tr>
+                        <?php
+                        $id_section = $sec['IdSection'];
+                        $crit_sql = $mysqli->prepare("SELECT c.IdCritere, c.descCourte, c.descLongue, sc.ValeurMaxCritereEVal
+                                                      FROM critereseval c
+                                                      JOIN sectioncontenircriteres sc ON c.IdCritere = sc.IdCritere
+                                                      WHERE sc.IdSection = ?");
+                        $crit_sql->bind_param("i", $id_section);
+                        $crit_sql->execute();
+                        $crit_res = $crit_sql->get_result();
 
-switch (strtolower($nature_Soutenance)) {
-    case "portfolio":
-        $rows = getPortfolioGrid($mysqli, $IdEtudiant);
-        $title = "PORTFOLIO";
-        $type = "portfolio";
-        break;
-    case "anglais":
-        $rows = getEnglishGrid($mysqli, $IdEtudiant);
-        $title = "ANGLAIS";
-        $type = "anglais";
-        break;
-    case "soutenance":
-        $rows = getSoutenanceGrid($mysqli, $IdEtudiant);
-        $title = "SOUTENANCE";
-        $type = "soutenance";
-        break;
-    case "rapport":
-        $rows = getRapportGrid($mysqli, $IdEtudiant);
-        $title = "RAPPORT";
-        $type = "rapport";
-        break;
-    case "stage":
-        $rows = getStageGrid($mysqli, $IdEtudiant);
-        $title = "STAGE";
-        $type = "stage";
-        break;
-    default:
-        $rows = [];
-        $title = "Aucune grille";
-        $type = "";
-}
+                        while ($crit = $crit_res->fetch_assoc()):
+                            $idCrit = $crit['IdCritere'];
+                            $note_sql = $mysqli->prepare("SELECT $noteCol as note FROM $tablePivot WHERE $colEval=? AND IdCritere=?");
+                            $note_sql->bind_param("ii", $idEval, $idCrit);
+                            $note_sql->execute();
+                            $resNote = $note_sql->get_result()->fetch_assoc();
+                            $noteExistante = $resNote ? $resNote['note'] : "";
+                            $ro = readonlyIfLocked($statut);
+                        ?>
+                            <tr>
+                                <td><?= htmlspecialchars($crit['descCourte']) ?></td>
+                                <td><?= htmlspecialchars($crit['descLongue']) ?></td>
+                                <td><input type="number" step="0.01" name="notes[<?= $idCrit ?>]" value="<?= htmlspecialchars($noteExistante) ?>" min="0" max="<?= $crit['ValeurMaxCritereEVal'] ?>" <?= $ro ?>></td>
+                                <td><?= $crit['ValeurMaxCritereEVal'] ?></td>
+                            </tr>
+                        <?php endwhile; ?>
+                    </table>
+                </td>
+            </tr>
+        <?php endwhile; ?>
+    </table>
 
+    <div>
+        <label for="commentaireJury">Commentaire du jury</label><br>
+        <textarea name="commentaireJury" rows="4" <?= readonlyIfLocked($statut) ? 'readonly' : '' ?>>
+            <?= htmlspecialchars($existingCommentaire ?? '', ENT_QUOTES) ?>
+        </textarea>
+    </div>
+
+    <?= renderActions($statut) ?>
+</form>
+
+</body>
+</html>
 
 ?>
 
@@ -434,7 +409,7 @@ switch (strtolower($nature_Soutenance)) {
         <meta charset="UTF-8">
     </head>
     <body>
-    <h2>Grilles de <?=$nature_Soutenance?> de l'étudiant <?= $nom_etudient?> <?= $prenom_etudient?> </h2>
+    <h2>Grilles de <?=$nature_Soutenance?> de l'Ã©tudiant <?= $nom_etudient?> <?= $prenom_etudient?> </h2>
     
     
     <div class="student-block">
@@ -443,7 +418,7 @@ switch (strtolower($nature_Soutenance)) {
    <div class="card">
     <h3><?= $title ?></h3>
     <?php if (empty($rows)): ?>
-        <p>Aucune évaluation trouvée pour cet étudiant et cette nature (<?= htmlspecialchars($title) ?>).</p>
+        <p>Aucune Ã©valuation trouvÃ©e pour cet Ã©tudiant et cette nature (<?= htmlspecialchars($title) ?>).</p>
         <?php
             // log empty result for debugging
             if (!file_exists('logs')) mkdir('logs', 0755, true);
@@ -452,8 +427,8 @@ switch (strtolower($nature_Soutenance)) {
     <?php endif; ?>
     <?php foreach ($rows as $etu): ?>
         <?php
-            // On appelle la fonction qui affiche la grille avec ses critères
-            // ⚠️ Ici tu dois passer l'IdModeleEval correspondant
+            // On appelle la fonction qui affiche la grille avec ses critÃ¨res
+            // âš ï¸ Ici tu dois passer l'IdModeleEval correspondant
             // -> Pour simplifier on peut le lire directement dans EvalXXX
             $idEval = null;
             switch ($type) {
@@ -513,7 +488,7 @@ switch (strtolower($nature_Soutenance)) {
                         $idGrille = $r3['IdModeleEval'];
                         afficherGrilleAvecNotes($mysqli, $idGrille, $etu['IdEtudiant'], $idEval, $type);
                     } else {
-                        echo "<p>⚠️ Aucun modèle de grille trouvé pour la nature : " . htmlspecialchars($type) . "</p>";
+                        echo "<p>âš ï¸ Aucun modÃ¨le de grille trouvÃ© pour la nature : " . htmlspecialchars($type) . "</p>";
                         // Log available model natures to help debugging
                         if (!file_exists('logs')) mkdir('logs', 0755, true);
                         $resN = $mysqli->query("SELECT DISTINCT natureGrille FROM modelesgrilleeval");
@@ -524,7 +499,7 @@ switch (strtolower($nature_Soutenance)) {
                         file_put_contents('logs/actions.log', date('c') . " - Model not found for type: $type - IdEtudiant: {$etu['IdEtudiant']} - available: " . implode('|', $vals) . "\n", FILE_APPEND | LOCK_EX);
                     }
                 } else {
-                    echo "<p>⚠️ Erreur lors de la recherche du modèle de grille.</p>";
+                    echo "<p>âš ï¸ Erreur lors de la recherche du modÃ¨le de grille.</p>";
                 }
             }
         ?>
@@ -534,9 +509,9 @@ switch (strtolower($nature_Soutenance)) {
 
 </div>
 <?php if (strtolower($type) === 'anglais'): ?>
-    <p><a href="../Front_PartieA/public/index.php"> ← Retour</a></p>
+    <p><a href="../Front_PartieA/public/index.php"> â† Retour</a></p>
 <?php else: ?>
-    <p><a href="../PAGEB/index.php?etudiant_id=<?php echo $IdEtudiant; ?>"> ← Retour</a></p>
+    <p><a href="../PAGEB/index.php?etudiant_id=<?php echo $IdEtudiant; ?>"> â† Retour</a></p>
 <?php endif; ?>
 
 
