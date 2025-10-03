@@ -20,3 +20,4 @@ function statutApresValidation($typeGrille, $pdo, $idStage) {
     }
     return null;
 }
+?>

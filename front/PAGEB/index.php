@@ -13,11 +13,6 @@ require_once 'grilleController.php';
 $idUser;
 $idEtudiant;
 
-
-
-// Si l'application gère une session d'authentification, on pourrait préférer $_SESSION.
-// Ici on supporte GET pour tester facilement depuis l'URL.
-//$idUser     = isset($_GET['idUser']) ? (int)$_GET['idUser'] : null;
 if (isset($_SESSION['idUser'])) 
 	$idUser = $_SESSION['idUser'];
 else
@@ -31,8 +26,6 @@ if (isset($_GET['etudiant_id'])){
 ob_start();
 afficherPageEtudiant($idUser, $idEtudiant);
 $pageEtudiantContent = ob_get_clean();
-
-
 ?>
 
 <!DOCTYPE html>
@@ -50,7 +43,3 @@ $pageEtudiantContent = ob_get_clean();
     <a href="../Front_PartieA/public/index.php" class="btn-retour mb-3">← Retour</a>
 </div>
 </body>
-
-<?php
-
-

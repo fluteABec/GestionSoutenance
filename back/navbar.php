@@ -12,6 +12,7 @@
         <a class="nav-item<?php if(strpos($_SERVER['PHP_SELF'], 'Partie3.5.3')!==false) echo ' selected'; ?>" href="../Partie3.5.3/gestion.php">Gestion des ressources</a>
         <a class="nav-item logout-button" href="../deconnexion.php">Déconnexion</a>
 
+
         <nav>
     </div>
 </nav>

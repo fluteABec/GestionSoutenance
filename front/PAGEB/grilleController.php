@@ -9,3 +9,4 @@ function afficherPageEtudiant($idUser, $idEtudiant) {
 
     afficherEtudiantAvecLiens($etudiant, $idUser, $role);
 }
+?>

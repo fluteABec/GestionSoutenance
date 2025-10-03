@@ -95,9 +95,7 @@ $donnees = $controller->traiterRequetes();
                                     <td><?php echo htmlspecialchars($etudiant['statut_portfolio']); ?></td>
                                     <td><?php echo htmlspecialchars($etudiant['statut_anglais']); ?></td>
                                     <td>
-                                        <a href="?action=remonter&id=<?php echo $etudiant['IdEtudiant']; ?>&but3=1">
-                                            Remonter
-                                        </a>
+                                        <a href="?action=remonter&id=<?php echo $etudiant['IdEtudiant']; ?>&but3=1">Remonter</a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -235,12 +233,8 @@ $donnees = $controller->traiterRequetes();
 
         <h3>Envoi par mail</h3>
         <form method="post">
-            <button type="submit" name="export_csv_mail" value="but2">
-                Exporter BUT2 et envoyer par mail
-            </button>
-            <button type="submit" name="export_csv_mail" value="but3">
-                Exporter BUT3 et envoyer par mail
-            </button>
+            <button type="submit" name="export_csv_mail" value="but2">Exporter BUT2 et envoyer par mail</button>
+            <button type="submit" name="export_csv_mail" value="but3">Exporter BUT3 et envoyer par mail</button>
         </form>
     </div>
 </body>
