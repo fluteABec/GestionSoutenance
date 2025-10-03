@@ -11,3 +11,4 @@ try {
 } catch (PDOException $e) {
     die("Erreur connexion : " . $e->getMessage());
 }
+?>
