@@ -5,19 +5,12 @@ $pass = "";
 $db   = "evaluationstages";    
 
 $conn = new mysqli($host, $user, $pass, $db);
+if ($conn->connect_error) die("Connexion échouée : " . $conn->connect_error);
 
-// Vérifier la connexion
-if ($conn->connect_error) {
-    die("Connexion échouée : " . $conn->connect_error);
-}
-//echo "Connexion réussie !"; // Test connexion
+//////////////////////////////////////////// SUPPRESSION CRIT ////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////// SUPPRESSION ///////////////////////////////////////////////////////////////
-
-
-// Vérifier qu’on a bien reçu les paramètres
-if (!isset($_GET['id_critere']) || !isset($_GET['id_section'])) {
-    die("Erreur : critère, section ou grille non spécifiée.");
+if (!isset($_GET['id_critere']) || !isset($_GET['id_section']) || !isset($_GET['id_grille'])) {
+    die("Erreur : paramètres manquants.");
 }
 
 $id_critere = intval($_GET['id_critere']);
@@ -33,21 +26,12 @@ if (grilleDejaUtilisee($conn, $id_grille)) {
 
 }
 
-// Étape 1 : supprimer la liaison section <-> critère
-$sql1 = "DELETE FROM sectioncontenircriteres WHERE IdCritere = $id_critere AND IdSection = $id_section";
-if (!$conn->query($sql1)) {
-    die("Erreur suppression liaison : " . $conn->error);
-}
+// Supprimer d'abord la liaison
+$conn->query("DELETE FROM sectioncontenircriteres WHERE IdSection = $id_section AND IdCritere = $id_critere");
 
-// Étape 2 : supprimer le critère lui-même
-$sql2 = "DELETE FROM critereseval WHERE IdCritere = $id_critere";
-if (!$conn->query($sql2)) {
-    die("Erreur suppression critère : " . $conn->error);
-}
+// Puis supprimer le critère
+$conn->query("DELETE FROM critereseval WHERE IdCritere = $id_critere");
 
-echo "✅ Critère supprimé avec succès.";
 header("Location: ../Affichage.php?id_grille=$id_grille");
-exit; 
-
-$conn->close();
+exit;
 ?>
