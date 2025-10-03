@@ -58,16 +58,31 @@ if (grilleDejaUtilisee($conn, $id_grille)) {
 ?>
 
 
-<h2>Ajouter une section</h2>
-<form method="POST">
-    <label>Titre :</label>
-    <input type="text" name="titre" required>
-    <label>Description :</label>
-    <input type="text" name="description" required>
-    <button type="submit">✅ Ajouter</button>
-</form>
 
-<?php 
-$id_grille = intval($_GET['id_grille']);
-echo "<br><br><a href='../Affichage.php?id_grille=$id_grille'>📂 Retour à l'affichage de grille</a>"; 
-echo "<br><a href='../Grille.php'>📂 Retour aux Grilles</a>";
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <title>Ajouter une section</title>
+    <link rel="stylesheet" href="../../../../stylee.css">
+</head>
+<body>
+    <?php include '../../../navbarGrilles.php'; ?>
+<div class="admin-block" style="max-width:500px;width:96%;margin:40px auto 0 auto;box-sizing:border-box;">
+    <h2 class="section-title">Ajouter une section</h2>
+    <form method="POST" class="card" style="padding:32px 24px;">
+        <div class="form-group" style="margin-bottom:18px;">
+            <label for="titre">Titre :</label>
+            <input type="text" name="titre" id="titre" required class="input-text">
+        </div>
+        <div class="form-group" style="margin-bottom:18px;">
+            <label for="description">Description :</label>
+            <input type="text" name="description" id="description" required class="input-text">
+        </div>
+        <button type="submit" class="btn btn-primary">✅ Ajouter</button>
+    </form>
+        <a href="../Affichage.php?id_grille=<?php echo intval($_GET['id_grille']); ?>" class="btn-retour mb-3">📂 Retour à l'affichage de grille</a>
+    <a href="../Grille.php" class="btn-retour mb-3">📂 Retour aux Grilles</a>
+</div>
+</body>
+</html>

@@ -99,20 +99,76 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 echo "</p>";
             } else {
-                // INSERT stage
-                $sql = "INSERT INTO EvalStage 
+                // Déterminer IdModeleEval le plus récent pour la nature 'STAGE' (normaliser espaces/casse)
+                $stmtModel = $pdo->prepare("SELECT IdModeleEval FROM modelesgrilleeval WHERE TRIM(LOWER(natureGrille)) LIKE LOWER('%stage%') ORDER BY anneeDebut DESC, IdModeleEval DESC LIMIT 1");
+                $stmtModel->execute();
+                $modelRow = $stmtModel->fetch(PDO::FETCH_ASSOC);
+                $idModeleEval = $modelRow ? (int)$modelRow['IdModeleEval'] : 1; // fallback to 1 if none found
+
+                // INSERT stage + création atomique des autres évaluations pour BUT3
+                try {
+                    $pdo->beginTransaction();
+
+                    $sql = "INSERT INTO EvalStage 
                     (date_h, IdEtudiant, IdEnseignantTuteur, IdSecondEnseignant, IdSalle, anneeDebut, IdModeleEval, Statut, note, commentaireJury, presenceMaitreStageApp, confidentiel)
-                    VALUES (:date, :idEtudiant, :tuteur, :second, :salle, :annee, 1, :statut, NULL, NULL, 0, 0)";
-                $stmt = $pdo->prepare($sql);
-                $stmt->execute([
-                    'date' => $date,
-                    'idEtudiant' => $idEtudiant,
-                    'tuteur' => $idTuteur,
-                    'second' => $secondEns,
-                    'salle' => $salle,
-                    'annee' => $anneeDebut,
-                    'statut' => $statut
-                ]);
+                    VALUES (:date, :idEtudiant, :tuteur, :second, :salle, :annee, :idModele, :statut, NULL, NULL, 0, 0)";
+                    $stmt = $pdo->prepare($sql);
+                    $stmt->execute([
+                        'date' => $date,
+                        'idEtudiant' => $idEtudiant,
+                        'tuteur' => $idTuteur,
+                        'second' => $secondEns,
+                        'salle' => $salle,
+                        'annee' => $anneeDebut,
+                        'idModele' => $idModeleEval,
+                        'statut' => $statut
+                    ]);
+
+                    // Si étudiant BUT3 : créer aussi les évaluations portfolio, rapport et soutenance (pas anglais)
+                    if ($estBut3) {
+                        // mapping of additional eval tables
+                        $toCreate = [
+                            'portfolio' => ['table' => 'evalportfolio', 'like' => 'portfolio'],
+                            'rapport'   => ['table' => 'evalrapport',   'like' => 'rapport'],
+                            'soutenance'=> ['table' => 'evalsoutenance','like' => 'soutenance']
+                        ];
+
+                        foreach ($toCreate as $key => $info) {
+                            // find latest model for this nature
+                            $stmtM = $pdo->prepare("SELECT IdModeleEval FROM modelesgrilleeval WHERE TRIM(LOWER(natureGrille)) LIKE LOWER(:needle) ORDER BY anneeDebut DESC, IdModeleEval DESC LIMIT 1");
+                            $needle = '%' . $info['like'] . '%';
+                            $stmtM->execute(['needle' => $needle]);
+                            $mRow = $stmtM->fetch(PDO::FETCH_ASSOC);
+                            $idModel = $mRow ? (int)$mRow['IdModeleEval'] : 1;
+
+                            // Check existence to avoid duplicate unique key errors
+                            $checkSql = "SELECT 1 FROM {$info['table']} WHERE IdEtudiant = :idEt AND anneeDebut = :annee AND IdModeleEval = :idModel LIMIT 1";
+                            $chk = $pdo->prepare($checkSql);
+                            $chk->execute(['idEt' => $idEtudiant, 'annee' => $anneeDebut, 'idModel' => $idModel]);
+                            $exists = $chk->fetchColumn();
+                            if ($exists) continue;
+
+                            // Insert accordingly
+                            if ($info['table'] === 'evalportfolio') {
+                                $ins = $pdo->prepare("INSERT INTO evalportfolio (note, commentaireJury, anneeDebut, IdModeleEval, IdEtudiant, Statut) VALUES (NULL, NULL, :annee, :idModel, :idEt, :statut)");
+                                $ins->execute(['annee' => $anneeDebut, 'idModel' => $idModel, 'idEt' => $idEtudiant, 'statut' => $statut]);
+                            } elseif ($info['table'] === 'evalrapport') {
+                                $ins = $pdo->prepare("INSERT INTO evalrapport (note, commentaireJury, Statut, anneeDebut, IdModeleEval, IdEtudiant) VALUES (NULL, NULL, :statut, :annee, :idModel, :idEt)");
+                                $ins->execute(['statut' => $statut, 'annee' => $anneeDebut, 'idModel' => $idModel, 'idEt' => $idEtudiant]);
+                            } elseif ($info['table'] === 'evalsoutenance') {
+                                $ins = $pdo->prepare("INSERT INTO evalsoutenance (note, commentaireJury, anneeDebut, IdModeleEval, IdEtudiant, Statut) VALUES (NULL, NULL, :annee, :idModel, :idEt, :statut)");
+                                $ins->execute(['annee' => $anneeDebut, 'idModel' => $idModel, 'idEt' => $idEtudiant, 'statut' => $statut]);
+                            }
+                        }
+                    }
+
+                    $pdo->commit();
+                } catch (Exception $e) {
+                    $pdo->rollBack();
+                    error_log('Error creating stage and related evals: ' . $e->getMessage());
+                    echo "<p style='color:red'>Erreur lors de l'enregistrement : " . htmlspecialchars($e->getMessage()) . "</p>";
+                    exit;
+                }
                 header("Location: ../mainAdministration.php?added=1");
                 exit;
             }
@@ -121,12 +177,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($nature === 'anglais') {
-        $ens = $_POST['SecondEnseignant'];
+        // For 'anglais' the visible select is the Tuteur select (label changed to "Enseignant").
+        // Use the value from 'Tuteur' if present, otherwise fall back to 'SecondEnseignant'.
+        if (isset($_POST['Tuteur']) && $_POST['Tuteur'] !== '') {
+            $ens = (int)$_POST['Tuteur'];
+        } elseif (isset($_POST['SecondEnseignant']) && $_POST['SecondEnseignant'] !== '') {
+            $ens = (int)$_POST['SecondEnseignant'];
+        } else {
+            echo "<p style='color:red'>Erreur : aucun enseignant sélectionné pour la soutenance d'anglais.</p>";
+            exit;
+        }
 
-        
+        // Déterminer IdModeleEval le plus récent pour la nature 'ANGLAIS'
+        $stmtModel = $pdo->prepare("SELECT IdModeleEval FROM modelesgrilleeval WHERE TRIM(LOWER(natureGrille)) LIKE LOWER('%anglais%') ORDER BY anneeDebut DESC, IdModeleEval DESC LIMIT 1");
+        $stmtModel->execute();
+        $modelRow = $stmtModel->fetch(PDO::FETCH_ASSOC);
+        $idModeleEval = $modelRow ? (int)$modelRow['IdModeleEval'] : 1;
+
         $sql = "INSERT INTO EvalAnglais 
             (dateS, IdEtudiant, IdEnseignant, IdSalle, anneeDebut, note, Statut, IdModeleEval)
-            VALUES (:date, :idEtudiant, :ens, :salle, :annee, NULL, :statut, 1)";
+            VALUES (:date, :idEtudiant, :ens, :salle, :annee, NULL, :statut, :idModele)";
 
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
@@ -136,6 +206,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'salle' => $salle,
             'annee' => $anneeDebut,
             'statut' => $statut,
+            'idModele' => $idModeleEval
         ]);
         header("Location: ../mainAdministration.php?added=1");
         exit;
@@ -156,49 +227,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
 <?php include '../navbar.php'; ?>
 
-<h2>Ajout d'une Soutenance</h2>
-<form method="post">
-    <?php if (!$estBut3 || $estBut3 && $type === 'stage'): ?> 
-        <label value="portfolio&stage">Nature : Portfolio & Stage</h3> 
-    <?php endif; ?> 
-        
-    <?php if ($estBut3 && $type === 'anglais'): ?> 
-        <label value="anglais">Nature : Anglais</h3> 
-    <?php endif; ?> 
 
-   <label>Date et heure :</label>
-<input type="datetime-local" name="DateSoutenance" id="DateSoutenance"><br>
-
-<label>Salle :</label>
-<select name="Salle" id="salleSelect">
-    <option value="">Choisir...</option>
-</select><br>
-
-<div id="tuteurGroup">
-    <label id="tuteurLabel">Tuteur (Stage/Portfolio) :</label>
-    <select name="Tuteur" id="tuteurSelect">
-        <?php foreach ($listeEnseignant as $e): ?>
-            <option value="<?= $e['IdEnseignant'] ?>">
-                <?= htmlspecialchars($e['nom']." ".$e['prenom']) ?>
-            </option>
-        <?php endforeach; ?>
-    </select><br>
+<div class="admin-block" style="max-width:650px;width:96%;margin:80px auto 0 auto;box-sizing:border-box;">
+    <h2 class="section-title">Ajout d'une Soutenance</h2>
+    <form method="post" class="card" style="padding:32px 24px;">
+        <?php if (!$estBut3 || $estBut3 && $type === 'stage'): ?> 
+            <div class="form-group" style="margin-bottom:18px;">
+                <label value="portfolio&stage">Nature : Portfolio & Stage</label>
+            </div>
+        <?php endif; ?> 
+        <?php if ($estBut3 && $type === 'anglais'): ?> 
+            <div class="form-group" style="margin-bottom:18px;">
+                <label value="anglais">Nature : Anglais</label>
+            </div>
+        <?php endif; ?> 
+        <div class="form-group" style="margin-bottom:18px;">
+            <label for="DateSoutenance">Date et heure :</label>
+            <input type="datetime-local" name="DateSoutenance" id="DateSoutenance" class="input-text">
+        </div>
+        <div class="form-group" style="margin-bottom:18px;">
+            <label for="salleSelect">Salle :</label>
+            <select name="Salle" id="salleSelect" class="input-text">
+                <option value="">Choisir...</option>
+            </select>
+        </div>
+        <div id="tuteurGroup" class="form-group" style="margin-bottom:18px;">
+            <label id="tuteurLabel" for="tuteurSelect">Tuteur (Stage/Portfolio) :</label>
+            <select name="Tuteur" id="tuteurSelect" class="input-text">
+                <?php foreach ($listeEnseignant as $e): ?>
+                    <option value="<?= $e['IdEnseignant'] ?>">
+                        <?= htmlspecialchars($e['nom']." ".$e['prenom']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <div id="secondEnsGroup" class="form-group" style="margin-bottom:18px;">
+            <label for="secondEnsSelect">Second enseignant :</label>
+            <select name="SecondEnseignant" id="secondEnsSelect" class="input-text">
+                <?php foreach ($listeEnseignant as $e): ?>
+                    <option value="<?= $e['IdEnseignant'] ?>">
+                        <?= htmlspecialchars($e['nom']." ".$e['prenom']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+    </form>
+        <a href="../mainAdministration.php" class="btn-retour mb-3">← Retour</a>
 </div>
-
-<div id="secondEnsGroup">
-    <label>Second enseignant :</label>
-    <select name="SecondEnseignant" id="secondEnsSelect">
-        <?php foreach ($listeEnseignant as $e): ?>
-            <option value="<?= $e['IdEnseignant'] ?>">
-                <?= htmlspecialchars($e['nom']." ".$e['prenom']) ?>
-            </option>
-        <?php endforeach; ?>
-    </select><br>
-</div>
-
-<button type="submit">Enregistrer</button>
-
-<p><a href="../mainAdministration.php">← Retour</a></p>
 
 </body>
 </html>

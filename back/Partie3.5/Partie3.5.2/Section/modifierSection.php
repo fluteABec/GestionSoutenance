@@ -62,18 +62,31 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 }
 ?>
 
-<h2>Modifier la section</h2>
-<form method="POST">
-    <label>Titre :</label>
-    <input type="text" name="titre" value="<?php echo htmlspecialchars($titre); ?>" required>
 
-    <label>Description :</label>
-    <input type="text" name="description" value="<?php echo htmlspecialchars($description); ?>" required>
-
-    <button type="submit">✅ Enregistrer</button>
-</form>
-
-<?php
-$id_grille = intval($_GET['id_grille']);
-echo "<br><br><a href='../Affichage.php?id_grille=$id_grille'>📂 Retour aux sections</a>"; 
-echo "<br><a href='../Grille.php'>📂 Retour aux Grilles</a>"; 
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <title>Modifier la section</title>
+    <link rel="stylesheet" href="../../../../stylee.css">
+</head>
+<body>
+    <?php include '../../../navbarGrilles.php'; ?>
+<div class="admin-block" style="max-width:500px;width:96%;margin:80px auto 0 auto;box-sizing:border-box;">
+    <h2 class="section-title">Modifier la section</h2>
+    <form method="POST" class="card" style="padding:32px 24px;">
+        <div class="form-group" style="margin-bottom:18px;">
+            <label for="titre">Titre :</label>
+            <input type="text" name="titre" id="titre" value="<?php echo htmlspecialchars($titre); ?>" required class="input-text">
+        </div>
+        <div class="form-group" style="margin-bottom:18px;">
+            <label for="description">Description :</label>
+            <input type="text" name="description" id="description" value="<?php echo htmlspecialchars($description); ?>" required class="input-text">
+        </div>
+        <button type="submit" class="btn btn-primary">✅ Enregistrer</button>
+    </form>
+        <a href="../Affichage.php?id_grille=<?php echo intval($_GET['id_grille']); ?>" class="btn-retour mb-3">📂 Retour à l'affichage de grille</a>
+    <a href="../Grille.php" class="btn-retour mb-3">📂 Retour aux Grilles</a>
+</div>
+</body>
+</html>
