@@ -42,7 +42,6 @@ if (isset($_GET['etudiant_id'])){
 //       </p>";
 
 // Appelle la fonction du contrôleur qui affiche la page pour cet étudiant
-// (selon ta structure, cette fonction doit exister dans grilleController.php)
 afficherPageEtudiant($idUser, $idEtudiant);
 
 
@@ -52,17 +51,19 @@ afficherPageEtudiant($idUser, $idEtudiant);
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Information Ettduient</title> 
-    <link rel="stylesheet" href="../stylee.css">
+    <title>Information Étudiant</title>
+    <link rel="stylesheet" href="../../stylee.css">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
-<p><a href="../Front_PartieA/public/index.php">← Retour</a></p>
-
+    <?php include '../headerFront.php'; ?>
+<div class="admin-block" style="max-width:900px;width:96%;margin:60px auto 0 auto;box-sizing:border-box;">
+    <a href="../Front_PartieA/public/index.php" class="btn-retour mb-3">← Retour</a>
+    <!-- Le contenu dynamique généré par afficherPageEtudiant s'affichera ici -->
+</div>
 </body>
 
 <?php
-
 // Pour tester d'autres cas, ouvre : index.php?idUser=2&idEtudiant=3
 
 
