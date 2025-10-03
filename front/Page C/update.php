@@ -66,28 +66,40 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $totalRow = $stmt->get_result()->fetch_assoc();
     $total = isset($totalRow['total']) ? (float)$totalRow['total'] : 0.0;
 
-    // Règle spéciale pour le stage
+    // Règle spéciale pour le stage : n'autoriser la mise en BLOQUEE que si toutes
+    // les autres évaluations de l'étudiant sont déjà BLOQUEE.
     if ($type === "stage" && $action === "valider") {
-    $res1 = $mysqli->query("SELECT Statut FROM evalrapport WHERE IdEtudiant=$idEtudiant");
-    $res2 = $mysqli->query("SELECT Statut FROM evalsoutenance WHERE IdEtudiant=$idEtudiant");
+        $checks = [
+            'evalportfolio' => 'portfolio',
+            'evalrapport'   => 'rapport',
+            'evalsoutenance'=> 'soutenance',
+            'evalanglais'   => 'anglais'
+        ];
+        $notBlocked = [];
+        foreach ($checks as $table => $label) {
+            // Count any rows for this student that are not BLOQUEE
+            $q = "SELECT COUNT(*) AS c FROM $table WHERE IdEtudiant=? AND Statut <> 'BLOQUEE'";
+            $stm = $mysqli->prepare($q);
+            if (!$stm) continue; // table might not exist or other issue
+            $stm->bind_param('i', $idEtudiant);
+            $stm->execute();
+            $r = $stm->get_result()->fetch_assoc();
+            $cnt = isset($r['c']) ? (int)$r['c'] : 0;
+            if ($cnt > 0) $notBlocked[] = $label;
+        }
 
-        $rapport = $res1->fetch_assoc()["Statut"] ?? "";
-        $soutenance = $res2->fetch_assoc()["Statut"] ?? "";
-
-        if ($rapport === "VALIDEE" && $soutenance === "VALIDEE") {
-            $statut = "BLOQUEE";
-            // Utiliser des prepared statements pour mettre à jour les statuts
-            $upd1 = $mysqli->prepare("UPDATE evalrapport SET Statut='BLOQUEE' WHERE IdEtudiant=?");
-            $upd1->bind_param('i', $idEtudiant);
-            $upd1->execute();
-            $upd2 = $mysqli->prepare("UPDATE evalsoutenance SET Statut='BLOQUEE' WHERE IdEtudiant=?");
-            $upd2->bind_param('i', $idEtudiant);
-            $upd2->execute();
-        } else {
-            // Redirect back with error
-            header("Location: index.php?nature=$type&error=rapport_soutenance_non_valides");
+        if (!empty($notBlocked)) {
+            // Log which evaluations prevented blocking
+            if (!file_exists('logs')) mkdir('logs', 0755, true);
+            file_put_contents('logs/actions.log', date('c') . " - Cannot block stage for IdEtudiant=$idEtudiant; not blocked: " . implode(',', $notBlocked) . "\n", FILE_APPEND | LOCK_EX);
+            // Redirect back with an error indicating missing blocked evals
+            $details = urlencode(implode(',', $notBlocked));
+            header("Location: index.php?nature=$type&error=not_all_blocked&details=$details");
             exit();
         }
+
+        // All other evaluations are already BLOQUEE -> allow stage to be blocked
+        $statut = "BLOQUEE";
     }
 
     // Mise à jour de la table principale
