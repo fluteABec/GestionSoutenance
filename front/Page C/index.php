@@ -416,82 +416,65 @@ switch (strtolower($nature_Soutenance)) {
 <html>
     <head>
         <title>Grilles <?= $nature_Soutenance?> - <?=$idEnseignant?></title>
-        <link rel="stylesheet" href="../../../stylee.css">
+        <link rel="stylesheet" href="../../stylee.css">
         <meta charset="UTF-8">
     </head>
     <body>
-    <h2>Grilles de <?=$nature_Soutenance?> de l'étudiant <?= $nom_etudient?> <?= $prenom_etudient?> </h2>
-    
-    
-    <div class="student-block">
-
-    <!-- Portfolio -->
-    <div class="card">
-    <h3><?= $title ?></h3>
-    <?php 
-        $pageContent = '';
-        foreach ($rows as $etu) {
-            // On appelle la fonction qui affiche la grille avec ses critères
-            // ⚠️ Ici tu dois passer l'IdModeleEval correspondant
-            // -> Pour simplifier on peut le lire directement dans EvalXXX
-            $idEval = null;
-            switch ($type) {
-                case "portfolio": $idEval = $etu['IdEvalPortfolio']; break;
-                case "anglais": $idEval = $etu['IdEvalAnglais']; break;
-                case "soutenance": $idEval = $etu['IdEvalSoutenance']; break;
-                case "rapport": $idEval = $etu['IdEvalRapport']; break;
-                case "stage": $idEval = $etu['IdEvalStage']; break;
-            }
-
-            // Prefer IdModeleEval provided by the eval record (IdModeleEval), fallback to lookup by nature
-            $idGrille = null;
-            if (!empty($etu['IdModeleEval'])) {
-                $idGrille = (int)$etu['IdModeleEval'];
-            }
-
-            if (!$idGrille) {
-                // Use TRIM to ignore accidental spaces in the stored enum values (e.g. ' STAGE' in the dump)
-                $stmt = $mysqli->prepare("SELECT IdModeleEval FROM modelesgrilleeval WHERE TRIM(LOWER(natureGrille)) = LOWER(?) LIMIT 1");
-                $stmt->bind_param("s", $type);
-                $stmt->execute();
-                $res = $stmt->get_result();
-                if ($res && $row = $res->fetch_assoc()) {
-                    $idGrille = $row['IdModeleEval'];
-                }
-            }
-
-            // Second fallback: look for models containing the word (robuste contre espaces inattendus)
-            if (!$idGrille) {
-                $like = '%' . $type . '%';
-                $stmt2 = $mysqli->prepare("SELECT IdModeleEval FROM modelesgrilleeval WHERE LOWER(natureGrille) LIKE LOWER(?) LIMIT 1");
-                $stmt2->bind_param('s', $like);
-                $stmt2->execute();
-                $res2 = $stmt2->get_result();
-                if ($res2 && $r2 = $res2->fetch_assoc()) {
-                    $idGrille = $r2['IdModeleEval'];
-                }
-            }
-
-            // If still no model, log to local file for diagnosis
-            if (!$idGrille) {
-                if (!file_exists('logs')) mkdir('logs', 0755, true);
-                file_put_contents('logs/actions.log', date('c') . " - Model not found for type: $type - IdEtudiant: {$etu['IdEtudiant']}\n", FILE_APPEND | LOCK_EX);
-            }
-
-            if ($idGrille) {
-                $pageContent .= afficherGrilleAvecNotes($mysqli, $idGrille, $etu['IdEtudiant'], $idEval, $type);
-            } else {
-                $pageContent .= "<p>⚠️ Aucun modèle de grille trouvé pour la nature : " . htmlspecialchars($type) . "</p>";
-            }
-        }
-    ?>
-    <?= $pageContent ?>
-</div>
-
-
-</div>
-<p><a href="../PAGEB/index.php?etudiant_id=<?= htmlspecialchars($IdEtudiant) ?>"> ← Retour</a></p>
-
-
+        <?php include('../headerFront.php'); ?>
+    <div class="admin-block" style="max-width:950px;width:96%;margin:80px auto 0 auto;box-sizing:border-box;">
+        <h2 class="section-title" style="margin-bottom:24px;">Grilles de <?= htmlspecialchars($nature_Soutenance) ?> de l'étudiant <?= htmlspecialchars($nom_etudient) ?> <?= htmlspecialchars($prenom_etudient) ?></h2>
+        <div class="student-block" style="width:100%;">
+            <div class="card" style="margin-bottom:32px;">
+                <h3 style="margin-bottom:18px;"><?= htmlspecialchars($title) ?></h3>
+                <?php 
+                    $pageContent = '';
+                    foreach ($rows as $etu) {
+                        $idEval = null;
+                        switch ($type) {
+                            case "portfolio": $idEval = $etu['IdEvalPortfolio']; break;
+                            case "anglais": $idEval = $etu['IdEvalAnglais']; break;
+                            case "soutenance": $idEval = $etu['IdEvalSoutenance']; break;
+                            case "rapport": $idEval = $etu['IdEvalRapport']; break;
+                            case "stage": $idEval = $etu['IdEvalStage']; break;
+                        }
+                        $idGrille = null;
+                        if (!empty($etu['IdModeleEval'])) {
+                            $idGrille = (int)$etu['IdModeleEval'];
+                        }
+                        if (!$idGrille) {
+                            $stmt = $mysqli->prepare("SELECT IdModeleEval FROM modelesgrilleeval WHERE TRIM(LOWER(natureGrille)) = LOWER(?) LIMIT 1");
+                            $stmt->bind_param("s", $type);
+                            $stmt->execute();
+                            $res = $stmt->get_result();
+                            if ($res && $row = $res->fetch_assoc()) {
+                                $idGrille = $row['IdModeleEval'];
+                            }
+                        }
+                        if (!$idGrille) {
+                            $like = '%' . $type . '%';
+                            $stmt2 = $mysqli->prepare("SELECT IdModeleEval FROM modelesgrilleeval WHERE LOWER(natureGrille) LIKE LOWER(?) LIMIT 1");
+                            $stmt2->bind_param('s', $like);
+                            $stmt2->execute();
+                            $res2 = $stmt2->get_result();
+                            if ($res2 && $r2 = $res2->fetch_assoc()) {
+                                $idGrille = $r2['IdModeleEval'];
+                            }
+                        }
+                        if (!$idGrille) {
+                            if (!file_exists('logs')) mkdir('logs', 0755, true);
+                            file_put_contents('logs/actions.log', date('c') . " - Model not found for type: $type - IdEtudiant: {$etu['IdEtudiant']}\n", FILE_APPEND | LOCK_EX);
+                        }
+                        if ($idGrille) {
+                            $pageContent .= afficherGrilleAvecNotes($mysqli, $idGrille, $etu['IdEtudiant'], $idEval, $type);
+                        } else {
+                            $pageContent .= "<p>⚠️ Aucun modèle de grille trouvé pour la nature : " . htmlspecialchars($type) . "</p>";
+                        }
+                    }
+                ?>
+                <?= $pageContent ?>
+            </div>
+        </div>
+                <a href="../PAGEB/index.php?etudiant_id=<?= htmlspecialchars($IdEtudiant) ?>" class="btn-retour mb-3">← Retour</a>
+    </div>
     </body>
 </html>
