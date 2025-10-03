@@ -9,7 +9,7 @@
     // Variables
     session_start();
     $infoEtud = null;
-    // Prefer GET over session: when a link from Page A provides IdEtudiant, use it (avoids stale session values)
+    // Prefer GET over session: when a link frdEtudiant, use it (avoids stale session values)
     $IdEtudiant = 0;
     if (isset($_GET['IdEtudiant']) && $_GET['IdEtudiant'] !== '') {
         $IdEtudiant = (int)$_GET['IdEtudiant'];
