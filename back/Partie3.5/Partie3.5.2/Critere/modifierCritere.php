@@ -5,23 +5,20 @@ $pass = "";
 $db   = "evaluationstages";    
 
 $conn = new mysqli($host, $user, $pass, $db);
+if ($conn->connect_error) die("Connexion échouée : " . $conn->connect_error);
 
-if ($conn->connect_error) {
-    die("Connexion échouée : " . $conn->connect_error);
-}
 
-// Vérifier qu'on a bien reçu l'id
-if (!isset($_GET['id_critere']) || !isset($_GET['id_section'])) {
-    die("Erreur : critère ou section non spécifié.");
+//////////////////////////////////////////// MODIFICATION CRIT ////////////////////////////////////////////////////////
+
+
+// Vérifier qu'on a les bons paramètres
+if (!isset($_GET['id_critere']) || !isset($_GET['id_section']) || !isset($_GET['id_grille'])) {
+    die("Erreur : paramètres manquants.");
 }
 
 $id_critere = intval($_GET['id_critere']);
-$id_section = intval($_GET['id_section'] ?? $_POST['id_section'] ?? 0);
-$id_grille  = intval($_GET['id_grille'] ?? $_POST['id_grille'] ?? 0);
-
-
-//////////////////////////////////////////////// MODIFICATION ////////////////////////////////////////////////////////////
-
+$id_section = intval($_GET['id_section']);
+$id_grille  = intval($_GET['id_grille']);
 
 // Vérification si la grille est déjà utilisée
 include("../Bouton.php");
@@ -32,29 +29,44 @@ if (grilleDejaUtilisee($conn, $id_grille)) {
 
 }
 
+
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $descLongue = $conn->real_escape_string($_POST['descLongue']);
-    $descCourte = $conn->real_escape_string($_POST['descCourte']);
+    $descCourte = $_POST['descCourte'];
+    $descLongue = $_POST['descLongue'];
+    $valeurMax  = floatval($_POST['valeurMaxCritereEval']);
 
-    // Mise à jour dans critereseval
-    $sql = "UPDATE critereseval 
-            SET descLongue = '$descLongue', descCourte = '$descCourte' 
-            WHERE IdCritere = $id_critere";
+    // Mise à jour critereseval
+    $sql1 = "UPDATE critereseval 
+             SET descCourte = '$descCourte', descLongue = '$descLongue' 
+             WHERE IdCritere = $id_critere";
+    $ok1 = $conn->query($sql1);
 
-    if ($conn->query($sql)) {
+    // Mise à jour sectioncontenircriteres
+    $sql2 = "UPDATE sectioncontenircriteres 
+             SET valeurMaxCritereEval = $valeurMax 
+             WHERE IdSection = $id_section AND IdCritere = $id_critere";
+    $ok2 = $conn->query($sql2);
+
+    if ($ok1 && $ok2) {
         echo "✅ Critère modifié avec succès.";
-        header("Location: ../Affichage.php?id_grille=$id_grille");    } else {
+        header("Location: ../Affichage.php?id_grille=$id_grille");
+        exit;
+    } else {
         echo "Erreur SQL : " . $conn->error;
     }
 } else {
-    // Récupérer le critère existant
-    $sql = "SELECT * FROM critereseval WHERE IdCritere = $id_critere";
-    $result = $conn->query($sql);
+    // Charger le critère existant
+    $sql = "SELECT c.descCourte, c.descLongue, sc.valeurMaxCritereEval
+            FROM critereseval c
+            JOIN sectioncontenircriteres sc ON c.IdCritere = sc.IdCritere
+            WHERE c.IdCritere = $id_critere AND sc.IdSection = $id_section";
+    $res = $conn->query($sql);
 
-    if ($result->num_rows > 0) {
-        $row = $result->fetch_assoc();
-        $descLongue = $row['descLongue'];
+    if ($res->num_rows > 0) {
+        $row = $res->fetch_assoc();
         $descCourte = $row['descCourte'];
+        $descLongue = $row['descLongue'];
+        $valeurMax  = $row['valeurMaxCritereEval'];
     } else {
         die("Erreur : critère non trouvé.");
     }
@@ -63,20 +75,20 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 <h2>Modifier le critère</h2>
 <form method="POST">
-
     <label>Description Courte :</label>
     <input type="text" name="descCourte" value="<?php echo htmlspecialchars($descCourte); ?>" required>
 
     <label>Description Longue :</label>
     <input type="text" name="descLongue" value="<?php echo htmlspecialchars($descLongue); ?>" required>
 
+    <label>Note maximale :</label>
+    <input type="number" step="0.1" name="valeurMaxCritereEval" value="<?php echo htmlspecialchars($valeurMax); ?>" required>
+
     <button type="submit">✅ Enregistrer</button>
 </form>
 
-<?php 
-// bouton retour vers les critères de la section
-echo "<br><a href='../Affichage.php?id_grille=$id_grille'>📂 Retour à l'affichage de grille</a>";
-echo "<br><a href='../Grille.php'>📂 Retour aux Grilles</a>";
-
-
+<?php
+$id_grille = intval($_GET['id_grille']);
 ?>
+<br><br><a href='../Affichage.php?id_grille=<?= $id_grille?>'>📂 Retour à l'affichage de grille</a>
+<br><a href='../Grille.php'>📂 Retour aux Grilles</a> 

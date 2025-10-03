@@ -40,8 +40,8 @@
     $result = $stmt->get_result();
 
     if (!$result) {
-        echo "<br> La requête a échoué. <br>";
-        return;
+        error_log("[Page C] getInfoEtud: requete echouee pour IdEtudiant=$IdEtudiant");
+        return null;
     }
 
     // Un seul étudiant attendu
@@ -67,8 +67,8 @@
         // Erreur de la requete
         if (!$result)
         {
-            echo "<br> La requete à échoué. <br>";
-            return;
+            error_log("[Page C] getEnseiWithTheirEtud: requete echouee pour idEnseignant=$idEnseignant");
+            return [];
         }
 
         // Tableau associatif
@@ -104,8 +104,8 @@
         // Erreur de la requete
         if (!$result)
         {
-            echo "<br> La requete à échoué. <br>";
-            return;
+            error_log("[Page C] getPortfolioGrid: requete echouee pour IdEtudiant=$idEtud");
+            return [];
         }
 
         // Tableau associatif
@@ -133,8 +133,8 @@
         // Erreur de la requete
         if (!$result)
         {
-            echo "<br> La requete à échoué. <br>";
-            return;
+            error_log("[Page C] getEnglishGrid: requete echouee pour IdEtudiant=$idEtud");
+            return [];
         }
 
         // Tableau associatif
@@ -162,8 +162,8 @@
         // Erreur de la requete
         if (!$result)
         {
-            echo "<br> La requete à échoué. <br>";
-            return;
+            error_log("[Page C] getSoutenanceGrid: requete echouee pour IdEtudiant=$idEtud");
+            return [];
         }
 
         // Tableau associatif
@@ -192,8 +192,8 @@
         // Erreur de la requete
         if (!$result)
         {
-            echo "<br> La requete à échoué. <br>";
-            return;
+            error_log("[Page C] getRapportGrid: requete echouee pour IdEtudiant=$idEtud");
+            return [];
         }
 
         // Tableau associatif
@@ -221,8 +221,8 @@
         // Erreur de la requete
         if (!$result)
         {
-            echo "<br> La requete à échoué. <br>";
-            return;
+            error_log("[Page C] getStageGrid: requete echouee pour IdEtudiant=$idEtud");
+            return [];
         }
 
         // Tableau associatif
@@ -261,8 +261,7 @@
     ];
 
     if (!isset($pivotTables[$typeEval])) {
-        echo "<p>Type de grille inconnu.</p>";
-        return;
+        return '<p>Type de grille inconnu.</p>';
     }
     $tablePivot = $pivotTables[$typeEval]['table'];
     $colEval = $pivotTables[$typeEval]['colEval'];
@@ -298,11 +297,10 @@
     $grille = $stmt->get_result()->fetch_assoc();
 
     if (!$grille) {
-        echo "<p>⚠️ Modèle de grille introuvable pour IdModeleEval = " . htmlspecialchars($idGrille) . "</p>";
-        return;
+        return '<p>⚠️ Modèle de grille introuvable pour IdModeleEval = ' . htmlspecialchars($idGrille) . '</p>';
     }
 
-    echo "<h2>Grille : ".htmlspecialchars($grille['nomModuleGrilleEvaluation'])."</h2>";
+    $html = '<h2>Grille : ' . htmlspecialchars($grille['nomModuleGrilleEvaluation']) . '</h2>';
 
     // Sections
     $sql = "SELECT s.IdSection, sc.titre, sc.description
@@ -314,19 +312,19 @@
     $stmt->execute();
     $sections = $stmt->get_result();
 
-    echo "<form method='POST' action='update.php'>";
-    echo "<input type='hidden' name='type' value='$typeEval'>";
-    echo "<input type='hidden' name='id' value='$idEval'>";
-    echo "<input type='hidden' name='idEtudiant' value='$idEtudiant'>";
-    echo "<table border='1' cellpadding='5' cellspacing='0' width='100%'>";
-    echo "<tr><th>Section</th><th>Description</th><th>Critère</th><th>Note</th><th>Max</th></tr>";
+    $html .= "<form method='POST' action='update.php'>";
+    $html .= "<input type='hidden' name='type' value='" . htmlspecialchars($typeEval) . "'>";
+    $html .= "<input type='hidden' name='id' value='" . htmlspecialchars($idEval) . "'>";
+    $html .= "<input type='hidden' name='idEtudiant' value='" . htmlspecialchars($idEtudiant) . "'>";
+    $html .= "<table border='1' cellpadding='5' cellspacing='0' width='100%'>";
+    $html .= "<tr><th>Section</th><th>Description</th><th>Critère</th><th>Note</th><th>Max</th></tr>";
 
     while ($sec = $sections->fetch_assoc()) {
         $id_section = $sec['IdSection'];
-        echo "<tr>";
-        echo "<td>".htmlspecialchars($sec['titre'])."</td>";
-        echo "<td>".htmlspecialchars($sec['description'])."</td>";
-        echo "<td colspan='3'>";
+    $html .= "<tr>";
+    $html .= "<td>".htmlspecialchars($sec['titre'])."</td>";
+    $html .= "<td>".htmlspecialchars($sec['description'])."</td>";
+    $html .= "<td colspan='3'>";
 
         // Critères de la section
         $sql_crit = "SELECT c.IdCritere, c.descCourte, c.descLongue, sc.ValeurMaxCritereEVal as valeurMaxCritereEval
@@ -338,8 +336,8 @@
         $stmt2->execute();
         $crit_res = $stmt2->get_result();
 
-        echo "<table border='1' width='100%'>";
-        echo "<tr><th>Desc Courte</th><th>Desc Longue</th><th>Note</th><th>Max</th></tr>";
+    $html .= "<table border='1' width='100%'>";
+    $html .= "<tr><th>Desc Courte</th><th>Desc Longue</th><th>Note</th><th>Max</th></tr>";
         while ($crit = $crit_res->fetch_assoc()) {
             $idCrit = $crit['IdCritere'];
 
@@ -351,22 +349,24 @@
             $resNote = $stmt3->get_result()->fetch_assoc();
             $noteExistante = $resNote ? $resNote['note'] : "";
 
-            echo "<tr>";
-            echo "<td>".htmlspecialchars($crit['descCourte'])."</td>";
-            echo "<td>".htmlspecialchars($crit['descLongue'])."</td>";
+            $html .= "<tr>";
+            $html .= "<td>".htmlspecialchars($crit['descCourte'])."</td>";
+            $html .= "<td>".htmlspecialchars($crit['descLongue'])."</td>";
             $ro = readonlyIfLocked($statut);
-            echo "<td><input type='number' step='0.01' name='notes[$idCrit]' value='".htmlspecialchars($noteExistante)."' min='0' max='".$crit['valeurMaxCritereEval']."' $ro></td>";
-            echo "<td>".$crit['valeurMaxCritereEval']."</td>";
-            echo "</tr>";
+            $html .= "<td><input type='number' step='0.01' name='notes[$idCrit]' value='".htmlspecialchars($noteExistante)."' min='0' max='".$crit['valeurMaxCritereEval']."' $ro></td>";
+            $html .= "<td>".$crit['valeurMaxCritereEval']."</td>";
+            $html .= "</tr>";
         }
-        echo "</table>";
-        echo "</td>";
-        echo "</tr>";
+        $html .= "</table>";
+        $html .= "</td>";
+        $html .= "</tr>";
     }
-    echo "</table>";
+    $html .= "</table>";
     // Afficher les actions adaptées au statut courant (Enregistrer/Valider ou Débloquer/Non modifiable)
-    echo renderActions($statut);
-    echo "</form>";
+    $html .= renderActions($statut);
+    $html .= "</form>";
+
+    return $html;
 }
 
 
@@ -426,10 +426,11 @@ switch (strtolower($nature_Soutenance)) {
     <div class="student-block">
 
     <!-- Portfolio -->
-   <div class="card">
+    <div class="card">
     <h3><?= $title ?></h3>
-    <?php foreach ($rows as $etu): ?>
-        <?php
+    <?php 
+        $pageContent = '';
+        foreach ($rows as $etu) {
             // On appelle la fonction qui affiche la grille avec ses critères
             // ⚠️ Ici tu dois passer l'IdModeleEval correspondant
             // -> Pour simplifier on peut le lire directement dans EvalXXX
@@ -478,17 +479,18 @@ switch (strtolower($nature_Soutenance)) {
             }
 
             if ($idGrille) {
-                afficherGrilleAvecNotes($mysqli, $idGrille, $etu['IdEtudiant'], $idEval, $type);
+                $pageContent .= afficherGrilleAvecNotes($mysqli, $idGrille, $etu['IdEtudiant'], $idEval, $type);
             } else {
-                echo "<p>⚠️ Aucun modèle de grille trouvé pour la nature : $type</p>";
+                $pageContent .= "<p>⚠️ Aucun modèle de grille trouvé pour la nature : " . htmlspecialchars($type) . "</p>";
             }
-        ?>
-    <?php endforeach; ?>
+        }
+    ?>
+    <?= $pageContent ?>
 </div>
 
 
 </div>
-<p><a href="../PAGEB/index.php?etudiant_id=<?php echo $IdEtudiant; ?>"> ← Retour</a></p>
+<p><a href="../PAGEB/index.php?etudiant_id=<?= htmlspecialchars($IdEtudiant) ?>"> ← Retour</a></p>
 
 
     </body>
