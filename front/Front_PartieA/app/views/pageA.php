@@ -14,7 +14,6 @@ if (!isset($enseignantFullName) || !isset($enseignant)) {
     die('Erreur: Données manquantes pour afficher la page.');
 }
 ?>
-<?php include $_SERVER['DOCUMENT_ROOT'].'/projet_sql/front/headerFront.php'; ?>
 <!doctype html>
 <html lang="fr">
 <head>
@@ -25,7 +24,8 @@ if (!isset($enseignantFullName) || !isset($enseignant)) {
   
 </head>
 <body>
-  <div class="admin-block">
+  <?php include __DIR__ . '/../../../headerFront.php'; ?> 
+   <div class="admin-block">
     <div class="topbar">
       <h1>Tableau des soutenances</h1>
     </div>

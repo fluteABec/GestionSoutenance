@@ -1,5 +1,5 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700&display=swap" rel="stylesheet">
-<nav class="navbar">
+<nav class="navbar" style="width:100%;display:flex;align-items:center;flex-wrap:wrap;">
     <div class="brand">
         <span class="logo"></span>
     </div>
@@ -10,7 +10,7 @@
         <a class="nav-item<?php if(strpos($_SERVER['PHP_SELF'], 'mainAdministration.php')!==false) echo ' selected'; ?>" href="../Partie3.5/Partie3.5.2/Grille.php">Gestion Grille</a>
         <a class="nav-item<?php if(strpos($_SERVER['PHP_SELF'], 'mainAdministration.php')!==false) echo ' selected'; ?>" href="../mainAdministration.php">Administration</a>
         <a class="nav-item<?php if(strpos($_SERVER['PHP_SELF'], 'Partie3.5.3')!==false) echo ' selected'; ?>" href="../Partie3.5.3/gestion.php">Gestion des ressources</a>
-		<a class="nav-item" href="../deconnexion.php">Deconnexion</a>
+        <a class="nav-item logout-button" href="../deconnexion.php">Déconnexion</a>
 
         <nav>
     </div>

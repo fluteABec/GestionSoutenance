@@ -1,6 +1,11 @@
 <?php
 // index.php (version de test avec faux id par défaut)
-session_start();    
+
+session_start();
+// Initialisation du nom du professeur si absent
+if (!isset($_SESSION['professeur_nom'])) {
+    $_SESSION['professeur_nom'] = 'Professeur'; // Remplace par la vraie valeur si besoin
+}
 // charge la configuration / modèle / contrôleur
 require_once 'config.php';
 require_once 'grilleController.php';

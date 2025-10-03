@@ -13,13 +13,16 @@ if (isset($enseignantFullName)) {
     }
 }
 ?>
+
 <div class="navbar" style="display: flex; align-items: center; justify-content: space-between; padding: 0 32px; background: var(--navy); height: 64px; border-bottom: 1px solid var(--border); position: fixed; top: 0; left: 0; right: 0; width: 100vw; z-index: 20;">
-    <div class="brand">
+    <div class="brand" style="flex:0 0 auto;">
         <span class="logo"></span>
     </div>
-    <div style="color:#fff; font-weight:600; font-size:1.1rem; margin-left:32px; white-space:nowrap;">
-         <a href="../../back/deconnexion.php">Déconnexion</a>
-             <?php echo htmlspecialchars($nomProfesseur); ?>
+    <div style="flex:1;display:flex;justify-content:center;align-items:center;">
+        <span style="color:#fff; font-weight:700; font-size:1.15rem; white-space:nowrap;"><?php echo htmlspecialchars($nomProfesseur); ?></span>
+    </div>
+    <div style="flex:0 0 auto;">
+        <a class="nav-item logout-button deconnexion-btn" href="../../back/deconnexion.php">Déconnexion</a>
     </div>
 </div>
 

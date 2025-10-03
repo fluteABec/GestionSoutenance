@@ -10,8 +10,7 @@
         <a class="nav-item<?php if(strpos($_SERVER['PHP_SELF'], 'Partie3.5')!==false) echo ' selected'; ?>" href="Partie3.5/Partie3.5.2/Grille.php">Gestion Grille</a>
         <a class="nav-item<?php if(strpos($_SERVER['PHP_SELF'], 'mainAdministration.php')!==false) echo ' selected'; ?>" href="mainAdministration.php">Administration</a>
         <a class="nav-item<?php if(strpos($_SERVER['PHP_SELF'], 'Partie3.6')!==false) echo ' selected'; ?>" href="../back/Partie3.5.3/gestion.php">Gestion des ressources</a>
-        <a class="nav-item" href="deconnexion.php">Deconnexion</a>
-
+        <a class="nav-item logout-button" href="deconnexion.php">Déconnexion</a>
     </div>
     <!-- Barre de recherche -->
 <input type="text" id="searchInput" placeholder="🔍 Rechercher un étudiant...">
