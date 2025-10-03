@@ -1,5 +1,5 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700&display=swap" rel="stylesheet">    
-<nav class="navbar" style="width:100%;display:flex;align-items:center;flex-wrap:wrap;">
+<nav class="navbar" style="width:100%;">
     <div class="brand">
         <span class="logo"></span>
     </div>
