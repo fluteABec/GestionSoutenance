@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id_grille'])) {
 if (!$id_grille) {
     echo "<h3>Erreur : grille non spécifiée.</h3>";
     echo "<p>Vérifie que le lien contient <code>?id_grille=...</code>.</p>";
-    echo "<p><a href='/SQL/Grille.php'>&larr; Retour aux grilles</a></p>";
+    echo "<p><a href='../Grille.php'>&larr; Retour aux grilles</a></p>";
     // debug court (décommente si besoin) :
     // echo "<pre>GET=" . htmlspecialchars(print_r($_GET, true)) . "\nPOST=" . htmlspecialchars(print_r($_POST, true)) . "</pre>";
     exit;
@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->bind_param("ssssi", $nature, $note, $nom, $annee, $id_grille);
     if ($stmt->execute()) {
         // succès -> retour vers la liste (ou vers la page que tu veux)
-        header("Location: /SQL/Grille.php?updated=1");
+        header("Location: ../Grille.php?updated=1");
         exit;
     } else {
         echo "Erreur SQL (execute) : " . htmlspecialchars($stmt->error);
@@ -75,7 +75,7 @@ $stmt->execute();
 $res = $stmt->get_result();
 if ($res->num_rows === 0) {
     echo "Erreur : grille introuvable.";
-    echo "<p><a href='/SQL/Grille.php'>&larr; Retour</a></p>";
+    echo "<p><a href='../Grille.php'>&larr; Retour</a></p>";
     exit;
 }
 $row = $res->fetch_assoc();
