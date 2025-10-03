@@ -4,7 +4,10 @@
 if (isset($enseignantFullName)) {
     $nomProfesseur = $enseignantFullName;
 } else {
-    session_start();
+    // Start session only if not already active to avoid PHP notice
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        session_start();
+    }
     $nomProfesseur = '';
     if (isset($_SESSION['professeur_nom'])) {
         $nomProfesseur = $_SESSION['professeur_nom'];
