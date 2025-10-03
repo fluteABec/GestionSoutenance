@@ -22,27 +22,10 @@ if (isset($_GET['etudiant_id'])){
 	$idEtudiant = $_GET['etudiant_id'];
     $_SESSION['idEtudiant'] = $idEtudiant;
 }
-
-
-// Valeurs de test par défaut (à adapter si besoin)
-//$DEFAULT_USER_ID     = 1; // faux enseignant / secrétaire
-//$DEFAULT_ETUDIANT_ID = 1; // faux étudiant
-
-// Utilise les valeurs par défaut si les paramètres manquent
-//if (!$idUser) {
-//    $idUser = $DEFAULT_USER_ID;
-//}
-//if (!$idEtudiant) {
-//    $idEtudiant = $DEFAULT_ETUDIANT_ID;
-//}
-
-// Affichage informatif pour le debug / test
-// echo "<p style='background:#f0f0f0;padding:8px;border:1px solid #ddd'>
-//         Mode TEST : idUser = <strong>{$idUser}</strong>, idEtudiant = <strong>{$idEtudiant}</strong>.
-//       </p>";
-
-// Appelle la fonction du contrôleur qui affiche la page pour cet étudiant
+// Capture le contenu généré par afficherPageEtudiant
+ob_start();
 afficherPageEtudiant($idUser, $idEtudiant);
+$pageEtudiantContent = ob_get_clean();
 
 
 ?>
@@ -58,12 +41,11 @@ afficherPageEtudiant($idUser, $idEtudiant);
 <body>
     <?php include '../headerFront.php'; ?>
 <div class="admin-block" style="max-width:900px;width:96%;margin:60px auto 0 auto;box-sizing:border-box;">
+    <?php echo $pageEtudiantContent; ?>
     <a href="../Front_PartieA/public/index.php" class="btn-retour mb-3">← Retour</a>
-    <!-- Le contenu dynamique généré par afficherPageEtudiant s'affichera ici -->
 </div>
 </body>
 
 <?php
-// Pour tester d'autres cas, ouvre : index.php?idUser=2&idEtudiant=3
 
 

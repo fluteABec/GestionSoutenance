@@ -42,12 +42,11 @@ img{max-width:100%;height:auto;display:block}
   margin-right: 32px;
 }
 
-
 .navbar .brand .logo {
   width: 120px;
   height: 50px;
-  background: url('logo-uca-site.png') center/contain no-repeat;
-  border-radius: 0;
+  border-radius: 8px;
+  background: #fff url('logo-uca-site.png') center/contain no-repeat;
 }
 
 .navbar .brand span {
