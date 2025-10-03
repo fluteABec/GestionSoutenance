@@ -8,11 +8,17 @@
 
     // Variables
     session_start();
-    $idEnseignant;
-    $infoEtud; 
-    $IdEtudiant = $_SESSION['idEtudiant'] ?? 0;
-    if (isset($_SESSION["professeur_id"])) {
-        $idEnseignant = $_SESSION["professeur_id"];
+
+    $infoEtud = null;
+    // Prefer GET over session: when a link frdEtudiant, use it (avoids stale session values)
+    $IdEtudiant = 0;
+    if (isset($_GET['IdEtudiant']) && $_GET['IdEtudiant'] !== '') {
+        $IdEtudiant = (int)$_GET['IdEtudiant'];
+        // keep it in session so subsequent actions keep context
+        $_SESSION['idEtudiant'] = $IdEtudiant;
+    } elseif (isset($_GET['id']) && $_GET['id'] !== '') {
+        $IdEtudiant = (int)$_GET['id'];
+        $_SESSION['idEtudiant'] = $IdEtudiant;
     } else {
         // Cas ou il n'y a pas de idEnseignant dans l'URL
         $idEnseignant = 0; 
